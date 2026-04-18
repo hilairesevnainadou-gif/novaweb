@@ -3,16 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <meta name="description" content="{{ $company->description ?? 'Nova Tech - Agence Web Professionnelle' }}">
-    <meta name="author" content="Nova Tech">
+    <meta name="description" content="{{ $company->description ?? $company->meta_description ?? 'Nova Tech - Agence Web Professionnelle' }}">
+    <meta name="author" content="{{ $company->name ?? 'Nova Tech' }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <!-- SEO Meta Tags -->
+    @if(isset($company) && $company)
+        @if($company->meta_keywords)
+            <meta name="keywords" content="{{ $company->meta_keywords }}">
+        @endif
+        @if($company->meta_description)
+            <meta name="description" content="{{ $company->meta_description }}">
+        @endif
+    @endif
+
+    <!-- Favicon -->
+    @if(isset($company) && $company && $company->favicon)
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $company->favicon) }}">
+        <link rel="shortcut icon" type="image/x-icon" href="{{ asset('storage/' . $company->favicon) }}">
+    @else
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    @endif
 
     <!-- Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <title>@yield('title', $company->name ?? 'Nova Tech - Agence Web')</title>
+    <title>@yield('title', isset($company) && $company->name ? $company->name : 'Nova Tech - Agence Web')</title>
 
     <!-- CSS -->
     <link href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -100,6 +118,7 @@
             height: 45px;
             width: auto;
             transition: var(--transition);
+            object-fit: contain;
         }
 
         .header.scrolled .header-logo img {
@@ -224,6 +243,8 @@
 
         .mobile-menu-logo {
             height: 40px;
+            width: auto;
+            object-fit: contain;
             filter: brightness(0) invert(1);
         }
 
@@ -1094,8 +1115,8 @@
     <header class="header" id="header">
         <div class="header-container">
             <a href="{{ route('home') }}" class="header-logo">
-                @if (isset($company) && $company && $company->logo)
-                    <img src="{{ asset($company->logo) }}" alt="{{ $company->name }}">
+                @if(isset($company) && $company && $company->logo)
+                    <img src="{{ asset('storage/' . $company->logo) }}" alt="{{ $company->name ?? 'Logo' }}">
                 @else
                     <img src="{{ asset('assets/images/logo.png') }}" alt="Nova Tech">
                 @endif
@@ -1121,8 +1142,8 @@
     <!-- Menu Mobile -->
     <div class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-header">
-            @if (isset($company) && $company && $company->logo)
-                <img src="{{ asset($company->logo) }}" alt="{{ $company->name }}" class="mobile-menu-logo">
+            @if(isset($company) && $company && $company->logo)
+                <img src="{{ asset('storage/' . $company->logo) }}" alt="{{ $company->name ?? 'Nova Tech' }}" class="mobile-menu-logo">
             @else
                 <img src="{{ asset('assets/images/logo.png') }}" alt="Nova Tech" class="mobile-menu-logo">
             @endif
@@ -1145,7 +1166,7 @@
     </main>
 
     <!-- WHATSAPP -->
-    @if (isset($company) && $company && $company->whatsapp)
+    @if(isset($company) && $company && $company->whatsapp)
     <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $company->whatsapp) }}" class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
         <i class="fa fa-whatsapp"></i>
     </a>
@@ -1159,33 +1180,38 @@
                     <div class="footer-brand-col">
                         <div class="footer-brand">
                             <a href="{{ route('home') }}" class="footer-logo">
-                                @if (isset($company) && $company && $company->logo)
-                                    <img src="{{ asset($company->logo) }}" alt="{{ $company->name }}" loading="lazy">
+                                @if(isset($company) && $company && $company->logo)
+                                    <img src="{{ asset('storage/' . $company->logo) }}" alt="{{ $company->name ?? 'Nova Tech' }}" loading="lazy">
                                 @else
                                     <img src="{{ asset('assets/images/logo.png') }}" alt="Nova Tech" loading="lazy">
                                 @endif
                             </a>
                             <p class="footer-desc">
-                                Agence web professionnelle dédiée à la création de solutions digitales innovantes et sur mesure pour faire rayonner votre présence en ligne.
+                                {{ $company->description ?? $company->mission ?? 'Agence web professionnelle dédiée à la création de solutions digitales innovantes et sur mesure pour faire rayonner votre présence en ligne.' }}
                             </p>
                         </div>
                         <div class="footer-social">
-                            @if (isset($company) && $company && $company->facebook)
+                            @if(isset($company) && $company && $company->facebook)
                                 <a href="{{ $company->facebook }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Facebook">
                                     <i class="fa fa-facebook-f"></i>
                                 </a>
                             @endif
-                            @if (isset($company) && $company && $company->instagram)
+                            @if(isset($company) && $company && $company->instagram)
                                 <a href="{{ $company->instagram }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram">
                                     <i class="fa fa-instagram"></i>
                                 </a>
                             @endif
-                            @if (isset($company) && $company && $company->linkedin)
+                            @if(isset($company) && $company && $company->linkedin)
                                 <a href="{{ $company->linkedin }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="LinkedIn">
                                     <i class="fa fa-linkedin"></i>
                                 </a>
                             @endif
-                            @if (isset($company) && $company && $company->whatsapp)
+                            @if(isset($company) && $company && $company->twitter)
+                                <a href="{{ $company->twitter }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Twitter">
+                                    <i class="fa fa-twitter"></i>
+                                </a>
+                            @endif
+                            @if(isset($company) && $company && $company->whatsapp)
                                 <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $company->whatsapp) }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="WhatsApp">
                                     <i class="fa fa-whatsapp"></i>
                                 </a>
@@ -1214,25 +1240,25 @@
                             <i class="fa fa-chevron-down footer-toggle-icon"></i>
                         </h4>
                         <ul class="footer-list contact-list" id="footer-contact">
-                            @if (isset($company) && $company && $company->address)
+                            @if(isset($company) && $company && $company->address)
                                 <li>
                                     <span class="contact-icon"><i class="fa fa-map-marker"></i></span>
                                     <span class="contact-text">{{ $company->address }}</span>
                                 </li>
                             @endif
-                            @if (isset($company) && $company && $company->email)
+                            @if(isset($company) && $company && $company->email)
                                 <li>
                                     <span class="contact-icon"><i class="fa fa-envelope"></i></span>
                                     <a href="mailto:{{ $company->email }}">{{ $company->email }}</a>
                                 </li>
                             @endif
-                            @if (isset($company) && $company && $company->phone)
+                            @if(isset($company) && $company && $company->phone)
                                 <li>
                                     <span class="contact-icon"><i class="fa fa-phone"></i></span>
                                     <a href="tel:{{ $company->phone }}">{{ $company->phone }}</a>
                                 </li>
                             @endif
-                            @if (isset($company) && $company && $company->whatsapp)
+                            @if(isset($company) && $company && $company->whatsapp)
                                 <li>
                                     <span class="contact-icon"><i class="fa fa-whatsapp"></i></span>
                                     <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $company->whatsapp) }}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
@@ -1244,10 +1270,10 @@
                     <div class="footer-newsletter-col">
                         <h4 class="footer-title">Newsletter</h4>
                         <p class="footer-text">Recevez nos actualités et offres spéciales directement dans votre boîte mail.</p>
-                        <form class="newsletter-form" action="#" method="POST">
+                        <form class="newsletter-form" action="{{ route('newsletter.subscribe') }}" method="POST">
                             @csrf
                             <div class="newsletter-group">
-                                <input type="email" class="newsletter-input" placeholder="Votre email" required aria-label="Votre email">
+                                <input type="email" name="email" class="newsletter-input" placeholder="Votre email" required aria-label="Votre email">
                                 <button type="submit" class="newsletter-btn" aria-label="S'inscrire">
                                     <i class="fa fa-paper-plane"></i>
                                 </button>
@@ -1263,7 +1289,7 @@
             <div class="footer-container">
                 <div class="footer-bottom-content">
                     <p class="copyright">
-                        &copy; {{ date('Y') }} {{ (isset($company) && $company) ? $company->name : 'Nova Tech' }}. Tous droits réservés.
+                        &copy; {{ date('Y') }} {{ (isset($company) && $company && $company->name) ? $company->name : 'Nova Tech' }}. Tous droits réservés.
                     </p>
                     <div class="footer-legal">
                         <a href="{{ route('mentions.legales') }}">Mentions légales</a>
@@ -1339,15 +1365,17 @@
                 }
             }
 
-            menuToggle.addEventListener('click', toggleMenu);
-            menuOverlay.addEventListener('click', toggleMenu);
+            if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+            if (menuOverlay) menuOverlay.addEventListener('click', toggleMenu);
 
-            mobileMenu.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', toggleMenu);
-            });
+            if (mobileMenu) {
+                mobileMenu.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', toggleMenu);
+                });
+            }
 
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+                if (e.key === 'Escape' && mobileMenu && mobileMenu.classList.contains('active')) {
                     toggleMenu();
                 }
             });
@@ -1357,9 +1385,10 @@
                 anchor.addEventListener('click', function(e) {
                     const href = this.getAttribute('href');
                     if (href && href !== '#' && href !== '#about' && href !== '#services' && href !== '#contact') {
-                        e.preventDefault();
-                        const target = document.querySelector(href);
+                        const targetId = href.split('#')[1];
+                        const target = document.getElementById(targetId);
                         if (target) {
+                            e.preventDefault();
                             const headerOffset = 80;
                             const elementPosition = target.getBoundingClientRect().top;
                             const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
@@ -1434,24 +1463,26 @@
             window.addEventListener('scroll', updateActiveMenuOnScroll);
             window.addEventListener('load', updateActiveMenuOnScroll);
 
-            const mobileLinks = document.querySelectorAll('.mobile-menu-nav a');
-            mobileLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    const href = this.getAttribute('href');
-                    if (href && href.includes('#')) {
-                        const targetId = href.split('#')[1];
-                        const target = document.getElementById(targetId);
-                        if (target) {
-                            e.preventDefault();
-                            const headerOffset = 80;
-                            const elementPosition = target.getBoundingClientRect().top;
-                            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                            window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
-                            toggleMenu();
+            if (mobileMenu) {
+                const mobileLinks = mobileMenu.querySelectorAll('.mobile-menu-nav a');
+                mobileLinks.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        const href = this.getAttribute('href');
+                        if (href && href.includes('#')) {
+                            const targetId = href.split('#')[1];
+                            const target = document.getElementById(targetId);
+                            if (target) {
+                                e.preventDefault();
+                                const headerOffset = 80;
+                                const elementPosition = target.getBoundingClientRect().top;
+                                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                                window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                                toggleMenu();
+                            }
                         }
-                    }
+                    });
                 });
-            });
+            }
 
             // Footer accordéons mobile
             const footerToggles = document.querySelectorAll('.footer-title[data-toggle]');
@@ -1479,6 +1510,8 @@
             const modalMessage = document.getElementById('modalMessage');
 
             function showModal(type, title, message) {
+                if (!modalIcon || !modalTitle || !modalMessage) return;
+
                 modalIcon.className = 'newsletter-modal-icon';
 
                 if (type === 'success') {
@@ -1493,27 +1526,21 @@
 
                 modalTitle.textContent = title;
                 modalMessage.textContent = message;
-                newsletterModal.classList.add('active');
+                if (newsletterModal) newsletterModal.classList.add('active');
                 document.body.style.overflow = 'hidden';
             }
 
             function closeModal() {
-                newsletterModal.classList.remove('active');
+                if (newsletterModal) newsletterModal.classList.remove('active');
                 document.body.style.overflow = '';
             }
 
-            if (newsletterModalClose) {
-                newsletterModalClose.addEventListener('click', closeModal);
-            }
-
-            if (newsletterModalBtn) {
-                newsletterModalBtn.addEventListener('click', closeModal);
-            }
-
+            if (newsletterModalClose) newsletterModalClose.addEventListener('click', closeModal);
+            if (newsletterModalBtn) newsletterModalBtn.addEventListener('click', closeModal);
             document.querySelector('.newsletter-modal-overlay')?.addEventListener('click', closeModal);
 
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && newsletterModal.classList.contains('active')) {
+                if (e.key === 'Escape' && newsletterModal && newsletterModal.classList.contains('active')) {
                     closeModal();
                 }
             });
@@ -1524,7 +1551,7 @@
                     e.preventDefault();
 
                     const emailInput = this.querySelector('input[type="email"]');
-                    const email = emailInput.value.trim();
+                    const email = emailInput ? emailInput.value.trim() : '';
                     const submitBtn = this.querySelector('button[type="submit"]');
 
                     if (!email || !email.includes('@') || !email.includes('.')) {
@@ -1552,7 +1579,7 @@
 
                         if (data.success) {
                             showModal('success', 'Inscription réussie !', data.message);
-                            emailInput.value = '';
+                            if (emailInput) emailInput.value = '';
                         } else {
                             showModal('error', 'Oups !', data.message);
                         }
