@@ -1,0 +1,1374 @@
+@import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Palette Novatech adaptée pour Flux */
+    --color-novatech-vert: #2ecc71;
+    --color-novatech-jaune: #f1c40f;
+    --color-novatech-rouge: #e74c3c;
+    --color-novatech-bleu: #3498db;
+    --color-novatech-blanc: #ffffff;
+    --color-novatech-gris: #f8f9fa;
+    --color-novatech-noir: #2c3e50;
+
+    /* Intégration des couleurs Novatech dans la palette Flux */
+    --color-accent: var(--color-novatech-vert);
+    --color-accent-content: var(--color-novatech-blanc);
+    --color-accent-foreground: var(--color-novatech-noir);
+
+    /* Extension des couleurs Zinc avec les couleurs Novatech */
+    --color-zinc-50: #fafafa;
+    --color-zinc-100: #f5f5f5;
+    --color-zinc-200: #e5e5e5;
+    --color-zinc-300: #d4d4d4;
+    --color-zinc-400: #a3a3a3;
+    --color-zinc-500: #737373;
+    --color-zinc-600: #525252;
+    --color-zinc-700: #404040;
+    --color-zinc-800: #262626;
+    --color-zinc-900: #171717;
+    --color-zinc-950: #0a0a0a;
+}
+
+@layer theme {
+    .dark {
+        --color-accent: var(--color-novatech-bleu);
+        --color-accent-content: var(--color-novatech-blanc);
+        --color-accent-foreground: var(--color-novatech-noir);
+        --color-novatech-blanc: #1a1a2e;
+        --color-novatech-gris: #16213e;
+        --color-novatech-noir: #ffffff;
+    }
+}
+
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--color-novatech-blanc);
+        color: var(--color-novatech-noir);
+    }
+}
+
+/* ============================================
+   HEADER ADMIN NOVATECH
+   ============================================ */
+
+.admin-header-novatech {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--color-novatech-blanc);
+    border-bottom: 1px solid var(--color-zinc-200);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.dark .admin-header-novatech {
+    background: var(--color-zinc-900);
+    border-bottom-color: var(--color-zinc-800);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.admin-header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    height: 64px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Logo Admin */
+.admin-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+}
+
+.admin-logo-image {
+    height: 40px;
+    width: auto;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+.admin-logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dark .admin-logo-text {
+    background: linear-gradient(135deg, var(--color-novatech-bleu), var(--color-novatech-vert));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Navigation Admin */
+.admin-nav {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.admin-nav-menu {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.admin-nav-item {
+    position: relative;
+}
+
+.admin-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: var(--color-novatech-noir);
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.admin-nav-link:hover {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(52, 152, 219, 0.1));
+    color: var(--color-novatech-vert);
+    transform: translateY(-2px);
+}
+
+.admin-nav-link.active {
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    color: var(--color-novatech-blanc) !important;
+}
+
+.admin-nav-link.active:hover {
+    background: linear-gradient(135deg, var(--color-novatech-rouge), var(--color-novatech-jaune));
+    transform: translateY(-2px);
+}
+
+.dark .admin-nav-link {
+    color: var(--color-novatech-blanc);
+}
+
+.dark .admin-nav-link:hover {
+    color: var(--color-novatech-bleu);
+}
+
+/* Badge notifications */
+.admin-notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: linear-gradient(135deg, var(--color-novatech-rouge), var(--color-novatech-jaune));
+    color: white;
+    font-size: 0.7rem;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+/* User Menu */
+.admin-user-menu {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.admin-user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-user-profile:hover {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(52, 152, 219, 0.1));
+}
+
+.admin-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu)) border-box;
+}
+
+.admin-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-user-name {
+    font-weight: 600;
+    color: var(--color-novatech-noir);
+}
+
+.admin-user-role {
+    font-size: 0.8rem;
+    color: var(--color-novatech-vert);
+    font-weight: 500;
+}
+
+.dark .admin-user-name {
+    color: var(--color-novatech-blanc);
+}
+
+.dark .admin-user-role {
+    color: var(--color-novatech-bleu);
+}
+
+/* Menu déroulant utilisateur */
+.admin-user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    min-width: 200px;
+    background: var(--color-novatech-blanc);
+    border-radius: 12px;
+    border: 1px solid var(--color-zinc-200);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.admin-user-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dark .admin-user-dropdown {
+    background: var(--color-zinc-900);
+    border-color: var(--color-zinc-800);
+}
+
+.admin-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--color-novatech-noir);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid var(--color-zinc-100);
+}
+
+.admin-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.admin-dropdown-item:hover {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(52, 152, 219, 0.1));
+    color: var(--color-novatech-vert);
+}
+
+.dark .admin-dropdown-item {
+    color: var(--color-novatech-blanc);
+    border-bottom-color: var(--color-zinc-800);
+}
+
+.dark .admin-dropdown-item:hover {
+    color: var(--color-novatech-bleu);
+}
+
+.admin-dropdown-item.logout {
+    color: var(--color-novatech-rouge);
+}
+
+.admin-dropdown-item.logout:hover {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(241, 196, 15, 0.1));
+}
+
+/* Toggle menu mobile */
+.admin-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.admin-menu-toggle:hover {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(52, 152, 219, 0.1));
+}
+
+.admin-menu-toggle span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    margin: 5px 0;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+/* ============================================
+   FOOTER ADMIN NOVATECH
+   ============================================ */
+
+.admin-footer-novatech {
+    background: var(--color-novatech-noir);
+    color: var(--color-novatech-blanc);
+    padding: 2rem 0;
+    margin-top: auto;
+}
+
+.dark .admin-footer-novatech {
+    background: var(--color-zinc-950);
+}
+
+.admin-footer-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.admin-footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.admin-footer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.admin-footer-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+}
+
+.admin-footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.admin-footer-link {
+    color: var(--color-novatech-blanc);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+}
+
+.admin-footer-link:hover {
+    opacity: 1;
+    color: var(--color-novatech-vert);
+    transform: translateX(5px);
+}
+
+.dark .admin-footer-link:hover {
+    color: var(--color-novatech-bleu);
+}
+
+.admin-footer-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.admin-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--color-novatech-blanc);
+    opacity: 0.8;
+}
+
+.admin-contact-item i {
+    color: var(--color-novatech-vert);
+}
+
+.dark .admin-contact-item i {
+    color: var(--color-novatech-bleu);
+}
+
+.admin-social-links {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.admin-social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(52, 152, 219, 0.1));
+    color: var(--color-novatech-blanc);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.admin-social-link:hover {
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+}
+
+.admin-footer-bottom {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    opacity: 0.6;
+    font-size: 0.9rem;
+}
+
+/* ============================================
+   LAYOUT ADMIN PRINCIPAL
+   ============================================ */
+
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.admin-main-content {
+    flex: 1;
+    padding: 2rem 1.5rem;
+    background: var(--color-novatech-gris);
+}
+
+.dark .admin-main-content {
+    background: var(--color-zinc-950);
+}
+
+/* Styles spécifiques pour les composants Flux avec thème Novatech */
+[data-flux-field]:not(ui-radio, ui-checkbox) {
+    @apply grid gap-2;
+}
+
+[data-flux-label] {
+    @apply !mb-0 !leading-tight font-medium text-novatech-noir;
+}
+
+input:focus[data-flux-control],
+textarea:focus[data-flux-control],
+select:focus[data-flux-control] {
+    @apply outline-hidden ring-2 ring-novatech-vert ring-offset-2 ring-offset-novatech-blanc;
+}
+
+/* Personnalisation des boutons Flux avec thème Novatech */
+button[data-flux-button] {
+    transition: all 0.3s ease;
+}
+
+button[data-flux-button]:hover {
+    transform: translateY(-2px);
+}
+
+button[data-flux-button].novatech-gradient-1 {
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    color: var(--color-novatech-blanc);
+    border: none;
+}
+
+button[data-flux-button].novatech-gradient-2 {
+    background: linear-gradient(135deg, var(--color-novatech-rouge), var(--color-novatech-jaune));
+    color: var(--color-novatech-blanc);
+    border: none;
+}
+
+/* Personnalisation des menus Flux */
+[data-flux-menu] {
+    border-radius: 12px;
+    border: 1px solid var(--color-zinc-200);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.dark [data-flux-menu] {
+    border-color: var(--color-zinc-700);
+    background: var(--color-novatech-gris);
+}
+
+/* Personnalisation des sidebar Flux */
+[data-flux-sidebar] {
+    background: var(--color-novatech-blanc);
+    border-right: 1px solid var(--color-zinc-200);
+}
+
+.dark [data-flux-sidebar] {
+    background: var(--color-novatech-gris);
+    border-right-color: var(--color-zinc-700);
+}
+
+/* Personnalisation des formulaires Flux */
+[data-flux-control] {
+    border-radius: 8px;
+    border: 2px solid var(--color-zinc-200);
+    padding: 10px 14px;
+    font-size: 15px;
+    transition: all 0.3s;
+}
+
+[data-flux-control]:focus {
+    border-color: var(--color-novatech-vert);
+    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
+}
+
+.dark [data-flux-control] {
+    border-color: var(--color-zinc-700);
+    background: var(--color-novatech-noir);
+    color: var(--color-novatech-blanc);
+}
+
+.dark [data-flux-control]:focus {
+    border-color: var(--color-novatech-bleu);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+/* Classes utilitaires Novatech */
+.novatech-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    color: var(--color-novatech-blanc);
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.hover-novatech {
+    transition: all 0.3s ease;
+}
+
+.hover-novatech:hover {
+    transform: translateY(-3px);
+}
+
+/* Couleurs de texte */
+.text-novatech-vert { color: var(--color-novatech-vert); }
+.text-novatech-jaune { color: var(--color-novatech-jaune); }
+.text-novatech-rouge { color: var(--color-novatech-rouge); }
+.text-novatech-bleu { color: var(--color-novatech-bleu); }
+.text-novatech-blanc { color: var(--color-novatech-blanc); }
+.text-novatech-gris { color: var(--color-novatech-gris); }
+.text-novatech-noir { color: var(--color-novatech-noir); }
+
+/* Backgrounds */
+.bg-novatech-vert { background-color: var(--color-novatech-vert); }
+.bg-novatech-jaune { background-color: var(--color-novatech-jaune); }
+.bg-novatech-rouge { background-color: var(--color-novatech-rouge); }
+.bg-novatech-bleu { background-color: var(--color-novatech-bleu); }
+.bg-novatech-blanc { background-color: var(--color-novatech-blanc); }
+.bg-novatech-gris { background-color: var(--color-novatech-gris); }
+.bg-novatech-noir { background-color: var(--color-novatech-noir); }
+
+/* Bordures */
+.border-novatech-vert { border-color: var(--color-novatech-vert); }
+.border-novatech-jaune { border-color: var(--color-novatech-jaune); }
+.border-novatech-rouge { border-color: var(--color-novatech-rouge); }
+.border-novatech-bleu { border-color: var(--color-novatech-bleu); }
+
+/* Dégradés */
+.bg-gradient-novatech-1 {
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+}
+.bg-gradient-novatech-2 {
+    background: linear-gradient(135deg, var(--color-novatech-rouge), var(--color-novatech-jaune));
+}
+.bg-gradient-novatech-3 {
+    background: linear-gradient(135deg, var(--color-novatech-jaune), var(--color-novatech-vert));
+}
+
+/* Animation du preloader Novatech */
+.novatech-preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-novatech-blanc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.25s ease;
+}
+
+.novatech-preloader.loaded {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.novatech-preloader .dots {
+    display: flex;
+    gap: 8px;
+}
+
+.novatech-preloader .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    animation: novatech-bounce 1.4s infinite ease-in-out both;
+}
+
+.novatech-preloader .dot:nth-child(1) { animation-delay: -0.32s; }
+.novatech-preloader .dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes novatech-bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+/* Styles pour le header/admin avec thème Novatech */
+.admin-header-novatech {
+    background: var(--color-novatech-blanc);
+    border-bottom: 3px solid var(--color-novatech-vert);
+    box-shadow: 0 2px 10px rgba(44, 62, 80, 0.1);
+}
+
+.dark .admin-header-novatech {
+    background: var(--color-zinc-900);
+    border-bottom-color: var(--color-novatech-bleu);
+}
+
+/* Boutons de style Novatech pour Flux */
+.btn-novatech {
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    color: var(--color-novatech-blanc);
+    border-radius: 25px;
+    padding: 12px 30px;
+    font-weight: 600;
+    border: none;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-novatech:hover {
+    background: linear-gradient(135deg, var(--color-novatech-rouge), var(--color-novatech-jaune));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+}
+
+.btn-novatech:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(46, 204, 113, 0.3);
+}
+
+/* Cartes de style Novatech */
+.card-novatech {
+    background: var(--color-novatech-blanc);
+    border-radius: 15px;
+    border: 1px solid var(--color-zinc-200);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.dark .card-novatech {
+    background: var(--color-zinc-800);
+    border-color: var(--color-zinc-700);
+}
+
+.card-novatech:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(46, 204, 113, 0.1);
+}
+
+/* Badges Flux avec style Novatech */
+[data-flux-badge].novatech {
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    color: var(--color-novatech-blanc);
+    font-weight: 600;
+}
+
+/* Alertes avec thème Novatech */
+.alert-novatech {
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-weight: 500;
+    border-left: 4px solid;
+}
+
+.alert-novatech-success {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(52, 152, 219, 0.1));
+    border-left-color: var(--color-novatech-vert);
+    color: var(--color-novatech-vert);
+}
+
+.alert-novatech-error {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(241, 196, 15, 0.1));
+    border-left-color: var(--color-novatech-rouge);
+    color: var(--color-novatech-rouge);
+}
+
+/* Personnalisation des onglets Flux */
+[data-flux-tab].novatech {
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+[data-flux-tab].novatech[aria-selected="true"] {
+    border-bottom-color: var(--color-novatech-vert);
+    color: var(--color-novatech-vert);
+}
+
+.dark [data-flux-tab].novatech[aria-selected="true"] {
+    border-bottom-color: var(--color-novatech-bleu);
+    color: var(--color-novatech-bleu);
+}
+
+/* Animation d'entrée Novatech */
+@keyframes fadeInUp-novatech {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeInUp-novatech {
+    animation: fadeInUp-novatech 0.6s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .btn-novatech {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    .card-novatech {
+        border-radius: 10px;
+    }
+
+    .admin-menu-toggle {
+        display: block;
+    }
+
+    .admin-nav-menu {
+        position: fixed;
+        top: 64px;
+        left: 0;
+        right: 0;
+        background: var(--color-novatech-blanc);
+        flex-direction: column;
+        padding: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transform: translateY(-100%);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 999;
+    }
+
+    .admin-nav-menu.show {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .dark .admin-nav-menu {
+        background: var(--color-zinc-900);
+    }
+
+    .admin-nav-item {
+        width: 100%;
+    }
+
+    .admin-nav-link {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .admin-user-dropdown {
+        position: fixed;
+        left: 1rem;
+        right: 1rem;
+        top: auto;
+        bottom: 1rem;
+    }
+
+    .admin-footer-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-header-container {
+        padding: 0 1rem;
+    }
+
+    .admin-main-content {
+        padding: 1.5rem 1rem;
+    }
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-novatech-gris);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--color-novatech-rouge), var(--color-novatech-jaune));
+}
+
+/* Styles pour le contenu admin */
+.admin-content-header {
+    background: var(--color-novatech-blanc);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.dark .admin-content-header {
+    background: var(--color-zinc-800);
+}
+
+.admin-content-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+.admin-content-subtitle {
+    color: var(--color-zinc-600);
+    font-size: 0.95rem;
+}
+
+.dark .admin-content-subtitle {
+    color: var(--color-zinc-400);
+}
+
+/* Breadcrumb admin */
+.admin-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.admin-breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-zinc-600);
+    font-size: 0.9rem;
+}
+
+.admin-breadcrumb-item a {
+    color: var(--color-novatech-vert);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.admin-breadcrumb-item a:hover {
+    color: var(--color-novatech-bleu);
+}
+
+.dark .admin-breadcrumb-item {
+    color: var(--color-zinc-400);
+}
+
+.dark .admin-breadcrumb-item a {
+    color: var(--color-novatech-bleu);
+}
+
+.admin-breadcrumb-separator {
+    color: var(--color-zinc-400);
+}
+
+.dark .admin-breadcrumb-separator {
+    color: var(--color-zinc-600);
+}
+
+/* Animation pour le menu mobile */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.admin-nav-menu.show .admin-nav-item {
+    animation: slideDown 0.3s ease forwards;
+    opacity: 0;
+}
+
+.admin-nav-menu.show .admin-nav-item:nth-child(1) { animation-delay: 0.1s; }
+.admin-nav-menu.show .admin-nav-item:nth-child(2) { animation-delay: 0.2s; }
+.admin-nav-menu.show .admin-nav-item:nth-child(3) { animation-delay: 0.3s; }
+.admin-nav-menu.show .admin-nav-item:nth-child(4) { animation-delay: 0.4s; }
+.admin-nav-menu.show .admin-nav-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* Styles pour le dashboard admin */
+.admin-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.admin-dashboard-card {
+    background: var(--color-novatech-blanc);
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.dark .admin-dashboard-card {
+    background: var(--color-zinc-800);
+}
+
+.admin-dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(46, 204, 113, 0.1);
+}
+
+.admin-card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    color: white;
+    font-size: 1.5rem;
+}
+
+.admin-card-title {
+    font-size: 0.9rem;
+    color: var(--color-zinc-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.dark .admin-card-title {
+    color: var(--color-zinc-400);
+}
+
+.admin-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+.admin-card-growth {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-novatech-vert);
+}
+
+.admin-card-growth.negative {
+    color: var(--color-novatech-rouge);
+}
+
+/* Table admin */
+.admin-table-container {
+    background: var(--color-novatech-blanc);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.dark .admin-table-container {
+    background: var(--color-zinc-800);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table thead {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(52, 152, 219, 0.1));
+}
+
+.admin-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--color-novatech-noir);
+    border-bottom: 2px solid var(--color-zinc-200);
+}
+
+.dark .admin-table th {
+    color: var(--color-novatech-blanc);
+    border-bottom-color: var(--color-zinc-700);
+}
+
+.admin-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-zinc-100);
+}
+
+.dark .admin-table td {
+    border-bottom-color: var(--color-zinc-700);
+}
+
+.admin-table tr:hover {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.05), rgba(52, 152, 219, 0.05));
+}
+
+/* Actions admin */
+.admin-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.admin-action-btn {
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-action-btn.edit {
+    color: var(--color-novatech-vert);
+}
+
+.admin-action-btn.edit:hover {
+    background: rgba(46, 204, 113, 0.1);
+}
+
+.admin-action-btn.delete {
+    color: var(--color-novatech-rouge);
+}
+
+.admin-action-btn.delete:hover {
+    background: rgba(231, 76, 60, 0.1);
+}
+
+.admin-action-btn.view {
+    color: var(--color-novatech-bleu);
+}
+
+.admin-action-btn.view:hover {
+    background: rgba(52, 152, 219, 0.1);
+}
+
+/* Pagination admin */
+.admin-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.admin-pagination-link {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background: var(--color-novatech-blanc);
+    color: var(--color-novatech-noir);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid var(--color-zinc-200);
+}
+
+.dark .admin-pagination-link {
+    background: var(--color-zinc-800);
+    color: var(--color-novatech-blanc);
+    border-color: var(--color-zinc-700);
+}
+
+.admin-pagination-link:hover {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(52, 152, 219, 0.1));
+    border-color: var(--color-novatech-vert);
+}
+
+.admin-pagination-link.active {
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    color: var(--color-novatech-blanc);
+    border-color: transparent;
+}
+
+/* Formulaires admin */
+.admin-form {
+    background: var(--color-novatech-blanc);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.dark .admin-form {
+    background: var(--color-zinc-800);
+}
+
+.admin-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.admin-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--color-novatech-noir);
+}
+
+.dark .admin-form-label {
+    color: var(--color-novatech-blanc);
+}
+
+.admin-form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 2px solid var(--color-zinc-200);
+    background: var(--color-novatech-blanc);
+    color: var(--color-novatech-noir);
+    transition: all 0.3s ease;
+}
+
+.dark .admin-form-input {
+    background: var(--color-zinc-900);
+    border-color: var(--color-zinc-700);
+    color: var(--color-novatech-blanc);
+}
+
+.admin-form-input:focus {
+    outline: none;
+    border-color: var(--color-novatech-vert);
+    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
+}
+
+.dark .admin-form-input:focus {
+    border-color: var(--color-novatech-bleu);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.admin-form-textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+/* Boutons de formulaire */
+.admin-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.admin-btn-primary {
+    background: linear-gradient(135deg, var(--color-novatech-vert), var(--color-novatech-bleu));
+    color: var(--color-novatech-blanc);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-btn-primary:hover {
+    background: linear-gradient(135deg, var(--color-novatech-rouge), var(--color-novatech-jaune));
+    transform: translateY(-2px);
+}
+
+.admin-btn-secondary {
+    background: transparent;
+    color: var(--color-novatech-vert);
+    border: 2px solid var(--color-novatech-vert);
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dark .admin-btn-secondary {
+    color: var(--color-novatech-bleu);
+    border-color: var(--color-novatech-bleu);
+}
+
+.admin-btn-secondary:hover {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(52, 152, 219, 0.1));
+}
+
+/* Alertes admin */
+.admin-alert {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.admin-alert-success {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(52, 152, 219, 0.1));
+    border-left: 4px solid var(--color-novatech-vert);
+    color: var(--color-novatech-vert);
+}
+
+.admin-alert-error {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(241, 196, 15, 0.1));
+    border-left: 4px solid var(--color-novatech-rouge);
+    color: var(--color-novatech-rouge);
+}
+
+.admin-alert-info {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(155, 89, 182, 0.1));
+    border-left: 4px solid var(--color-novatech-bleu);
+    color: var(--color-novatech-bleu);
+}
+
+.admin-alert-warning {
+    background: linear-gradient(135deg, rgba(241, 196, 15, 0.1), rgba(230, 126, 34, 0.1));
+    border-left: 4px solid var(--color-novatech-jaune);
+    color: var(--color-novatech-jaune);
+}
+
+/* Media queries supplémentaires */
+@media (max-width: 480px) {
+    .admin-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-form-actions {
+        flex-direction: column;
+    }
+
+    .admin-form-actions button {
+        width: 100%;
+    }
+
+    .admin-actions {
+        flex-direction: column;
+    }
+}
+
+/* Animations supplémentaires */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.admin-fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.admin-slide-in-right {
+    animation: slideInRight 0.5s ease-out;
+}
+
+@keyframes pulse-novatech {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-pulse-novatech {
+    animation: pulse-novatech 2s infinite;
+}
