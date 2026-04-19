@@ -40,6 +40,13 @@
 
     <!-- Styles spécifiques à la page -->
     @stack('styles')
+    <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-WZG06CXWP2');
+</script>
 <script src="https://app.secureprivacy.ai/script/69e50b44ea11f6c81f2048d7.js"></script>
 
     <style>
@@ -1599,12 +1606,6 @@
     </script>
     <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-WZG06CXWP2"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-WZG06CXWP2');
-</script>
 </body>
 </html>
