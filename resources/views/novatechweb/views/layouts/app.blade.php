@@ -39,6 +39,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/owl.theme.default.min.css') }}">
 
     <!-- Styles spécifiques à la page -->
+    <script src="https://app.secureprivacy.ai/script/69e50b44ea11f6c81f2048d7.js"></script>
     @stack('styles')
     <script>
   window.dataLayer = window.dataLayer || [];
@@ -47,7 +48,7 @@
 
   gtag('config', 'G-WZG06CXWP2');
 </script>
-<script src="https://app.secureprivacy.ai/script/69e50b44ea11f6c81f2048d7.js"></script>
+
 
     <style>
         /* ========== VARIABLES MODERNES ========== */
