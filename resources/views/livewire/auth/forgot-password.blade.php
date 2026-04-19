@@ -20,7 +20,6 @@ body {
     overflow-y: auto;
 }
 
-/* ─── ANIMATED BACKGROUND ORBS ─── */
 .bg-orbs {
     position: fixed;
     inset: 0;
