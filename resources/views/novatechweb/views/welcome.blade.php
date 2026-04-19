@@ -6,17 +6,36 @@
 
 @section('content')
 
-<!-- ========== HERO : GRANDE BANNIÈRE AVEC IMAGE BACKGROUND ========== -->
+<!-- ========== HERO : VERSION PSYCHOLOGIQUE OPTIMISÉE ========== -->
 <section class="hero-banner">
     <div class="hero-overlay"></div>
+    <div class="hero-pattern"></div>
     <div class="container">
         <div class="hero-content">
-            <h1>Donnez vie à vos idées<br>avec <span class="highlight">des gens qui vous écoutent</span></h1>
-            <p>Pas de jargon, pas de technique compliquée. Juste une équipe passionnée qui construit votre site web comme si c'était le sien.</p>
+            <div class="hero-badge-wrapper">
+                <span class="hero-badge">
+                    +100 entrepreneurs nous font confiance
+                </span>
+            </div>
+            <h1>Vous voulez <span class="highlight">plus de clients ?</span><br>On vous offre la solution</h1>
+            <p>Arrêtez de perdre du temps et de l'argent avec des promesses non tenues. Notre équipe de passionnés construit pour vous un <strong>site web ou une application qui vous ressemble et qui rapporte</strong>. Simple, transparent, efficace.</p>
             <div class="hero-actions">
-                <a href="#contact" class="btn btn-primary">Parlons de votre projet →</a>
+                <a href="#contact" class="btn btn-primary">
+                    Discutons de votre projet
+                </a>
+                <a href="#services" class="btn btn-outline">
+                    Pourquoi nous choisir ?
+                </a>
+            </div>
+            <div class="hero-guarantee">
+                Devis gratuit sans engagement
             </div>
         </div>
+    </div>
+    <div class="hero-wave">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120">
+            <path fill="#f8fafc" fill-opacity="1" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+        </svg>
     </div>
 </section>
 
@@ -57,17 +76,17 @@
                     <div class="service-card">
                         <h3>{{ $service->title }}</h3>
                         <p>{{ Str::limit($service->description, 120) }}</p>
-                        <div class="service-price">À partir de <strong>sur devis</strong></div>
+                        <div class="service-price">À partir de sur devis</div>
                         <a href="#contact" class="service-link">En savoir plus →</a>
                     </div>
                 </div>
                 @endforeach
             </div>
             <button class="carousel-btn prev" onclick="moveCarousel('servicesCarousel', -1)">
-                <i class="fa fa-chevron-left"></i>
+                ‹
             </button>
             <button class="carousel-btn next" onclick="moveCarousel('servicesCarousel', 1)">
-                <i class="fa fa-chevron-right"></i>
+                ›
             </button>
             <div class="carousel-dots" id="servicesDots"></div>
         </div>
@@ -116,6 +135,7 @@
                             'site-vitrine' => 'Site Vitrine',
                             'e-commerce' => 'E-commerce',
                             'application-web' => 'Application Web',
+                            'application-mobile' => 'Application Mobile',
                             'maintenance' => 'Maintenance',
                             'optimisation' => 'Optimisation',
                             'autre' => 'Autre'
@@ -136,7 +156,6 @@
                                 <p class="project-description">{{ Str::limit($portfolio->description ?? 'Un projet réalisé avec passion pour un client satisfait.', 100) }}</p>
                                 @if($portfolio->client)
                                 <div class="project-client">
-                                    <i class="fa fa-user"></i>
                                     <span>{{ $portfolio->client }}</span>
                                 </div>
                                 @endif
@@ -158,10 +177,10 @@
                 @endforeach
             </div>
             <button class="carousel-btn prev" onclick="moveCarousel('portfolioCarousel', -1)">
-                <i class="fa fa-chevron-left"></i>
+                ‹
             </button>
             <button class="carousel-btn next" onclick="moveCarousel('portfolioCarousel', 1)">
-                <i class="fa fa-chevron-right"></i>
+                ›
             </button>
             <div class="carousel-dots" id="portfolioDots"></div>
         </div>
@@ -219,9 +238,9 @@
                 <div class="testimonial-rating">
                     @for($i = 1; $i <= 5; $i++)
                         @if($i <= $testimonial->rating)
-                            <i class="fa fa-star"></i>
+                            <span class="star star-filled">★</span>
                         @else
-                            <i class="fa fa-star-o"></i>
+                            <span class="star star-empty">☆</span>
                         @endif
                     @endfor
                     <span class="rating-text">{{ $testimonial->rating }}/5</span>
@@ -246,11 +265,11 @@
                     </div>
                 </div>
                 <div class="testimonial-rating">
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
+                    <span class="star star-filled">★</span>
+                    <span class="star star-filled">★</span>
+                    <span class="star star-filled">★</span>
+                    <span class="star star-filled">★</span>
+                    <span class="star star-filled">★</span>
                     <span class="rating-text">5/5</span>
                 </div>
             </div>
@@ -268,11 +287,11 @@
                     </div>
                 </div>
                 <div class="testimonial-rating">
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star-o"></i>
+                    <span class="star star-filled">★</span>
+                    <span class="star star-filled">★</span>
+                    <span class="star star-filled">★</span>
+                    <span class="star star-filled">★</span>
+                    <span class="star star-empty">☆</span>
                     <span class="rating-text">4/5</span>
                 </div>
             </div>
@@ -290,11 +309,11 @@
                     </div>
                 </div>
                 <div class="testimonial-rating">
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
+                    <span class="star star-filled">★</span>
+                    <span class="star star-filled">★</span>
+                    <span class="star star-filled">★</span>
+                    <span class="star star-filled">★</span>
+                    <span class="star star-filled">★</span>
                     <span class="rating-text">5/5</span>
                 </div>
             </div>
@@ -325,7 +344,7 @@
                         <div class="why-number">02</div>
                         <div class="why-text">
                             <h3>On livre à temps</h3>
-                            <p>Votre site en ligne en 2-3 semaines. Pas de promesses en l'air.</p>
+                            <p>Votre projet en ligne en 2-4 semaines. Pas de promesses en l'air.</p>
                         </div>
                     </div>
                     <div class="why-item">
@@ -391,9 +410,11 @@
                         <div class="form-group">
                             <select name="service" id="service">
                                 <option value="">Quel est votre besoin ?</option>
-                                <option value="site-vitrine" {{ old('service') == 'site-vitrine' ? 'selected' : '' }}>Je veux un site vitrine</option>
-                                <option value="ecommerce" {{ old('service') == 'ecommerce' ? 'selected' : '' }}>Je veux vendre en ligne</option>
-                                <option value="refonte" {{ old('service') == 'refonte' ? 'selected' : '' }}>Je veux améliorer mon site actuel</option>
+                                <option value="site-vitrine" {{ old('service') == 'site-vitrine' ? 'selected' : '' }}>Site vitrine</option>
+                                <option value="ecommerce" {{ old('service') == 'ecommerce' ? 'selected' : '' }}>Boutique en ligne (E-commerce)</option>
+                                <option value="application-web" {{ old('service') == 'application-web' ? 'selected' : '' }}>Application web</option>
+                                <option value="application-mobile" {{ old('service') == 'application-mobile' ? 'selected' : '' }}>Application mobile</option>
+                                <option value="refonte" {{ old('service') == 'refonte' ? 'selected' : '' }}>Refonte de site existant</option>
                                 <option value="autre" {{ old('service') == 'autre' ? 'selected' : '' }}>Autre projet</option>
                             </select>
                             <div class="field-error" id="error-service" style="display: none;"></div>
@@ -421,7 +442,7 @@
 
         <div class="faq-grid">
             <div class="faq-item">
-                <h3>Ça coûte combien un site web ?</h3>
+                <h3>Ça coûte combien un site web ou une application ?</h3>
                 <p>Chaque projet est différent. On vous fait un devis personnalisé et gratuit après avoir échangé avec vous. Pas de surprise, pas de frais cachés.</p>
             </div>
             <div class="faq-item">
@@ -429,8 +450,8 @@
                 <p>Bien sûr ! On vous accompagne pas à pas, on explique tout simplement. Vous n'avez besoin d'aucune compétence technique.</p>
             </div>
             <div class="faq-item">
-                <h3>Combien de temps pour avoir mon site ?</h3>
-                <p>Comptez 2 à 3 semaines pour un site vitrine, 4 à 6 semaines pour une boutique en ligne.</p>
+                <h3>Combien de temps pour avoir mon site ou application ?</h3>
+                <p>Comptez 2 à 3 semaines pour un site vitrine, 4 à 6 semaines pour une boutique en ligne ou une application.</p>
             </div>
             <div class="faq-item">
                 <h3>Et après, vous nous laissez ?</h3>
@@ -448,7 +469,9 @@
 :root {
     --primary: #6366f1;
     --primary-dark: #4f46e5;
+    --primary-light: #818cf8;
     --accent: #06b6d4;
+    --accent-light: #67e8f9;
     --text-dark: #0f172a;
     --text-gray: #475569;
     --text-light: #64748b;
@@ -467,9 +490,9 @@
     padding: 80px 0;
 }
 
-/* ========== HERO BANNIÈRE ========== */
+/* ========== HERO BANNIÈRE OPTIMISÉE ========== */
 .hero-banner {
-    min-height: 80vh;
+    min-height: 100vh;
     background-image: url('{{ asset("assets/images/hero-bg.png") }}');
     background-size: cover;
     background-position: center;
@@ -478,6 +501,7 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+    overflow: hidden;
 }
 
 .hero-overlay {
@@ -486,165 +510,36 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.7) 100%);
+    background: linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(15,23,42,0.8) 50%, rgba(0,0,0,0.85) 100%);
+}
+
+.hero-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236366f1' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
 }
 
 .hero-banner .container {
     position: relative;
     z-index: 2;
-}
-
-.hero-content {
-    max-width: 800px;
-    margin: 0 auto;
-    color: white;
-}
-
-.hero-content h1 {
-    font-size: clamp(36px, 5vw, 56px);
-    font-weight: 800;
-    line-height: 1.2;
-    margin-bottom: 24px;
-    color: white;
-}
-
-.hero-content h1 .highlight {
-    color: var(--accent);
-}
-
-.hero-content p {
-    font-size: 18px;
-    margin-bottom: 32px;
-    opacity: 0.9;
-}
-
-/* ========== BOUTONS ========== */
-.btn-primary {
-    display: inline-block;
-    background: var(--primary);
-    color: white;
-    padding: 14px 36px;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    border: none;
-    cursor: pointer;
-}
-
-.btn-primary:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-}
-
-.btn-outline-light {
-    display: inline-block;
-    background: transparent;
-    color: white;
-    padding: 12px 32px;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: 600;
-    border: 2px solid white;
-    transition: all 0.3s ease;
-}
-
-.btn-outline-light:hover {
-    background: white;
-    color: var(--primary);
-}
-
-.btn-block {
     width: 100%;
 }
 
-/* ========== CARROUSEL ========== */
-.carousel-container {
-    position: relative;
-    overflow: hidden;
-    padding: 0 60px;
-}
-
-.carousel-track {
-    display: flex;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    gap: 30px;
-}
-
-.carousel-slide {
-    flex: 0 0 calc(33.333% - 20px);
-    min-width: 0;
-}
-
-.carousel-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: white;
-    border: 2px solid var(--border-light);
-    color: var(--text-dark);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    z-index: 10;
-}
-
-.carousel-btn:hover {
-    background: var(--primary);
+.hero-content {
+    max-width: 900px;
+    margin: 0 auto;
     color: white;
-    border-color: var(--primary);
+    animation: fadeInUp 0.8s ease-out;
 }
 
-.carousel-btn.prev { left: 0; }
-.carousel-btn.next { right: 0; }
-
-.carousel-dots {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 40px;
-}
-
-.carousel-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--border-light);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-    padding: 0;
-}
-
-.carousel-dot.active {
-    background: var(--primary);
-    width: 28px;
-    border-radius: 5px;
-}
-
-/* ========== ERREURS FORMULAIRE ========== */
-.error-border {
-    border-color: #ef4444 !important;
-    background-color: #fef2f2 !important;
-}
-
-.field-error {
-    color: #ef4444;
-    font-size: 12px;
-    margin-top: 5px;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
+@keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(-5px);
+        transform: translateY(30px);
     }
     to {
         opacity: 1;
@@ -652,45 +547,238 @@
     }
 }
 
-.form-message {
-    transition: all 0.3s ease;
-    margin-top: 20px;
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
-    font-weight: 500;
+.hero-badge-wrapper {
+    margin-bottom: 30px;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(99, 102, 241, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 10px 24px;
+    border-radius: 100px;
     font-size: 14px;
+    font-weight: 500;
+    color: white;
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    letter-spacing: 0.5px;
 }
 
-.form-message.success {
-    background-color: #d1fae5;
-    color: #10b981;
-    border: 1px solid #a7f3d0;
+.hero-content h1 {
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 24px;
+    color: white;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
-.form-message.error {
-    background-color: #fee2e2;
-    color: #ef4444;
-    border: 1px solid #fecaca;
-}
-
-.spinner {
+.hero-content h1 .highlight {
+    color: var(--accent);
+    position: relative;
     display: inline-block;
-    width: 16px;
-    height: 16px;
+}
+
+.hero-content h1 .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--primary));
+    border-radius: 3px;
+}
+
+.hero-content p {
+    font-size: clamp(16px, 3vw, 20px);
+    margin-bottom: 30px;
+    opacity: 0.95;
+    line-height: 1.6;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    color: rgba(255,255,255,0.95);
+}
+
+.hero-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 14px 32px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+}
+
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: white;
+    padding: 14px 32px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
     border: 2px solid rgba(255,255,255,0.3);
-    border-radius: 50%;
-    border-top-color: white;
-    animation: spin 0.6s linear infinite;
-    margin-right: 8px;
-    vertical-align: middle;
+    cursor: pointer;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+.btn-outline:hover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+    transform: translateY(-3px);
 }
 
-/* ========== TYPOGRAPHIE ========== */
+.hero-guarantee {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.8);
+}
+
+.hero-wave {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.hero-wave svg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ========== RESPONSIVE HERO ========== */
+@media (max-width: 992px) {
+    .hero-banner {
+        min-height: 90vh;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-banner {
+        min-height: auto;
+        padding: 100px 0 60px;
+    }
+
+    .hero-content h1 {
+        margin-bottom: 20px;
+        font-size: 32px;
+    }
+
+    .hero-content p {
+        margin-bottom: 30px;
+        padding: 0 10px;
+        font-size: 16px;
+    }
+
+    .hero-actions {
+        gap: 15px;
+        margin-bottom: 25px;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn-primary,
+    .btn-outline {
+        padding: 12px 28px;
+        font-size: 15px;
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .hero-badge {
+        padding: 8px 18px;
+        font-size: 12px;
+    }
+
+    .hero-guarantee {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-banner {
+        padding: 80px 0 50px;
+    }
+
+    .hero-content h1 {
+        font-size: 28px;
+        line-height: 1.3;
+    }
+
+    .hero-content p {
+        font-size: 14px;
+        padding: 0 5px;
+    }
+
+    .hero-actions {
+        gap: 12px;
+    }
+
+    .btn-primary,
+    .btn-outline {
+        padding: 10px 24px;
+        font-size: 14px;
+        max-width: 260px;
+    }
+
+    .hero-badge {
+        padding: 6px 14px;
+        font-size: 11px;
+    }
+}
+
+@media (max-height: 700px) and (orientation: landscape) {
+    .hero-banner {
+        min-height: auto;
+        padding: 80px 0 40px;
+    }
+
+    .hero-content p {
+        margin-bottom: 20px;
+    }
+}
+
+.hero-content h1,
+.hero-content p,
+.hero-badge,
+.hero-guarantee {
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* ========== AUTRES STYLES ========== */
 .label {
     display: inline-block;
     font-size: 12px;
@@ -778,6 +866,77 @@ h2 {
 .section-header {
     text-align: center;
     margin-bottom: 50px;
+}
+
+.carousel-container {
+    position: relative;
+    overflow: hidden;
+    padding: 0 60px;
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 30px;
+}
+
+.carousel-slide {
+    flex: 0 0 calc(33.333% - 20px);
+    min-width: 0;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--border-light);
+    color: var(--text-dark);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.carousel-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.carousel-btn.prev { left: 0; }
+.carousel-btn.next { right: 0; }
+
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 40px;
+}
+
+.carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border-light);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    padding: 0;
+}
+
+.carousel-dot.active {
+    background: var(--primary);
+    width: 28px;
+    border-radius: 5px;
 }
 
 .service-card {
@@ -949,7 +1108,20 @@ h2 {
     color: var(--text-gray);
 }
 
-.project-client i {
+.btn-outline-light {
+    display: inline-block;
+    background: transparent;
+    color: white;
+    padding: 12px 32px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    border: 2px solid white;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+    background: white;
     color: var(--primary);
 }
 
@@ -1016,7 +1188,6 @@ h2 {
     color: var(--text-light);
 }
 
-/* ========== NOTES ÉTOILES ========== */
 .testimonial-rating {
     margin-top: 15px;
     padding-top: 10px;
@@ -1027,19 +1198,19 @@ h2 {
     flex-wrap: wrap;
 }
 
-.testimonial-rating i {
-    font-size: 14px;
+.star {
+    font-size: 16px;
 }
 
-.testimonial-rating i.fa-star {
+.star-filled {
     color: #f59e0b;
 }
 
-.testimonial-rating i.fa-star-o {
+.star-empty {
     color: #cbd5e1;
 }
 
-.testimonial-rating .rating-text {
+.rating-text {
     font-size: 11px;
     color: var(--text-light);
     margin-left: 4px;
@@ -1185,6 +1356,55 @@ h2 {
     background: white;
 }
 
+.btn-block {
+    width: 100%;
+}
+
+.error-border {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
+.field-error {
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 5px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-message {
+    transition: all 0.3s ease;
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.form-message.success {
+    background-color: #d1fae5;
+    color: #10b981;
+    border: 1px solid #a7f3d0;
+}
+
+.form-message.error {
+    background-color: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+}
+
 /* ========== FAQ ========== */
 .faq-grid {
     display: grid;
@@ -1215,7 +1435,6 @@ h2 {
     line-height: 1.6;
 }
 
-/* ========== EMPTY STATE ========== */
 .empty-state {
     text-align: center;
     padding: 60px;
@@ -1255,10 +1474,6 @@ h2 {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .hero-banner {
-        min-height: 60vh;
-    }
-
     .carousel-slide {
         flex: 0 0 calc(50% - 15px);
     }
@@ -1268,6 +1483,10 @@ h2 {
     .testimonials-grid,
     .faq-grid {
         grid-template-columns: 1fr;
+    }
+
+    .contact-card {
+        padding: 30px 20px;
     }
 }
 
@@ -1279,18 +1498,6 @@ h2 {
     .form-row {
         grid-template-columns: 1fr;
         gap: 0;
-    }
-
-    .contact-card {
-        padding: 30px 20px;
-    }
-
-    .hero-content h1 {
-        font-size: 28px;
-    }
-
-    .hero-banner {
-        min-height: 50vh;
     }
 
     .carousel-container {
@@ -1469,7 +1676,7 @@ if (form) {
         const originalText = btn.innerHTML;
 
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Envoi en cours...';
+        btn.innerHTML = 'Envoi en cours...';
         msg.style.display = 'none';
 
         document.querySelectorAll('.field-error').forEach(el => {
