@@ -12,18 +12,18 @@
     <div class="hero-pattern"></div>
     <div class="container">
         <div class="hero-content">
-            <div class="hero-badge-wrapper">
-                <span class="hero-badge">
-                    +100 entrepreneurs nous font confiance
-                </span>
-            </div>
+                {{-- <div class="hero-badge-wrapper">
+                    <span class="hero-badge">
+                        +100 entrepreneurs nous font confiance
+                    </span>
+                </div> --}}
             <h1>Vous voulez <span class="highlight">plus de clients ?</span><br>On vous offre la solution</h1>
             <p>Arrêtez de perdre du temps et de l'argent avec des promesses non tenues. Notre équipe de passionnés construit pour vous un <strong>site web ou une application qui vous ressemble et qui rapporte</strong>. Simple, transparent, efficace.</p>
             <div class="hero-actions">
-                <a href="#contact" class="btn btn-primary">
+                <a href="{{ route('home') }}#contact" class="btn btn-primary">
                     Discutons de votre projet
                 </a>
-                <a href="#services" class="btn btn-outline">
+                <a href="{{ route('home') }}#services" class="btn btn-outline">
                     Pourquoi nous choisir ?
                 </a>
             </div>

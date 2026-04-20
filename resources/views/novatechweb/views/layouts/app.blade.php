@@ -1417,8 +1417,43 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 });
             });
 
-            // Gestion de l'activation du menu au scroll
+            // ========== CORRECTION : Gestion de l'activation du menu ==========
             function updateActiveMenuOnScroll() {
+                // Vérifier d'abord si nous sommes sur la page d'accueil
+                const isHomePage = window.location.pathname === '{{ route("home") }}' || window.location.pathname === '/';
+
+                // Retirer la classe active de tous les liens du menu desktop
+                const navLinks = document.querySelectorAll('.header-nav .nav-link');
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+
+                // Gérer l'activation basée sur l'URL pour les pages spécifiques
+                const currentPath = window.location.pathname;
+                const portfolioLink = document.getElementById('portfolioLink');
+                const blogLink = document.getElementById('blogLink');
+                const homeLink = document.getElementById('homeLink');
+
+                // Activer Portfolio ou Blog si on est sur leurs pages respectives
+                if (portfolioLink) {
+                    if (currentPath.includes('/portfolio')) {
+                        portfolioLink.classList.add('active');
+                    }
+                }
+
+                if (blogLink) {
+                    if (currentPath.includes('/blog')) {
+                        blogLink.classList.add('active');
+                    }
+                }
+
+                // Si on n'est PAS sur la page d'accueil, on arrête ici
+                // pour éviter que le scroll n'active des liens de section qui n'existent pas
+                if (!isHomePage) {
+                    return;
+                }
+
+                // Si on est sur la page d'accueil, gérer l'activation par scroll
                 const sections = [
                     { id: 'about', linkId: 'aboutLink' },
                     { id: 'services', linkId: 'servicesLink' },
@@ -1441,11 +1476,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     }
                 }
 
-                const navLinks = document.querySelectorAll('.header-nav .nav-link');
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                });
-
                 if (currentSection) {
                     const activeLink = document.getElementById(currentSection + 'Link');
                     if (activeLink) {
@@ -1453,29 +1483,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     }
                 }
 
+                // Activer Accueil si en haut de la page d'accueil
                 if (window.scrollY < 100) {
-                    const homeLink = document.getElementById('homeLink');
                     if (homeLink) homeLink.classList.add('active');
-                }
-
-                const currentPath = window.location.pathname;
-                const portfolioLink = document.getElementById('portfolioLink');
-                const blogLink = document.getElementById('blogLink');
-
-                if (portfolioLink) {
-                    if (currentPath.includes('/portfolio')) {
-                        portfolioLink.classList.add('active');
-                    } else {
-                        portfolioLink.classList.remove('active');
-                    }
-                }
-
-                if (blogLink) {
-                    if (currentPath.includes('/blog')) {
-                        blogLink.classList.add('active');
-                    } else {
-                        blogLink.classList.remove('active');
-                    }
                 }
             }
 

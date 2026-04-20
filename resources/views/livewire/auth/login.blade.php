@@ -7,6 +7,13 @@
 <title>Connexion | Nova Tech</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+ <!-- Favicon -->
+    @if(isset($company) && $company && $company->favicon)
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $company->favicon) }}">
+        <link rel="shortcut icon" type="image/x-icon" href="{{ asset('storage/' . $company->favicon) }}">
+    @else
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    @endif
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
