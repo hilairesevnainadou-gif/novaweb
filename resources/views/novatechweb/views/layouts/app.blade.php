@@ -1143,11 +1143,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             <nav class="header-nav">
                 <a href="{{ route('home') }}" class="nav-link" id="homeLink">Accueil</a>
-                <a href="#about" class="nav-link" id="aboutLink">À propos</a>
-                <a href="#services" class="nav-link" id="servicesLink">Services</a>
+                <a href="{{ route('home') }}#about" class="nav-link" id="aboutLink">À propos</a>
+                <a href="{{ route('home') }}#services" class="nav-link" id="servicesLink">Services</a>
                 <a href="{{ route('portfolio.index') }}" class="nav-link" id="portfolioLink">Portfolio</a>
                 <a href="{{ route('blog.index') }}" class="nav-link" id="blogLink">Blog</a>
-                <a href="#contact" class="nav-link nav-cta" id="contactLink">Contact</a>
+                <a href="{{ route('home') }}#contact" class="nav-link nav-cta" id="contactLink">Contact</a>
             </nav>
 
             <button class="menu-toggle" id="menuToggle" aria-label="Ouvrir le menu" aria-expanded="false">
@@ -1169,11 +1169,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <nav class="mobile-menu-nav">
             <a href="{{ route('home') }}">Accueil</a>
-            <a href="#about">À propos</a>
-            <a href="#services">Services</a>
+            <a href="{{ route('home') }}#about">À propos</a>
+            <a href="{{ route('home') }}#services">Services</a>
             <a href="{{ route('portfolio.index') }}">Portfolio</a>
             <a href="{{ route('blog.index') }}">Blog</a>
-            <a href="#contact" class="nav-cta-mobile">Contact</a>
+            <a href="{{ route('home') }}#contact" class="nav-cta-mobile">Contact</a>
         </nav>
     </div>
 
@@ -1245,11 +1245,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         </h4>
                         <ul class="footer-list" id="footer-links">
                             <li><a href="{{ route('home') }}"><i class="fa fa-chevron-right"></i> Accueil</a></li>
-                            <li><a href="#about"><i class="fa fa-chevron-right"></i> À propos</a></li>
-                            <li><a href="#services"><i class="fa fa-chevron-right"></i> Services</a></li>
+                            <li><a href="{{ route('home') }}#about"><i class="fa fa-chevron-right"></i> À propos</a></li>
+                            <li><a href="{{ route('home') }}#services"><i class="fa fa-chevron-right"></i> Services</a></li>
                             <li><a href="{{ route('portfolio.index') }}"><i class="fa fa-chevron-right"></i> Portfolio</a></li>
                             <li><a href="{{ route('blog.index') }}"><i class="fa fa-chevron-right"></i> Blog</a></li>
-                            <li><a href="#contact"><i class="fa fa-chevron-right"></i> Contact</a></li>
+                            <li><a href="{{ route('home') }}#contact"><i class="fa fa-chevron-right"></i> Contact</a></li>
                         </ul>
                     </div>
 
