@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\CompanyInfo;
+use App\Models\Faq;
 use App\Models\Portfolio;
 use App\Models\Service;
 use App\Models\Testimonial;
+use App\Models\Tool;
 
 class HomeController extends Controller
 {
@@ -19,6 +21,8 @@ class HomeController extends Controller
                                    ->orderBy('created_at', 'desc')
                                    ->limit(6)
                                    ->get();
+        $tools = Tool::active()->ordered()->get();
+        $faqs = Faq::active()->ordered()->get();
 
         // Récupérer les projets actifs
         $portfolios = Portfolio::active()
@@ -31,6 +35,6 @@ class HomeController extends Controller
             $portfolios = Portfolio::ordered()->limit(6)->get();
         }
 
-        return view('novatechweb.views.welcome', compact('company', 'services', 'testimonials', 'portfolios'));
+        return view('novatechweb.views.welcome', compact('company', 'services', 'testimonials', 'portfolios', 'tools', 'faqs'));
     }
 }

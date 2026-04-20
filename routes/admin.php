@@ -1,18 +1,22 @@
 <?php
+
 // routes/admin.php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\BlogController;
-use App\Http\Controllers\Admin\ServiceController;
-use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\ContactController;
-use App\Http\Controllers\Admin\TicketController;
-use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FaqController;
+use App\Http\Controllers\Admin\NewsletterController;
+use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\TicketController;
+use App\Http\Controllers\Admin\ToolController;
+use App\Http\Controllers\Admin\UserController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -227,6 +231,86 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     });
 
     /*─────────────────────────────────────────
+      Outils & Technologies
+    ─────────────────────────────────────────*/
+    Route::prefix('tools')->name('tools.')->group(function () {
+
+        Route::post('/reorder', [ToolController::class, 'reorder'])
+            ->middleware('permission:tools.edit')
+            ->name('reorder');
+
+        Route::get('/', [ToolController::class, 'index'])
+            ->middleware('permission:tools.view')
+            ->name('index');
+
+        Route::get('/create', [ToolController::class, 'create'])
+            ->middleware('permission:tools.create')
+            ->name('create');
+
+        Route::post('/', [ToolController::class, 'store'])
+            ->middleware('permission:tools.create')
+            ->name('store');
+
+        Route::get('/{tool}/edit', [ToolController::class, 'edit'])
+            ->middleware('permission:tools.edit')
+            ->name('edit');
+
+        Route::put('/{tool}', [ToolController::class, 'update'])
+            ->middleware('permission:tools.edit')
+            ->name('update');
+
+        Route::post('/{tool}/toggle', [ToolController::class, 'toggleActive'])
+            ->middleware('permission:tools.edit')
+            ->name('toggle');
+
+        Route::delete('/{tool}', [ToolController::class, 'destroy'])
+            ->middleware('permission:tools.delete')
+            ->name('destroy');
+    });
+
+    /*─────────────────────────────────────────
+      FAQ
+    ─────────────────────────────────────────*/
+    Route::prefix('faqs')->name('faqs.')->group(function () {
+
+        Route::post('/reorder', [FaqController::class, 'reorder'])
+            ->middleware('permission:faqs.edit')
+            ->name('reorder');
+
+        Route::get('/', [FaqController::class, 'index'])
+            ->middleware('permission:faqs.view')
+            ->name('index');
+
+        Route::get('/create', [FaqController::class, 'create'])
+            ->middleware('permission:faqs.create')
+            ->name('create');
+
+        Route::post('/', [FaqController::class, 'store'])
+            ->middleware('permission:faqs.create')
+            ->name('store');
+
+        Route::get('/{faq}/edit', [FaqController::class, 'edit'])
+            ->middleware('permission:faqs.edit')
+            ->name('edit');
+
+        Route::put('/{faq}', [FaqController::class, 'update'])
+            ->middleware('permission:faqs.edit')
+            ->name('update');
+
+        Route::post('/{faq}/toggle', [FaqController::class, 'toggleActive'])
+            ->middleware('permission:faqs.edit')
+            ->name('toggle');
+
+        Route::delete('/{faq}', [FaqController::class, 'destroy'])
+            ->middleware('permission:faqs.delete')
+            ->name('destroy');
+
+        Route::get('/export', [FaqController::class, 'export'])
+            ->middleware('permission:faqs.view')
+            ->name('export');
+    });
+
+    /*─────────────────────────────────────────
       Messages de contact
     ─────────────────────────────────────────*/
     Route::prefix('contacts')->name('contacts.')->group(function () {
@@ -287,8 +371,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     });
 
     /*─────────────────────────────────────────
-      Paramètres
-    ─────────────────────────────────────────*/
+  Paramètres
+─────────────────────────────────────────*/
     Route::prefix('settings')->name('settings.')->group(function () {
 
         Route::get('/', [SettingsController::class, 'index'])
@@ -311,11 +395,26 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             ->middleware('permission:settings.edit')
             ->name('update-branding');
 
+        Route::post('/update-legal', [SettingsController::class, 'updateLegal'])
+            ->middleware('permission:settings.edit')
+            ->name('update-legal');
+
+        Route::post('/update-contact', [SettingsController::class, 'updateContact'])
+            ->middleware('permission:settings.edit')
+            ->name('update-contact');
+
+        Route::post('/update-hours', [SettingsController::class, 'updateHours'])
+            ->middleware('permission:settings.edit')
+            ->name('update-hours');
+
+        Route::post('/update-about', [SettingsController::class, 'updateAbout'])
+            ->middleware('permission:settings.edit')
+            ->name('update-about');
+
         Route::delete('/remove-image', [SettingsController::class, 'removeImage'])
             ->middleware('permission:settings.edit')
             ->name('remove-image');
     });
-
     /*─────────────────────────────────────────
       Profil utilisateur
     ─────────────────────────────────────────*/
@@ -368,27 +467,27 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     ─────────────────────────────────────────*/
     Route::prefix('newsletter')->name('newsletter.')->group(function () {
 
-        Route::get('/', [\App\Http\Controllers\Admin\NewsletterController::class, 'index'])
+        Route::get('/', [NewsletterController::class, 'index'])
             ->middleware('permission:newsletter.view')
             ->name('index');
 
-        Route::post('/{newsletter}/unsubscribe', [\App\Http\Controllers\Admin\NewsletterController::class, 'unsubscribe'])
+        Route::post('/{newsletter}/unsubscribe', [NewsletterController::class, 'unsubscribe'])
             ->middleware('permission:newsletter.edit')
             ->name('unsubscribe');
 
-        Route::post('/{newsletter}/resubscribe', [\App\Http\Controllers\Admin\NewsletterController::class, 'resubscribe'])
+        Route::post('/{newsletter}/resubscribe', [NewsletterController::class, 'resubscribe'])
             ->middleware('permission:newsletter.edit')
             ->name('resubscribe');
 
-        Route::delete('/{newsletter}', [\App\Http\Controllers\Admin\NewsletterController::class, 'destroy'])
+        Route::delete('/{newsletter}', [NewsletterController::class, 'destroy'])
             ->middleware('permission:newsletter.delete')
             ->name('destroy');
 
-        Route::post('/bulk-delete', [\App\Http\Controllers\Admin\NewsletterController::class, 'bulkDelete'])
+        Route::post('/bulk-delete', [NewsletterController::class, 'bulkDelete'])
             ->middleware('permission:newsletter.delete')
             ->name('bulk-delete');
 
-        Route::get('/export', [\App\Http\Controllers\Admin\NewsletterController::class, 'export'])
+        Route::get('/export', [NewsletterController::class, 'export'])
             ->middleware('permission:newsletter.view')
             ->name('export');
     });

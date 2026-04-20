@@ -28,10 +28,12 @@ class SettingsController extends Controller
     {
         $request->validate([
             'site_name' => 'required|string|max:255',
+            'slogan' => 'nullable|string|max:255',
             'site_description' => 'nullable|string',
             'site_email' => 'nullable|email',
             'site_phone' => 'nullable|string',
             'site_address' => 'nullable|string',
+            'website' => 'nullable|url',
         ]);
 
         $settings = CompanyInfo::first();
@@ -42,10 +44,12 @@ class SettingsController extends Controller
 
         // Mapper les données du formulaire vers le modèle
         $settings->name = $request->site_name;
+        $settings->slogan = $request->slogan;
         $settings->description = $request->site_description;
         $settings->email = $request->site_email;
         $settings->phone = $request->site_phone;
         $settings->address = $request->site_address;
+        $settings->website = $request->website;
 
         $settings->save();
 
@@ -109,7 +113,9 @@ class SettingsController extends Controller
     {
         $request->validate([
             'site_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'site_favicon' => 'nullable|image|mimes:jpg,jpeg,png,webp,ico|max:1024'
+            'site_favicon' => 'nullable|image|mimes:jpg,jpeg,png,webp,ico|max:1024',
+            'banner_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'about_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048'
         ]);
 
         $settings = CompanyInfo::first();
@@ -120,12 +126,9 @@ class SettingsController extends Controller
 
         // Gestion du logo
         if ($request->hasFile('site_logo')) {
-            // Supprimer l'ancien logo s'il existe
             if ($settings->logo && Storage::disk('public')->exists($settings->logo)) {
                 Storage::disk('public')->delete($settings->logo);
             }
-
-            // Générer un nom unique pour le logo
             $logoFile = $request->file('site_logo');
             $logoName = 'logo_' . time() . '_' . Str::random(10) . '.' . $logoFile->getClientOriginalExtension();
             $logoPath = $logoFile->storeAs('settings', $logoName, 'public');
@@ -134,16 +137,35 @@ class SettingsController extends Controller
 
         // Gestion du favicon
         if ($request->hasFile('site_favicon')) {
-            // Supprimer l'ancien favicon s'il existe
             if ($settings->favicon && Storage::disk('public')->exists($settings->favicon)) {
                 Storage::disk('public')->delete($settings->favicon);
             }
-
-            // Générer un nom unique pour le favicon
             $faviconFile = $request->file('site_favicon');
             $faviconName = 'favicon_' . time() . '_' . Str::random(10) . '.' . $faviconFile->getClientOriginalExtension();
             $faviconPath = $faviconFile->storeAs('settings', $faviconName, 'public');
             $settings->favicon = $faviconPath;
+        }
+
+        // Gestion de l'image de bannière
+        if ($request->hasFile('banner_image')) {
+            if ($settings->banner_image && Storage::disk('public')->exists($settings->banner_image)) {
+                Storage::disk('public')->delete($settings->banner_image);
+            }
+            $bannerFile = $request->file('banner_image');
+            $bannerName = 'banner_' . time() . '_' . Str::random(10) . '.' . $bannerFile->getClientOriginalExtension();
+            $bannerPath = $bannerFile->storeAs('settings', $bannerName, 'public');
+            $settings->banner_image = $bannerPath;
+        }
+
+        // Gestion de l'image À propos
+        if ($request->hasFile('about_image')) {
+            if ($settings->about_image && Storage::disk('public')->exists($settings->about_image)) {
+                Storage::disk('public')->delete($settings->about_image);
+            }
+            $aboutFile = $request->file('about_image');
+            $aboutName = 'about_' . time() . '_' . Str::random(10) . '.' . $aboutFile->getClientOriginalExtension();
+            $aboutPath = $aboutFile->storeAs('settings', $aboutName, 'public');
+            $settings->about_image = $aboutPath;
         }
 
         $settings->save();
@@ -152,10 +174,132 @@ class SettingsController extends Controller
             ->with('success', 'Identité visuelle mise à jour avec succès');
     }
 
+    public function updateLegal(Request $request)
+    {
+        $request->validate([
+            'legal_form' => 'nullable|string|max:255',
+            'capital' => 'nullable|string|max:255',
+            'rccm' => 'nullable|string|max:255',
+            'ifu' => 'nullable|string|max:255',
+            'director' => 'nullable|string|max:255',
+            'vat_number' => 'nullable|string|max:255',
+            'legal_address' => 'nullable|string',
+            'data_protection_officer' => 'nullable|string|max:255',
+            'hosting_name' => 'nullable|string|max:255',
+            'hosting_address' => 'nullable|string',
+            'hosting_phone' => 'nullable|string|max:255',
+            'hosting_url' => 'nullable|url'
+        ]);
+
+        $settings = CompanyInfo::first();
+
+        if (!$settings) {
+            $settings = new CompanyInfo();
+        }
+
+        $settings->legal_form = $request->legal_form;
+        $settings->capital = $request->capital;
+        $settings->rccm = $request->rccm;
+        $settings->ifu = $request->ifu;
+        $settings->director = $request->director;
+        $settings->vat_number = $request->vat_number;
+        $settings->legal_address = $request->legal_address;
+        $settings->data_protection_officer = $request->data_protection_officer;
+        $settings->hosting_name = $request->hosting_name;
+        $settings->hosting_address = $request->hosting_address;
+        $settings->hosting_phone = $request->hosting_phone;
+        $settings->hosting_url = $request->hosting_url;
+
+        $settings->save();
+
+        return redirect()->route('admin.settings.index')
+            ->with('success', 'Mentions légales mises à jour avec succès');
+    }
+
+    public function updateContact(Request $request)
+    {
+        $request->validate([
+            'address' => 'nullable|string',
+            'latitude' => 'nullable|string|max:255',
+            'longitude' => 'nullable|string|max:255',
+            'google_maps_url' => 'nullable|string'
+        ]);
+
+        $settings = CompanyInfo::first();
+
+        if (!$settings) {
+            $settings = new CompanyInfo();
+        }
+
+        $settings->address = $request->address;
+        $settings->latitude = $request->latitude;
+        $settings->longitude = $request->longitude;
+        $settings->google_maps_url = $request->google_maps_url;
+
+        $settings->save();
+
+        return redirect()->route('admin.settings.index')
+            ->with('success', 'Informations de contact mises à jour avec succès');
+    }
+
+    public function updateHours(Request $request)
+    {
+        $request->validate([
+            'opening_hours' => 'nullable|string|max:255',
+            'opening_hours_weekend' => 'nullable|string|max:255'
+        ]);
+
+        $settings = CompanyInfo::first();
+
+        if (!$settings) {
+            $settings = new CompanyInfo();
+        }
+
+        $settings->opening_hours = $request->opening_hours;
+        $settings->opening_hours_weekend = $request->opening_hours_weekend;
+
+        $settings->save();
+
+        return redirect()->route('admin.settings.index')
+            ->with('success', 'Horaires d\'ouverture mis à jour avec succès');
+    }
+
+    public function updateAbout(Request $request)
+    {
+        $request->validate([
+            'about_title' => 'nullable|string|max:255',
+            'about_description_1' => 'nullable|string',
+            'about_description_2' => 'nullable|string',
+            'mission' => 'nullable|string',
+            'vision' => 'nullable|string',
+            'values' => 'nullable|string',
+            'years_experience' => 'nullable|integer'
+        ]);
+
+        $settings = CompanyInfo::first();
+
+        if (!$settings) {
+            $settings = new CompanyInfo();
+        }
+
+        $settings->about_title = $request->about_title;
+        $settings->about_description_1 = $request->about_description_1;
+        $settings->about_description_2 = $request->about_description_2;
+        $settings->mission = $request->mission;
+        $settings->vision = $request->vision;
+        $settings->values = $request->values;
+        $settings->years_experience = $request->years_experience;
+
+        $settings->save();
+
+        return redirect()->route('admin.settings.index')
+            ->with('success', 'Section "À propos" mise à jour avec succès');
+    }
+
     public function removeImage(Request $request)
     {
         $request->validate([
-            'field' => 'required|in:logo,favicon'
+            'field' => 'required|in:logo,favicon,banner_image,about_image'
         ]);
 
         $settings = CompanyInfo::first();

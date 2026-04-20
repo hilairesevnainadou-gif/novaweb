@@ -1,3 +1,6 @@
+<?php
+// resources/views/novatechweb/views/welcome.blade.php
+?>
 @extends('novatechweb.views.layouts.app')
 
 @section('title')
@@ -12,13 +15,13 @@
     <div class="hero-pattern"></div>
     <div class="container">
         <div class="hero-content">
-            <h1>Vous voulez <span class="highlight">plus de clients ?</span><br>On vous offre la solution</h1>
-            <p>Arrêtez de perdre du temps et de l'argent avec des promesses non tenues. Notre équipe de passionnés construit pour vous un <strong>site web ou une application qui vous ressemble et qui rapporte</strong>. Simple, transparent, efficace.</p>
+            <h1>{{ $company->hero_title ?? 'Vous voulez <span class="highlight">plus de clients ?</span><br>On vous offre la solution' }}</h1>
+            <p>{{ $company->hero_description ?? 'Arrêtez de perdre du temps et de l\'argent avec des promesses non tenues. Notre équipe de passionnés construit pour vous un <strong>site web ou une application qui vous ressemble et qui rapporte</strong>. Simple, transparent, efficace.' }}</p>
             <div class="hero-actions">
-                <a href="{{ route('home') }}#contact" class="btn btn-primary">
+                <a href="#contact" class="btn btn-primary">
                     Discutons de votre projet
                 </a>
-                <a href="{{ route('home') }}#services" class="btn btn-outline">
+                <a href="#services" class="btn btn-outline">
                     Pourquoi nous choisir ?
                 </a>
             </div>
@@ -40,15 +43,15 @@
         <div class="story-grid">
             <div class="story-text">
                 <span class="label">Notre histoire</span>
-                <h2>On a créé Nova Tech parce que <span class="accent">le web peut être simple</span></h2>
-                <p>Nous sommes une petite équipe de passionnés basée au Bénin. On aime ce qu'on fait, et ça se voit. Chaque projet est unique, chaque client est un ami qu'on aide à réussir en ligne.</p>
-                <p>Pas de machines, pas de templates copiés-collés. Juste du travail fait avec le cœur, de l'écoute et des résultats qui vous ressemblent.</p>
+                <h2>{{ $company->about_title ?? 'On a créé Nova Tech parce que <span class="accent">le web peut être simple</span>' }}</h2>
+                <p>{{ $company->about_description_1 ?? 'Nous sommes une petite équipe de passionnés basée au Bénin. On aime ce qu\'on fait, et ça se voit. Chaque projet est unique, chaque client est un ami qu\'on aide à réussir en ligne.' }}</p>
+                <p>{{ $company->about_description_2 ?? 'Pas de machines, pas de templates copiés-collés. Juste du travail fait avec le cœur, de l\'écoute et des résultats qui vous ressemblent.' }}</p>
                 <div class="story-signature">
-                    <span class="signature-text">L'équipe Nova Tech</span>
+                    <span class="signature-text">{{ $company->signature_text ?? 'L\'équipe Nova Tech' }}</span>
                 </div>
             </div>
             <div class="story-image">
-                <img src="{{ asset('assets/images/team-working.png') }}" alt="Notre équipe au travail" onerror="this.src='{{ asset('assets/images/placeholder.jpg') }}'">
+                <img src="{{ $company->about_image ? asset('storage/' . $company->about_image) : asset('assets/images/team-working.png') }}" alt="Notre équipe au travail" onerror="this.src='{{ asset('assets/images/placeholder.jpg') }}'">
             </div>
         </div>
     </div>
@@ -69,20 +72,23 @@
                 @foreach($services as $service)
                 <div class="carousel-slide">
                     <div class="service-card">
+                        <div class="service-icon">
+                            @if($service->icon)
+                                <i class="fa {{ $service->icon }}" style="color: {{ $service->icon_color ?? '#6366f1' }}"></i>
+                            @else
+                                <i class="fa fa-code" style="color: #6366f1"></i>
+                            @endif
+                        </div>
                         <h3>{{ $service->title }}</h3>
-                        <p>{{ Str::limit($service->description, 120) }}</p>
+                        <p>{{ Str::limit($service->description, 100) }}</p>
                         <div class="service-price">À partir de sur devis</div>
                         <a href="#contact" class="service-link">En savoir plus →</a>
                     </div>
                 </div>
                 @endforeach
             </div>
-            <button class="carousel-btn prev" onclick="moveCarousel('servicesCarousel', -1)">
-                ‹
-            </button>
-            <button class="carousel-btn next" onclick="moveCarousel('servicesCarousel', 1)">
-                ›
-            </button>
+            <button class="carousel-btn prev" onclick="moveCarousel('servicesCarousel', -1)">‹</button>
+            <button class="carousel-btn next" onclick="moveCarousel('servicesCarousel', 1)">›</button>
             <div class="carousel-dots" id="servicesDots"></div>
         </div>
         @else
@@ -93,7 +99,7 @@
     </div>
 </section>
 
-<!-- ========== PORTFOLIO : CARROUSEL (DESCRIPTION RÉDUITE) ========== -->
+<!-- ========== PORTFOLIO : CARROUSEL ========== -->
 <section id="portfolio" class="section portfolio-bg">
     <div class="container">
         <div class="section-header light">
@@ -148,7 +154,6 @@
                             <div class="project-body">
                                 <span class="project-category">{{ $categoryName }}</span>
                                 <h3>{{ $portfolio->title }}</h3>
-                                {{-- DESCRIPTION RÉDUITE À 60 CARACTÈRES --}}
                                 <p class="project-description">{{ Str::limit($portfolio->description ?? 'Un projet réalisé avec passion pour un client satisfait.', 60) }}</p>
                                 @if($portfolio->client)
                                 <div class="project-client">
@@ -172,12 +177,8 @@
                     </div>
                 @endforeach
             </div>
-            <button class="carousel-btn prev" onclick="moveCarousel('portfolioCarousel', -1)">
-                ‹
-            </button>
-            <button class="carousel-btn next" onclick="moveCarousel('portfolioCarousel', 1)">
-                ›
-            </button>
+            <button class="carousel-btn prev" onclick="moveCarousel('portfolioCarousel', -1)">‹</button>
+            <button class="carousel-btn next" onclick="moveCarousel('portfolioCarousel', 1)">›</button>
             <div class="carousel-dots" id="portfolioDots"></div>
         </div>
 
@@ -191,6 +192,43 @@
         @endif
     </div>
 </section>
+
+<!-- ========== NOS OUTILS & TECHNOLOGIES - CARROUSEL SANS DESCRIPTION ========== -->
+@if(isset($tools) && !$tools->isEmpty())
+<section class="section tools-carousel-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="label">Notre boîte à outils</span>
+            <h2>Les technologies <span class="accent">que nous maîtrisons</span></h2>
+            <p class="subtitle">Des outils modernes pour des projets d'exception</p>
+        </div>
+
+        <div class="carousel-container" id="toolsCarousel">
+            <div class="carousel-track">
+                @foreach($tools as $tool)
+                <div class="carousel-slide">
+                    <div class="tool-card" @if($tool->website_url) onclick="window.open('{{ $tool->website_url }}', '_blank')" @endif>
+                        <div class="tool-card-icon">
+                            @if($tool->logo)
+                                <img src="{{ asset('storage/' . $tool->logo) }}" alt="{{ $tool->name }}" class="tool-card-logo">
+                            @elseif($tool->icon)
+                                <i class="{{ $tool->icon }}" style="color: {{ $tool->icon_color ?? '#6366f1' }}"></i>
+                            @else
+                                <i class="fa fa-code" style="color: #6366f1"></i>
+                            @endif
+                        </div>
+                        <div class="tool-card-name">{{ $tool->name }}</div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            <button class="carousel-btn prev" onclick="moveCarousel('toolsCarousel', -1)">‹</button>
+            <button class="carousel-btn next" onclick="moveCarousel('toolsCarousel', 1)">›</button>
+            <div class="carousel-dots" id="toolsDots"></div>
+        </div>
+    </div>
+</section>
+@endif
 
 <!-- ========== TÉMOIGNAGES : CARROUSEL ========== -->
 <section class="section testimonials">
@@ -212,9 +250,7 @@
                         <div class="testimonial-author">
                             <div class="author-img">
                                 @if($testimonial->avatar)
-                                    <img src="{{ asset('storage/' . $testimonial->avatar) }}"
-                                         alt="{{ $testimonial->name }}"
-                                         style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                                    <img src="{{ asset('storage/' . $testimonial->avatar) }}" alt="{{ $testimonial->name }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
                                 @else
                                     <div class="author-placeholder">
                                         {{ strtoupper(substr($testimonial->name, 0, 2)) }}
@@ -248,16 +284,11 @@
                 </div>
                 @endforeach
             </div>
-            <button class="carousel-btn prev" onclick="moveCarousel('testimonialsCarousel', -1)">
-                ‹
-            </button>
-            <button class="carousel-btn next" onclick="moveCarousel('testimonialsCarousel', 1)">
-                ›
-            </button>
+            <button class="carousel-btn prev" onclick="moveCarousel('testimonialsCarousel', -1)">‹</button>
+            <button class="carousel-btn next" onclick="moveCarousel('testimonialsCarousel', 1)">›</button>
             <div class="carousel-dots" id="testimonialsDots"></div>
         </div>
         @else
-        {{-- Témoignages par défaut en carrousel --}}
         <div class="carousel-container" id="testimonialsCarousel">
             <div class="carousel-track">
                 <div class="carousel-slide">
@@ -357,12 +388,8 @@
                     </div>
                 </div>
             </div>
-            <button class="carousel-btn prev" onclick="moveCarousel('testimonialsCarousel', -1)">
-                ‹
-            </button>
-            <button class="carousel-btn next" onclick="moveCarousel('testimonialsCarousel', 1)">
-                ›
-            </button>
+            <button class="carousel-btn prev" onclick="moveCarousel('testimonialsCarousel', -1)">‹</button>
+            <button class="carousel-btn next" onclick="moveCarousel('testimonialsCarousel', 1)">›</button>
             <div class="carousel-dots" id="testimonialsDots"></div>
         </div>
         @endif
@@ -406,6 +433,55 @@
         </div>
     </div>
 </section>
+
+<!-- ========== FAQ (DYNAMIQUE DEPUIS LA BDD AVEC CKEDITOR) ========== -->
+@if(isset($faqs) && !$faqs->isEmpty())
+<section class="section faq-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="label">Questions fréquentes</span>
+            <h2>On répond à vos <span class="accent">questions</span></h2>
+        </div>
+
+        <div class="faq-grid">
+            @foreach($faqs as $faq)
+            <div class="faq-item">
+                <h3>{{ $faq->question }}</h3>
+                <div class="faq-answer">{!! $faq->answer !!}</div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@else
+<section class="section faq-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="label">Questions fréquentes</span>
+            <h2>On répond à vos <span class="accent">questions</span></h2>
+        </div>
+
+        <div class="faq-grid">
+            <div class="faq-item">
+                <h3>Ça coûte combien un site web ou une application ?</h3>
+                <p>Chaque projet est différent. On vous fait un devis personnalisé et gratuit après avoir échangé avec vous. Pas de surprise, pas de frais cachés.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Je ne connais rien au web, c'est possible ?</h3>
+                <p>Bien sûr ! On vous accompagne pas à pas, on explique tout simplement. Vous n'avez besoin d'aucune compétence technique.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Combien de temps pour avoir mon site ou application ?</h3>
+                <p>Comptez 2 à 3 semaines pour un site vitrine, 4 à 6 semaines pour une boutique en ligne ou une application.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Et après, vous nous laissez ?</h3>
+                <p>Jamais ! On vous forme, on reste disponibles pour les questions, les modifications, les pépins.</p>
+            </div>
+        </div>
+    </div>
+</section>
+@endif
 
 <!-- ========== FORMULAIRE DE CONTACT ========== -->
 <section id="contact" class="section contact-section">
@@ -479,40 +555,11 @@
     </div>
 </section>
 
-<!-- ========== FAQ SIMPLE ========== -->
-<section class="section faq-section">
-    <div class="container">
-        <div class="section-header">
-            <span class="label">Questions fréquentes</span>
-            <h2>On répond à vos <span class="accent">questions</span></h2>
-        </div>
-
-        <div class="faq-grid">
-            <div class="faq-item">
-                <h3>Ça coûte combien un site web ou une application ?</h3>
-                <p>Chaque projet est différent. On vous fait un devis personnalisé et gratuit après avoir échangé avec vous. Pas de surprise, pas de frais cachés.</p>
-            </div>
-            <div class="faq-item">
-                <h3>Je ne connais rien au web, c'est possible ?</h3>
-                <p>Bien sûr ! On vous accompagne pas à pas, on explique tout simplement. Vous n'avez besoin d'aucune compétence technique.</p>
-            </div>
-            <div class="faq-item">
-                <h3>Combien de temps pour avoir mon site ou application ?</h3>
-                <p>Comptez 2 à 3 semaines pour un site vitrine, 4 à 6 semaines pour une boutique en ligne ou une application.</p>
-            </div>
-            <div class="faq-item">
-                <h3>Et après, vous nous laissez ?</h3>
-                <p>Jamais ! On vous forme, on reste disponibles pour les questions, les modifications, les pépins.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
 @endsection
 
 @push('styles')
 <style>
-/* ========== STYLES PRINCIPAUX ========== */
+/* ========== VARIABLES ========== */
 :root {
     --primary: #6366f1;
     --primary-dark: #4f46e5;
@@ -537,10 +584,10 @@
     padding: 80px 0;
 }
 
-/* ========== HERO BANNIÈRE OPTIMISÉE ========== */
+/* ========== HERO BANNIÈRE ========== */
 .hero-banner {
     min-height: 100vh;
-    background-image: url('{{ asset("assets/images/hero-bg.png") }}');
+    background-image: url('{{ $company->banner_image ? asset("storage/" . $company->banner_image) : asset("assets/images/hero-bg.png") }}');
     background-size: cover;
     background-position: center;
     position: relative;
@@ -592,25 +639,6 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.hero-badge-wrapper {
-    margin-bottom: 30px;
-}
-
-.hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(99, 102, 241, 0.2);
-    backdrop-filter: blur(10px);
-    padding: 10px 24px;
-    border-radius: 100px;
-    font-size: 14px;
-    font-weight: 500;
-    color: white;
-    border: 1px solid rgba(99, 102, 241, 0.4);
-    letter-spacing: 0.5px;
 }
 
 .hero-content h1 {
@@ -765,11 +793,6 @@
         max-width: 280px;
     }
 
-    .hero-badge {
-        padding: 8px 18px;
-        font-size: 12px;
-    }
-
     .hero-guarantee {
         font-size: 12px;
     }
@@ -790,42 +813,51 @@
         padding: 0 5px;
     }
 
-    .hero-actions {
-        gap: 12px;
-    }
-
     .btn-primary,
     .btn-outline {
         padding: 10px 24px;
         font-size: 14px;
         max-width: 260px;
     }
-
-    .hero-badge {
-        padding: 6px 14px;
-        font-size: 11px;
-    }
 }
 
-@media (max-height: 700px) and (orientation: landscape) {
-    .hero-banner {
-        min-height: auto;
-        padding: 80px 0 40px;
-    }
-
-    .hero-content p {
-        margin-bottom: 20px;
-    }
+/* ========== SECTION HISTOIRE ========== */
+.story-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
 }
 
-.hero-content h1,
-.hero-content p,
-.hero-badge,
-.hero-guarantee {
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+.story-text p {
+    color: var(--text-gray);
+    margin-bottom: 20px;
+    line-height: 1.7;
 }
 
-/* ========== AUTRES STYLES ========== */
+.story-signature {
+    margin-top: 32px;
+}
+
+.signature-text {
+    font-size: 16px;
+    font-style: italic;
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.story-image img {
+    width: 100%;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px -12px rgba(0,0,0,0.15);
+}
+
+/* ========== SERVICES ========== */
+.section-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
 .label {
     display: inline-block;
     font-size: 12px;
@@ -876,43 +908,6 @@ h2 {
     font-size: 16px;
     max-width: 600px;
     margin: 0 auto;
-}
-
-/* ========== SECTION HISTOIRE ========== */
-.story-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    align-items: center;
-}
-
-.story-text p {
-    color: var(--text-gray);
-    margin-bottom: 20px;
-    line-height: 1.7;
-}
-
-.story-signature {
-    margin-top: 32px;
-}
-
-.signature-text {
-    font-size: 16px;
-    font-style: italic;
-    color: var(--primary);
-    font-weight: 500;
-}
-
-.story-image img {
-    width: 100%;
-    border-radius: 24px;
-    box-shadow: 0 20px 40px -12px rgba(0,0,0,0.15);
-}
-
-/* ========== SERVICES ========== */
-.section-header {
-    text-align: center;
-    margin-bottom: 50px;
 }
 
 .carousel-container {
@@ -1002,6 +997,14 @@ h2 {
 .service-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.service-icon {
+    margin-bottom: 20px;
+}
+
+.service-icon i {
+    font-size: 40px;
 }
 
 .service-card h3 {
@@ -1172,6 +1175,70 @@ h2 {
     color: var(--primary);
 }
 
+.text-center {
+    text-align: center;
+}
+
+.mt-4 {
+    margin-top: 40px;
+}
+
+/* ========== OUTILS & TECHNOLOGIES - CARROUSEL SANS DESCRIPTION ========== */
+.tools-carousel-section {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    padding: 80px 0;
+}
+
+.tools-carousel-section .section-header h2,
+.tools-carousel-section .section-header .subtitle {
+    color: white;
+}
+
+.tools-carousel-section .section-header .label {
+    color: var(--accent);
+}
+
+.tool-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 30px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.tool-card:hover {
+    background: rgba(99, 102, 241, 0.25);
+    border-color: var(--primary);
+    transform: translateY(-5px);
+}
+
+.tool-card-icon {
+    margin-bottom: 15px;
+}
+
+.tool-card-icon i {
+    font-size: 48px;
+}
+
+.tool-card-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+
+.tool-card-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+}
+
 /* ========== TÉMOIGNAGES ========== */
 .testimonials {
     background: var(--bg-light);
@@ -1311,6 +1378,50 @@ h2 {
 .why-text p {
     color: var(--text-gray);
     line-height: 1.6;
+}
+
+/* ========== FAQ ========== */
+.faq-section {
+    background: var(--bg-light);
+}
+
+.faq-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+}
+
+.faq-item {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    border: 1px solid var(--border-light);
+    transition: all 0.3s ease;
+}
+
+.faq-item:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.faq-item h3 {
+    font-size: 18px;
+    margin-bottom: 12px;
+    color: var(--text-dark);
+}
+
+.faq-answer {
+    color: var(--text-gray);
+    line-height: 1.6;
+}
+
+.faq-answer p {
+    margin-bottom: 12px;
+}
+
+.faq-answer ul,
+.faq-answer ol {
+    margin-left: 20px;
+    margin-bottom: 12px;
 }
 
 /* ========== CONTACT ========== */
@@ -1459,36 +1570,6 @@ h2 {
     border: 1px solid #fecaca;
 }
 
-/* ========== FAQ ========== */
-.faq-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
-}
-
-.faq-item {
-    background: var(--bg-white);
-    padding: 30px;
-    border-radius: 20px;
-    border: 1px solid var(--border-light);
-    transition: all 0.3s ease;
-}
-
-.faq-item:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-.faq-item h3 {
-    font-size: 18px;
-    margin-bottom: 12px;
-    color: var(--text-dark);
-}
-
-.faq-item p {
-    color: var(--text-gray);
-    line-height: 1.6;
-}
-
 .empty-state {
     text-align: center;
     padding: 60px;
@@ -1500,14 +1581,6 @@ h2 {
 .empty-state.light {
     background: rgba(255,255,255,0.05);
     color: rgba(255,255,255,0.7);
-}
-
-.text-center {
-    text-align: center;
-}
-
-.mt-4 {
-    margin-top: 40px;
 }
 
 /* ========== RESPONSIVE ========== */
@@ -1540,6 +1613,31 @@ h2 {
     .contact-card {
         padding: 30px 20px;
     }
+
+    .carousel-container {
+        padding: 0 40px;
+    }
+
+    .carousel-slide {
+        flex: 0 0 100%;
+    }
+
+    .tool-card {
+        padding: 20px 15px;
+    }
+
+    .tool-card-icon i {
+        font-size: 36px;
+    }
+
+    .tool-card-logo {
+        width: 45px;
+        height: 45px;
+    }
+
+    .tool-card-name {
+        font-size: 14px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -1550,14 +1648,6 @@ h2 {
     .form-row {
         grid-template-columns: 1fr;
         gap: 0;
-    }
-
-    .carousel-container {
-        padding: 0 40px;
-    }
-
-    .carousel-slide {
-        flex: 0 0 100%;
     }
 }
 </style>
@@ -1779,6 +1869,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('servicesCarousel')) initCarousel('servicesCarousel');
     if (document.getElementById('portfolioCarousel')) initCarousel('portfolioCarousel');
     if (document.getElementById('testimonialsCarousel')) initCarousel('testimonialsCarousel');
+    if (document.getElementById('toolsCarousel')) initCarousel('toolsCarousel');
+});
+
+// Animation au scroll
+const observerOptions = { threshold: 0.1 };
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+document.querySelectorAll('.service-card, .project-card, .testimonial-card, .faq-item, .tool-card, .why-item').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'all 0.5s ease';
+    observer.observe(el);
 });
 </script>
 @endpush

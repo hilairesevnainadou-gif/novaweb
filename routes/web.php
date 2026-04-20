@@ -12,7 +12,7 @@ Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])
 Route::get('/newsletter/unsubscribe/{email}', [NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
 Route::get('/mentions-legales', [PageController::class, 'mentionsLegales'])->name('mentions.legales');
 Route::get('/politique-confidentialite', [PageController::class, 'politiqueConfidentialite'])->name('politique.confidentialite');
-
+Route::get('/services', [PageController::class, 'services'])->name('services');
 /*
 |--------------------------------------------------------------------------
 | Routes Publiques

@@ -104,6 +104,20 @@ class RolePermissionSeeder extends Seeder
             'newsletter.view',
             'newsletter.edit',
             'newsletter.delete',
+
+
+             // Tools
+    'tools.view',
+    'tools.create',
+    'tools.edit',
+    'tools.delete',
+
+    // FAQ
+    'faqs.view',
+    'faqs.create',
+    'faqs.edit',
+    'faqs.delete',
+
         ];
 
         // ── Créer toutes les permissions (idempotent) ─────────────────────

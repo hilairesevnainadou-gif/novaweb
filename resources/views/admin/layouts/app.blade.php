@@ -781,6 +781,20 @@
                         <i class="fas fa-star"></i>
                         <span>Témoignages</span>
                     </a>
+
+                    <!-- NOUVEAU MENU OUTILS -->
+                    <a href="{{ route('admin.tools.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.tools.*') ? 'active' : '' }}">
+                        <i class="fas fa-tools"></i>
+                        <span>Outils & Technologies</span>
+                    </a>
+
+                    <!-- NOUVEAU MENU FAQ -->
+                    <a href="{{ route('admin.faqs.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.faqs.*') ? 'active' : '' }}">
+                        <i class="fas fa-question-circle"></i>
+                        <span>FAQ</span>
+                    </a>
                 </div>
 
                 <!-- Communications -->

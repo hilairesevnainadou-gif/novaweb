@@ -4,6 +4,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\CompanyInfo;
+use App\Models\Faq;
+use App\Models\Service;
+use App\Models\Testimonial;
+use App\Models\Tool;
 
 class PageController extends Controller
 {
@@ -18,4 +22,18 @@ class PageController extends Controller
         $company = CompanyInfo::first();
         return view('novatechweb.views.politique-confidentialite', compact('company'));
     }
+
+    public function services()
+{
+    $company = CompanyInfo::first();
+    $services = Service::active()->ordered()->get();
+    $tools = Tool::active()->ordered()->get();
+    $faqs = Faq::active()->ordered()->get();
+    $testimonials = Testimonial::where('is_active', true)
+                               ->orderBy('created_at', 'desc')
+                               ->limit(6)
+                               ->get();
+
+    return view('novatechweb.views.services', compact('company', 'services', 'tools', 'faqs', 'testimonials'));
+}
 }

@@ -38,24 +38,21 @@
     <link rel="stylesheet" href="{{ asset('assets/css/owl.carousel.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/owl.theme.default.min.css') }}">
 
-    <!-- Styles spécifiques à la page -->
     <!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-KW2Q64SZ');</script>
-<!-- End Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-KW2Q64SZ');</script>
+    <!-- End Google Tag Manager -->
     <script src="https://app.secureprivacy.ai/script/69e50b44ea11f6c81f2048d7.js"></script>
     @stack('styles')
     <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-WZG06CXWP2');
-</script>
-
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-WZG06CXWP2');
+    </script>
 
     <style>
         /* ========== VARIABLES MODERNES ========== */
@@ -258,10 +255,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }
 
         .mobile-menu-logo {
-            height: 40px;
+            height: 45px;
             width: auto;
             object-fit: contain;
-            filter: brightness(0) invert(1);
         }
 
         .mobile-menu-nav {
@@ -378,6 +374,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 font-size: 1.1rem;
                 padding: 14px 24px;
                 border-radius: 12px;
+            }
+
+            .mobile-menu-logo {
+                height: 35px;
             }
         }
 
@@ -1144,7 +1144,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <nav class="header-nav">
                 <a href="{{ route('home') }}" class="nav-link" id="homeLink">Accueil</a>
                 <a href="{{ route('home') }}#about" class="nav-link" id="aboutLink">À propos</a>
-                <a href="{{ route('home') }}#services" class="nav-link" id="servicesLink">Services</a>
+                <a href="{{ route('services') }}" class="nav-link" id="servicesLink">Services</a>
                 <a href="{{ route('portfolio.index') }}" class="nav-link" id="portfolioLink">Portfolio</a>
                 <a href="{{ route('blog.index') }}" class="nav-link" id="blogLink">Blog</a>
                 <a href="{{ route('home') }}#contact" class="nav-link nav-cta" id="contactLink">Contact</a>
@@ -1170,7 +1170,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <nav class="mobile-menu-nav">
             <a href="{{ route('home') }}">Accueil</a>
             <a href="{{ route('home') }}#about">À propos</a>
-            <a href="{{ route('home') }}#services">Services</a>
+            <a href="{{ route('services') }}">Services</a>
             <a href="{{ route('portfolio.index') }}">Portfolio</a>
             <a href="{{ route('blog.index') }}">Blog</a>
             <a href="{{ route('home') }}#contact" class="nav-cta-mobile">Contact</a>
@@ -1246,7 +1246,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <ul class="footer-list" id="footer-links">
                             <li><a href="{{ route('home') }}"><i class="fa fa-chevron-right"></i> Accueil</a></li>
                             <li><a href="{{ route('home') }}#about"><i class="fa fa-chevron-right"></i> À propos</a></li>
-                            <li><a href="{{ route('home') }}#services"><i class="fa fa-chevron-right"></i> Services</a></li>
+                            <li><a href="{{ route('services') }}"><i class="fa fa-chevron-right"></i> Services</a></li>
                             <li><a href="{{ route('portfolio.index') }}"><i class="fa fa-chevron-right"></i> Portfolio</a></li>
                             <li><a href="{{ route('blog.index') }}"><i class="fa fa-chevron-right"></i> Blog</a></li>
                             <li><a href="{{ route('home') }}#contact"><i class="fa fa-chevron-right"></i> Contact</a></li>
@@ -1399,105 +1399,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 }
             });
 
-            // Smooth scroll pour les ancres
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    const href = this.getAttribute('href');
-                    if (href && href !== '#' && href !== '#about' && href !== '#services' && href !== '#contact') {
-                        const targetId = href.split('#')[1];
-                        const target = document.getElementById(targetId);
-                        if (target) {
-                            e.preventDefault();
-                            const headerOffset = 80;
-                            const elementPosition = target.getBoundingClientRect().top;
-                            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                            window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
-                        }
-                    }
-                });
-            });
+            // Smooth scroll pour les ancres (uniquement sur la page d'accueil)
+            const isHomePage = window.location.pathname === '/' || window.location.pathname === '{{ route("home") }}';
 
-            // ========== CORRECTION : Gestion de l'activation du menu ==========
-            function updateActiveMenuOnScroll() {
-                // Vérifier d'abord si nous sommes sur la page d'accueil
-                const isHomePage = window.location.pathname === '{{ route("home") }}' || window.location.pathname === '/';
-
-                // Retirer la classe active de tous les liens du menu desktop
-                const navLinks = document.querySelectorAll('.header-nav .nav-link');
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                });
-
-                // Gérer l'activation basée sur l'URL pour les pages spécifiques
-                const currentPath = window.location.pathname;
-                const portfolioLink = document.getElementById('portfolioLink');
-                const blogLink = document.getElementById('blogLink');
-                const homeLink = document.getElementById('homeLink');
-
-                // Activer Portfolio ou Blog si on est sur leurs pages respectives
-                if (portfolioLink) {
-                    if (currentPath.includes('/portfolio')) {
-                        portfolioLink.classList.add('active');
-                    }
-                }
-
-                if (blogLink) {
-                    if (currentPath.includes('/blog')) {
-                        blogLink.classList.add('active');
-                    }
-                }
-
-                // Si on n'est PAS sur la page d'accueil, on arrête ici
-                // pour éviter que le scroll n'active des liens de section qui n'existent pas
-                if (!isHomePage) {
-                    return;
-                }
-
-                // Si on est sur la page d'accueil, gérer l'activation par scroll
-                const sections = [
-                    { id: 'about', linkId: 'aboutLink' },
-                    { id: 'services', linkId: 'servicesLink' },
-                    { id: 'contact', linkId: 'contactLink' }
-                ];
-
-                let currentSection = '';
-                const scrollPosition = window.scrollY + 120;
-
-                for (const section of sections) {
-                    const element = document.getElementById(section.id);
-                    if (element) {
-                        const offsetTop = element.offsetTop;
-                        const offsetBottom = offsetTop + element.offsetHeight;
-
-                        if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
-                            currentSection = section.id;
-                            break;
-                        }
-                    }
-                }
-
-                if (currentSection) {
-                    const activeLink = document.getElementById(currentSection + 'Link');
-                    if (activeLink) {
-                        activeLink.classList.add('active');
-                    }
-                }
-
-                // Activer Accueil si en haut de la page d'accueil
-                if (window.scrollY < 100) {
-                    if (homeLink) homeLink.classList.add('active');
-                }
-            }
-
-            window.addEventListener('scroll', updateActiveMenuOnScroll);
-            window.addEventListener('load', updateActiveMenuOnScroll);
-
-            if (mobileMenu) {
-                const mobileLinks = mobileMenu.querySelectorAll('.mobile-menu-nav a');
-                mobileLinks.forEach(link => {
-                    link.addEventListener('click', function(e) {
+            if (isHomePage) {
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', function(e) {
                         const href = this.getAttribute('href');
-                        if (href && href.includes('#')) {
+                        if (href && href !== '#' && href !== '#about' && href !== '#services' && href !== '#contact') {
                             const targetId = href.split('#')[1];
                             const target = document.getElementById(targetId);
                             if (target) {
@@ -1506,23 +1415,83 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                 const elementPosition = target.getBoundingClientRect().top;
                                 const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
                                 window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
-                                toggleMenu();
                             }
                         }
                     });
                 });
             }
 
+            // ========== GESTION DE L'ACTIVATION DU MENU ==========
+            function updateActiveMenuOnScroll() {
+                const currentPath = window.location.pathname;
+                const isHomePage = currentPath === '/' || currentPath === '{{ route("home") }}';
+
+                // Récupérer tous les liens
+                const homeLink = document.getElementById('homeLink');
+                const aboutLink = document.getElementById('aboutLink');
+                const servicesLink = document.getElementById('servicesLink');
+                const portfolioLink = document.getElementById('portfolioLink');
+                const blogLink = document.getElementById('blogLink');
+                const contactLink = document.getElementById('contactLink');
+
+                // Retirer la classe active de tous
+                const allLinks = [homeLink, aboutLink, servicesLink, portfolioLink, blogLink, contactLink];
+                allLinks.forEach(link => {
+                    if (link) link.classList.remove('active');
+                });
+
+                // Activer selon la route
+                if (currentPath.includes('/portfolio')) {
+                    if (portfolioLink) portfolioLink.classList.add('active');
+                }
+                else if (currentPath.includes('/blog')) {
+                    if (blogLink) blogLink.classList.add('active');
+                }
+                else if (currentPath.includes('/services')) {
+                    if (servicesLink) servicesLink.classList.add('active');
+                }
+                else if (isHomePage) {
+                    // Sur la page d'accueil, gérer le scroll
+                    if (homeLink) homeLink.classList.add('active');
+
+                    const scrollPosition = window.scrollY + 120;
+                    const aboutSection = document.getElementById('about');
+                    const servicesSection = document.getElementById('services');
+                    const contactSection = document.getElementById('contact');
+
+                    if (aboutSection && scrollPosition >= aboutSection.offsetTop) {
+                        if (aboutLink) aboutLink.classList.add('active');
+                        if (homeLink) homeLink.classList.remove('active');
+                    }
+                    if (servicesSection && scrollPosition >= servicesSection.offsetTop) {
+                        if (servicesLink) servicesLink.classList.add('active');
+                        if (aboutLink) aboutLink.classList.remove('active');
+                    }
+                    if (contactSection && scrollPosition >= contactSection.offsetTop) {
+                        if (contactLink) contactLink.classList.add('active');
+                        if (servicesLink) servicesLink.classList.remove('active');
+                    }
+                }
+            }
+
+            // Mettre à jour au scroll et au chargement
+            window.addEventListener('scroll', updateActiveMenuOnScroll);
+            window.addEventListener('load', updateActiveMenuOnScroll);
+
+            // Aussi quand on change de page (pour les liens internes)
+            document.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function() {
+                    setTimeout(updateActiveMenuOnScroll, 100);
+                });
+            });
+
             // Footer accordéons mobile
             const footerToggles = document.querySelectorAll('.footer-title[data-toggle]');
-
             footerToggles.forEach(toggle => {
                 toggle.addEventListener('click', function() {
                     if (window.innerWidth > 768) return;
-
                     const targetId = this.getAttribute('data-toggle');
                     const targetList = document.getElementById(targetId);
-
                     this.classList.toggle('active');
                     if (targetList) {
                         targetList.classList.toggle('active');
@@ -1540,9 +1509,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             function showModal(type, title, message) {
                 if (!modalIcon || !modalTitle || !modalMessage) return;
-
                 modalIcon.className = 'newsletter-modal-icon';
-
                 if (type === 'success') {
                     modalIcon.classList.add('success');
                     modalIcon.innerHTML = '<i class="fa fa-check-circle"></i>';
@@ -1552,7 +1519,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 } else {
                     modalIcon.innerHTML = '<i class="fa fa-envelope-open-text"></i>';
                 }
-
                 modalTitle.textContent = title;
                 modalMessage.textContent = message;
                 if (newsletterModal) newsletterModal.classList.add('active');
@@ -1578,21 +1544,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             document.querySelectorAll('.newsletter-form').forEach(form => {
                 form.addEventListener('submit', async function(e) {
                     e.preventDefault();
-
                     const emailInput = this.querySelector('input[type="email"]');
                     const email = emailInput ? emailInput.value.trim() : '';
                     const submitBtn = this.querySelector('button[type="submit"]');
-
                     if (!email || !email.includes('@') || !email.includes('.')) {
                         showModal('error', 'Email invalide', 'Veuillez entrer une adresse email valide.');
                         return;
                     }
-
                     if (submitBtn) {
                         submitBtn.disabled = true;
                         submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
                     }
-
                     try {
                         const response = await fetch('{{ route("newsletter.subscribe") }}', {
                             method: 'POST',
@@ -1603,9 +1565,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             },
                             body: JSON.stringify({ email: email })
                         });
-
                         const data = await response.json();
-
                         if (data.success) {
                             showModal('success', 'Inscription réussie !', data.message);
                             if (emailInput) emailInput.value = '';
@@ -1626,7 +1586,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         });
     </script>
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WZG06CXWP2"></script>
-
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WZG06CXWP2"></script>
 </body>
 </html>
