@@ -147,57 +147,38 @@
     </div>
 </section>
 
-<!-- ========== NOS OUTILS & TECHNOLOGIES ========== -->
+<!-- ========== NOS OUTILS & TECHNOLOGIES - CARROUSEL SANS CATÉGORISATION ========== -->
 @if(isset($tools) && !$tools->isEmpty())
-<section class="section portfolio-bg">
+<section class="section tools-carousel-section">
     <div class="container">
-        <div class="section-header light">
-            <span class="label label-light">Notre boîte à outils</span>
-            <h2>Les technologies <span class="accent-light">que nous maîtrisons</span></h2>
-            <p class="subtitle-light">Des outils modernes pour des projets d'exception</p>
+        <div class="section-header">
+            <span class="label">Notre boîte à outils</span>
+            <h2>Les technologies <span class="accent">que nous maîtrisons</span></h2>
+            <p class="subtitle">Des outils modernes pour des projets d'exception</p>
         </div>
 
-        <div class="tools-wrapper">
-            @foreach($tools->groupBy('category') as $category => $categoryTools)
-            <div class="tools-category">
-                <h3 class="tools-category-title">
-                    @if($category == 'frontend')
-                        <i class="fa fa-code"></i> Frontend
-                    @elseif($category == 'backend')
-                        <i class="fa fa-server"></i> Backend
-                    @elseif($category == 'database')
-                        <i class="fa fa-database"></i> Base de données
-                    @elseif($category == 'devops')
-                        <i class="fa fa-cloud-upload-alt"></i> DevOps
-                    @elseif($category == 'design')
-                        <i class="fa fa-paint-brush"></i> Design
-                    @elseif($category == 'mobile')
-                        <i class="fa fa-mobile-alt"></i> Mobile
-                    @elseif($category == 'seo')
-                        <i class="fa fa-chart-line"></i> SEO
-                    @else
-                        <i class="fa fa-cogs"></i> {{ ucfirst($category) }}
-                    @endif
-                </h3>
-                <div class="tools-list">
-                    @foreach($categoryTools as $tool)
-                    <div class="tool-badge" @if($tool->website_url) onclick="window.open('{{ $tool->website_url }}', '_blank')" @endif>
-                        @if($tool->logo)
-                            <img src="{{ asset('storage/' . $tool->logo) }}" alt="{{ $tool->name }}" class="tool-badge-logo">
-                        @elseif($tool->icon)
-                            <i class="{{ $tool->icon }}" style="color: {{ $tool->icon_color }}"></i>
-                        @else
-                            <i class="fa fa-code"></i>
-                        @endif
-                        <span>{{ $tool->name }}</span>
-                        @if($tool->description)
-                            <div class="tool-badge-tooltip">{{ $tool->description }}</div>
-                        @endif
+        <div class="carousel-container" id="toolsCarousel">
+            <div class="carousel-track">
+                @foreach($tools as $tool)
+                <div class="carousel-slide">
+                    <div class="tool-card" @if($tool->website_url) onclick="window.open('{{ $tool->website_url }}', '_blank')" @endif>
+                        <div class="tool-card-icon">
+                            @if($tool->logo)
+                                <img src="{{ asset('storage/' . $tool->logo) }}" alt="{{ $tool->name }}" class="tool-card-logo">
+                            @elseif($tool->icon)
+                                <i class="{{ $tool->icon }}" style="color: {{ $tool->icon_color ?? '#6366f1' }}"></i>
+                            @else
+                                <i class="fa fa-code" style="color: #6366f1"></i>
+                            @endif
+                        </div>
+                        <div class="tool-card-name">{{ $tool->name }}</div>
                     </div>
-                    @endforeach
                 </div>
+                @endforeach
             </div>
-            @endforeach
+            <button class="carousel-btn prev" onclick="moveCarousel('toolsCarousel', -1)">‹</button>
+            <button class="carousel-btn next" onclick="moveCarousel('toolsCarousel', 1)">›</button>
+            <div class="carousel-dots" id="toolsDots"></div>
         </div>
     </div>
 </section>
@@ -290,7 +271,7 @@
     </div>
 </section>
 
-<!-- ========== FAQ ========== -->
+<!-- ========== FAQ (DYNAMIQUE AVEC CKEDITOR) ========== -->
 @if(isset($faqs) && !$faqs->isEmpty())
 <section class="section faq-section">
     <div class="container">
@@ -303,7 +284,7 @@
             @foreach($faqs as $faq)
             <div class="faq-item">
                 <h3>{{ $faq->question }}</h3>
-                <p>{{ $faq->answer }}</p>
+                <div class="faq-answer">{!! $faq->answer !!}</div>
             </div>
             @endforeach
         </div>
@@ -836,93 +817,60 @@ h2 {
     line-height: 1.6;
 }
 
-/* ========== PORTFOLIO BG (pour outils) ========== */
-.portfolio-bg {
+/* ========== OUTILS & TECHNOLOGIES - CARROUSEL ========== */
+.tools-carousel-section {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    padding: 80px 0;
 }
 
-/* ========== OUTILS & TECHNOLOGIES ========== */
-.tools-wrapper {
-    margin-top: 40px;
-}
-
-.tools-category {
-    margin-bottom: 40px;
-}
-
-.tools-category-title {
-    font-size: 20px;
-    font-weight: 600;
+.tools-carousel-section .section-header h2,
+.tools-carousel-section .section-header .subtitle {
     color: white;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.tools-category-title i {
-    margin-right: 10px;
+.tools-carousel-section .section-header .label {
     color: var(--accent);
 }
 
-.tools-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.tool-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
+.tool-card {
     background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    padding: 10px 18px;
-    border-radius: 50px;
-    font-size: 14px;
-    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 30px 20px;
+    text-align: center;
     transition: all 0.3s ease;
     cursor: pointer;
-    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.tool-badge:hover {
-    background: rgba(99, 102, 241, 0.3);
+.tool-card:hover {
+    background: rgba(99, 102, 241, 0.25);
     border-color: var(--primary);
-    transform: translateY(-2px);
+    transform: translateY(-5px);
 }
 
-.tool-badge i {
-    font-size: 16px;
+.tool-card-icon {
+    margin-bottom: 15px;
 }
 
-.tool-badge-logo {
-    width: 20px;
-    height: 20px;
+.tool-card-icon i {
+    font-size: 48px;
+}
+
+.tool-card-logo {
+    width: 60px;
+    height: 60px;
     object-fit: contain;
 }
 
-.tool-badge-tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1e293b;
+.tool-card-name {
+    font-size: 16px;
+    font-weight: 600;
     color: white;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s;
-    margin-bottom: 8px;
-    pointer-events: none;
-    z-index: 10;
-}
-
-.tool-badge:hover .tool-badge-tooltip {
-    opacity: 1;
-    visibility: visible;
 }
 
 /* ========== PRIX ========== */
@@ -1082,9 +1030,19 @@ h2 {
     color: var(--text-dark);
 }
 
-.faq-item p {
+.faq-answer {
     color: var(--text-gray);
     line-height: 1.6;
+}
+
+.faq-answer p {
+    margin-bottom: 12px;
+}
+
+.faq-answer ul,
+.faq-answer ol {
+    margin-left: 20px;
+    margin-bottom: 12px;
 }
 
 .faq-more {
@@ -1244,13 +1202,21 @@ h2 {
         transform: translateY(-10px);
     }
 
-    .tools-list {
-        gap: 10px;
+    .tool-card {
+        padding: 20px 15px;
     }
 
-    .tool-badge {
-        padding: 8px 14px;
-        font-size: 12px;
+    .tool-card-icon i {
+        font-size: 36px;
+    }
+
+    .tool-card-logo {
+        width: 45px;
+        height: 45px;
+    }
+
+    .tool-card-name {
+        font-size: 14px;
     }
 }
 
@@ -1258,18 +1224,13 @@ h2 {
     .pricing-grid {
         grid-template-columns: 1fr;
     }
-
-    .tool-badge {
-        min-width: 70px;
-        padding: 8px 10px;
-    }
 }
 </style>
 @endpush
 
 @push('scripts')
 <script>
-// Carrousel (identique à welcome)
+// Carrousel
 const carousels = {};
 
 function initCarousel(id) {
@@ -1371,6 +1332,7 @@ function moveCarousel(id, direction) {
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('servicesCarousel')) initCarousel('servicesCarousel');
     if (document.getElementById('testimonialsCarousel')) initCarousel('testimonialsCarousel');
+    if (document.getElementById('toolsCarousel')) initCarousel('toolsCarousel');
 });
 
 // Animation au scroll
@@ -1384,7 +1346,7 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-document.querySelectorAll('.service-card, .pricing-card, .faq-item, .tool-badge, .why-item').forEach(el => {
+document.querySelectorAll('.service-card, .pricing-card, .faq-item, .tool-card, .why-item').forEach(el => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(20px)';
     el.style.transition = 'all 0.5s ease';
