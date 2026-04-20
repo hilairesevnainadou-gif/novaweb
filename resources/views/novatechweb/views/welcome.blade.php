@@ -12,11 +12,6 @@
     <div class="hero-pattern"></div>
     <div class="container">
         <div class="hero-content">
-                {{-- <div class="hero-badge-wrapper">
-                    <span class="hero-badge">
-                        +100 entrepreneurs nous font confiance
-                    </span>
-                </div> --}}
             <h1>Vous voulez <span class="highlight">plus de clients ?</span><br>On vous offre la solution</h1>
             <p>Arrêtez de perdre du temps et de l'argent avec des promesses non tenues. Notre équipe de passionnés construit pour vous un <strong>site web ou une application qui vous ressemble et qui rapporte</strong>. Simple, transparent, efficace.</p>
             <div class="hero-actions">
@@ -98,7 +93,7 @@
     </div>
 </section>
 
-<!-- ========== PORTFOLIO : CARROUSEL ========== -->
+<!-- ========== PORTFOLIO : CARROUSEL (DESCRIPTION RÉDUITE) ========== -->
 <section id="portfolio" class="section portfolio-bg">
     <div class="container">
         <div class="section-header light">
@@ -153,7 +148,8 @@
                             <div class="project-body">
                                 <span class="project-category">{{ $categoryName }}</span>
                                 <h3>{{ $portfolio->title }}</h3>
-                                <p class="project-description">{{ Str::limit($portfolio->description ?? 'Un projet réalisé avec passion pour un client satisfait.', 100) }}</p>
+                                {{-- DESCRIPTION RÉDUITE À 60 CARACTÈRES --}}
+                                <p class="project-description">{{ Str::limit($portfolio->description ?? 'Un projet réalisé avec passion pour un client satisfait.', 60) }}</p>
                                 @if($portfolio->client)
                                 <div class="project-client">
                                     <span>{{ $portfolio->client }}</span>
@@ -196,7 +192,7 @@
     </div>
 </section>
 
-<!-- ========== TÉMOIGNAGES ========== -->
+<!-- ========== TÉMOIGNAGES : CARROUSEL ========== -->
 <section class="section testimonials">
     <div class="container">
         <div class="section-header">
@@ -205,118 +201,169 @@
         </div>
 
         @if(isset($testimonials) && !$testimonials->isEmpty())
-        <div class="testimonials-grid">
-            @foreach($testimonials as $testimonial)
-            <div class="testimonial-card">
-                <div class="testimonial-text">
-                    <p>"{{ $testimonial->content }}"</p>
-                </div>
-                <div class="testimonial-author">
-                    <div class="author-img">
-                        @if($testimonial->avatar)
-                            <img src="{{ asset('storage/' . $testimonial->avatar) }}"
-                                 alt="{{ $testimonial->name }}"
-                                 style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
-                        @else
-                            <div class="author-placeholder">
-                                {{ strtoupper(substr($testimonial->name, 0, 2)) }}
+        <div class="carousel-container" id="testimonialsCarousel">
+            <div class="carousel-track">
+                @foreach($testimonials as $testimonial)
+                <div class="carousel-slide">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            <p>"{{ Str::limit($testimonial->content, 150) }}"</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-img">
+                                @if($testimonial->avatar)
+                                    <img src="{{ asset('storage/' . $testimonial->avatar) }}"
+                                         alt="{{ $testimonial->name }}"
+                                         style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                                @else
+                                    <div class="author-placeholder">
+                                        {{ strtoupper(substr($testimonial->name, 0, 2)) }}
+                                    </div>
+                                @endif
                             </div>
-                        @endif
-                    </div>
-                    <div class="author-details">
-                        <strong>{{ $testimonial->name }}</strong>
-                        @if($testimonial->position || $testimonial->company)
-                        <span>
-                            @if($testimonial->position){{ $testimonial->position }}@endif
-                            @if($testimonial->position && $testimonial->company) - @endif
-                            @if($testimonial->company){{ $testimonial->company }}@endif
-                        </span>
+                            <div class="author-details">
+                                <strong>{{ $testimonial->name }}</strong>
+                                @if($testimonial->position || $testimonial->company)
+                                <span>
+                                    @if($testimonial->position){{ $testimonial->position }}@endif
+                                    @if($testimonial->position && $testimonial->company) - @endif
+                                    @if($testimonial->company){{ $testimonial->company }}@endif
+                                </span>
+                                @endif
+                            </div>
+                        </div>
+                        @if($testimonial->rating && $testimonial->rating > 0)
+                        <div class="testimonial-rating">
+                            @for($i = 1; $i <= 5; $i++)
+                                @if($i <= $testimonial->rating)
+                                    <span class="star star-filled">★</span>
+                                @else
+                                    <span class="star star-empty">☆</span>
+                                @endif
+                            @endfor
+                            <span class="rating-text">{{ $testimonial->rating }}/5</span>
+                        </div>
                         @endif
                     </div>
                 </div>
-                @if($testimonial->rating && $testimonial->rating > 0)
-                <div class="testimonial-rating">
-                    @for($i = 1; $i <= 5; $i++)
-                        @if($i <= $testimonial->rating)
-                            <span class="star star-filled">★</span>
-                        @else
-                            <span class="star star-empty">☆</span>
-                        @endif
-                    @endfor
-                    <span class="rating-text">{{ $testimonial->rating }}/5</span>
-                </div>
-                @endif
+                @endforeach
             </div>
-            @endforeach
+            <button class="carousel-btn prev" onclick="moveCarousel('testimonialsCarousel', -1)">
+                ‹
+            </button>
+            <button class="carousel-btn next" onclick="moveCarousel('testimonialsCarousel', 1)">
+                ›
+            </button>
+            <div class="carousel-dots" id="testimonialsDots"></div>
         </div>
         @else
-        <div class="testimonials-grid">
-            <div class="testimonial-card">
-                <div class="testimonial-text">
-                    <p>"Je suis commerçante et je n'y connaissais rien en informatique. L'équipe a été patiente, à l'écoute. Aujourd'hui mes clients me trouvent sur internet."</p>
-                </div>
-                <div class="testimonial-author">
-                    <div class="author-img">
-                        <div class="author-placeholder">FA</div>
+        {{-- Témoignages par défaut en carrousel --}}
+        <div class="carousel-container" id="testimonialsCarousel">
+            <div class="carousel-track">
+                <div class="carousel-slide">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            <p>"Je suis commerçante et je n'y connaissais rien en informatique. L'équipe a été patiente, à l'écoute. Aujourd'hui mes clients me trouvent sur internet."</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-img">
+                                <div class="author-placeholder">FA</div>
+                            </div>
+                            <div class="author-details">
+                                <strong>Fatima A.</strong>
+                                <span>Boutique de tissus - Cotonou</span>
+                            </div>
+                        </div>
+                        <div class="testimonial-rating">
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="rating-text">5/5</span>
+                        </div>
                     </div>
-                    <div class="author-details">
-                        <strong>Fatima A.</strong>
-                        <span>Boutique de tissus - Cotonou</span>
+                </div>
+                <div class="carousel-slide">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            <p>"Ils m'ont conseillé, orienté, et le résultat est magnifique. Mon chiffre d'affaires a augmenté grâce à mon nouveau site."</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-img">
+                                <div class="author-placeholder">MD</div>
+                            </div>
+                            <div class="author-details">
+                                <strong>Marc D.</strong>
+                                <span>Restaurateur - Porto-Novo</span>
+                            </div>
+                        </div>
+                        <div class="testimonial-rating">
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="star star-empty">☆</span>
+                            <span class="rating-text">4/5</span>
+                        </div>
                     </div>
                 </div>
-                <div class="testimonial-rating">
-                    <span class="star star-filled">★</span>
-                    <span class="star star-filled">★</span>
-                    <span class="star star-filled">★</span>
-                    <span class="star star-filled">★</span>
-                    <span class="star star-filled">★</span>
-                    <span class="rating-text">5/5</span>
+                <div class="carousel-slide">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            <p>"Un accompagnement exceptionnel. Ils sont disponibles, réactifs et surtout très humains. Je recommande sans hésiter."</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-img">
+                                <div class="author-placeholder">AB</div>
+                            </div>
+                            <div class="author-details">
+                                <strong>Amel B.</strong>
+                                <span>Profession libérale</span>
+                            </div>
+                        </div>
+                        <div class="testimonial-rating">
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="rating-text">5/5</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-slide">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            <p>"Très professionnel et à l'écoute. Le site est exactement ce que je voulais. Je recommande vivement !"</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-img">
+                                <div class="author-placeholder">SK</div>
+                            </div>
+                            <div class="author-details">
+                                <strong>Sophie K.</strong>
+                                <span>Consultante - Cotonou</span>
+                            </div>
+                        </div>
+                        <div class="testimonial-rating">
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="star star-filled">★</span>
+                            <span class="rating-text">5/5</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="testimonial-card">
-                <div class="testimonial-text">
-                    <p>"Ils m'ont conseillé, orienté, et le résultat est magnifique. Mon chiffre d'affaires a augmenté grâce à mon nouveau site."</p>
-                </div>
-                <div class="testimonial-author">
-                    <div class="author-img">
-                        <div class="author-placeholder">MD</div>
-                    </div>
-                    <div class="author-details">
-                        <strong>Marc D.</strong>
-                        <span>Restaurateur - Porto-Novo</span>
-                    </div>
-                </div>
-                <div class="testimonial-rating">
-                    <span class="star star-filled">★</span>
-                    <span class="star star-filled">★</span>
-                    <span class="star star-filled">★</span>
-                    <span class="star star-filled">★</span>
-                    <span class="star star-empty">☆</span>
-                    <span class="rating-text">4/5</span>
-                </div>
-            </div>
-            <div class="testimonial-card">
-                <div class="testimonial-text">
-                    <p>"Un accompagnement exceptionnel. Ils sont disponibles, réactifs et surtout très humains. Je recommande sans hésiter."</p>
-                </div>
-                <div class="testimonial-author">
-                    <div class="author-img">
-                        <div class="author-placeholder">AB</div>
-                    </div>
-                    <div class="author-details">
-                        <strong>Amel B.</strong>
-                        <span>Profession libérale</span>
-                    </div>
-                </div>
-                <div class="testimonial-rating">
-                    <span class="star star-filled">★</span>
-                    <span class="star star-filled">★</span>
-                    <span class="star star-filled">★</span>
-                    <span class="star star-filled">★</span>
-                    <span class="star star-filled">★</span>
-                    <span class="rating-text">5/5</span>
-                </div>
-            </div>
+            <button class="carousel-btn prev" onclick="moveCarousel('testimonialsCarousel', -1)">
+                ‹
+            </button>
+            <button class="carousel-btn next" onclick="moveCarousel('testimonialsCarousel', 1)">
+                ›
+            </button>
+            <div class="carousel-dots" id="testimonialsDots"></div>
         </div>
         @endif
     </div>
@@ -1126,10 +1173,8 @@ h2 {
 }
 
 /* ========== TÉMOIGNAGES ========== */
-.testimonials-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
+.testimonials {
+    background: var(--bg-light);
 }
 
 .testimonial-card {
@@ -1139,11 +1184,18 @@ h2 {
     transition: all 0.3s ease;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--border-light);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .testimonial-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.testimonial-text {
+    flex-grow: 1;
 }
 
 .testimonial-text p {
@@ -1158,6 +1210,7 @@ h2 {
     display: flex;
     align-items: center;
     gap: 16px;
+    margin-top: auto;
 }
 
 .author-img {
@@ -1169,6 +1222,7 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .author-placeholder {
@@ -1469,7 +1523,6 @@ h2 {
         gap: 40px;
     }
 
-    .testimonials-grid,
     .faq-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -1480,7 +1533,6 @@ h2 {
 }
 
 @media (max-width: 768px) {
-    .testimonials-grid,
     .faq-grid {
         grid-template-columns: 1fr;
     }
@@ -1722,10 +1774,11 @@ if (form) {
     });
 }
 
-// Initialisation
+// Initialisation des carrousels
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('servicesCarousel')) initCarousel('servicesCarousel');
     if (document.getElementById('portfolioCarousel')) initCarousel('portfolioCarousel');
+    if (document.getElementById('testimonialsCarousel')) initCarousel('testimonialsCarousel');
 });
 </script>
 @endpush
