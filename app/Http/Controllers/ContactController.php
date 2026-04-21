@@ -109,12 +109,11 @@ class ContactController extends Controller
             // Construction du message
             $emailBody = $this->buildEmailBody($contact, $serviceLabel);
 
-            // Envoi avec Mail::send
-            Mail::send([], [], function($message) use ($adminEmail, $contact, $emailBody) {
+            // Envoi avec Mail::html
+            Mail::html($emailBody, function($message) use ($adminEmail, $contact) {
                 $message->to($adminEmail)
                         ->subject('Nouvelle demande de contact - ' . $contact->name)
-                        ->replyTo($contact->email, $contact->name)
-                        ->setBody($emailBody, 'text/html');
+                        ->replyTo($contact->email, $contact->name);
             });
 
             Log::info('Email envoyé avec succès vers: ' . $adminEmail);
@@ -133,59 +132,71 @@ class ContactController extends Controller
     {
         $html = '
         <!DOCTYPE html>
-        <html>
+        <html lang="fr">
         <head>
             <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
-                .content { background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px; }
-                .info-row { margin-bottom: 15px; padding: 10px; background: white; border-radius: 8px; }
-                .label { font-weight: bold; color: #4f46e5; width: 120px; display: inline-block; }
-                .value { color: #333; }
-                .message-box { background: white; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #6366f1; }
-                .footer { text-align: center; padding: 20px; font-size: 12px; color: #6b7280; }
-                hr { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; background-color: #f4f6f9; color: #1a1a2e; }
+                .wrapper { max-width: 620px; margin: 40px auto; background: #ffffff; border: 1px solid #dde3ec; border-radius: 4px; overflow: hidden; }
+                .header { background-color: #1e2a4a; padding: 32px 40px; }
+                .header h1 { color: #ffffff; font-size: 18px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+                .header p { color: #9daec8; font-size: 13px; margin-top: 4px; }
+                .badge { display: inline-block; background-color: #4f46e5; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; margin-top: 12px; }
+                .body { padding: 36px 40px; }
+                .section-title { font-size: 11px; font-weight: 700; color: #6b7280; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; }
+                .info-table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
+                .info-table tr td { padding: 10px 0; vertical-align: top; font-size: 14px; border-bottom: 1px solid #f3f4f6; }
+                .info-table tr:last-child td { border-bottom: none; }
+                .info-table td.label { color: #6b7280; font-weight: 600; width: 140px; padding-right: 16px; }
+                .info-table td.value { color: #111827; }
+                .info-table td.value a { color: #4f46e5; text-decoration: none; }
+                .message-block { background-color: #f9fafb; border: 1px solid #e5e7eb; border-left: 3px solid #1e2a4a; border-radius: 2px; padding: 20px 24px; font-size: 14px; line-height: 1.75; color: #374151; }
+                .footer { background-color: #f9fafb; border-top: 1px solid #e5e7eb; padding: 20px 40px; text-align: center; font-size: 12px; color: #9ca3af; }
+                .footer strong { color: #6b7280; }
             </style>
         </head>
         <body>
-            <div class="container">
+            <div class="wrapper">
                 <div class="header">
-                    <h2>📩 Nouvelle demande de contact</h2>
+                    <h1>Nouvelle demande de contact</h1>
+                    <p>Reçue via le formulaire de contact du site</p>
+                    <span class="badge">À traiter</span>
                 </div>
-                <div class="content">
-                    <div class="info-row">
-                        <span class="label">👤 Nom :</span>
-                        <span class="value">' . htmlspecialchars($contact->name) . '</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="label">📧 Email :</span>
-                        <span class="value"><a href="mailto:' . htmlspecialchars($contact->email) . '">' . htmlspecialchars($contact->email) . '</a></span>
-                    </div>
-                    <div class="info-row">
-                        <span class="label">📞 Téléphone :</span>
-                        <span class="value">' . htmlspecialchars($contact->phone ?: 'Non renseigné') . '</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="label">🛠️ Service :</span>
-                        <span class="value">' . htmlspecialchars($serviceLabel) . '</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="label">📅 Date :</span>
-                        <span class="value">' . $contact->created_at->format('d/m/Y H:i:s') . '</span>
-                    </div>
-                    <hr>
-                    <div class="info-row">
-                        <span class="label">💬 Message :</span>
-                    </div>
-                    <div class="message-box">
+                <div class="body">
+                    <p class="section-title">Informations du contact</p>
+                    <table class="info-table">
+                        <tr>
+                            <td class="label">Nom</td>
+                            <td class="value">' . htmlspecialchars($contact->name) . '</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Adresse e-mail</td>
+                            <td class="value"><a href="mailto:' . htmlspecialchars($contact->email) . '">' . htmlspecialchars($contact->email) . '</a></td>
+                        </tr>
+                        <tr>
+                            <td class="label">Téléphone</td>
+                            <td class="value">' . htmlspecialchars($contact->phone ?: 'Non renseigné') . '</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Service demandé</td>
+                            <td class="value">' . htmlspecialchars($serviceLabel) . '</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Date de réception</td>
+                            <td class="value">' . $contact->created_at->format('d/m/Y à H:i') . '</td>
+                        </tr>
+                    </table>
+
+                    <p class="section-title">Message</p>
+                    <div class="message-block">
                         ' . nl2br(htmlspecialchars($contact->message)) . '
                     </div>
                 </div>
                 <div class="footer">
-                    <p>Cet email a été envoyé depuis le formulaire de contact de votre site web.</p>
-                    <p>© ' . date('Y') . ' Nova Tech - Tous droits réservés.</p>
+                    <p>Ce message a été transmis automatiquement depuis le formulaire de contact.</p>
+                    <p style="margin-top:6px;"><strong>Nova Tech</strong> &mdash; &copy; ' . date('Y') . ' &mdash; Tous droits réservés.</p>
                 </div>
             </div>
         </body>
