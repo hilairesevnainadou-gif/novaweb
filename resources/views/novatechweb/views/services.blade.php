@@ -199,7 +199,7 @@
                     <h3>Site Vitrine</h3>
                     <div class="pricing-price">
                         <span class="currency">à partir de</span>
-                        <span class="price">250 000 FCFA</span>
+                        <span class="price">170 000 FCFA</span>
                     </div>
                 </div>
                 <div class="pricing-body">
@@ -223,7 +223,7 @@
                     <h3>E-commerce</h3>
                     <div class="pricing-price">
                         <span class="currency">à partir de</span>
-                        <span class="price">450 000 FCFA</span>
+                        <span class="price">350 000 FCFA</span>
                     </div>
                 </div>
                 <div class="pricing-body">
