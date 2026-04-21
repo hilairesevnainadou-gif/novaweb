@@ -782,18 +782,30 @@
                         <span>Témoignages</span>
                     </a>
 
-                    <!-- NOUVEAU MENU OUTILS -->
+                    <!-- Team Member -->
+                    <a href="{{ route('admin.team.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.team.*') ? 'active' : '' }}">
+                        <i class="fas fa-users"></i>
+                        <span>Équipe</span>
+                    </a>
+
                     <a href="{{ route('admin.tools.index') }}"
                         class="nav-item {{ request()->routeIs('admin.tools.*') ? 'active' : '' }}">
                         <i class="fas fa-tools"></i>
                         <span>Outils & Technologies</span>
                     </a>
 
-                    <!-- NOUVEAU MENU FAQ -->
                     <a href="{{ route('admin.faqs.index') }}"
                         class="nav-item {{ request()->routeIs('admin.faqs.*') ? 'active' : '' }}">
                         <i class="fas fa-question-circle"></i>
                         <span>FAQ</span>
+                    </a>
+
+                    <!-- Clients -->
+                    <a href="{{ route('admin.clients.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.clients.*') ? 'active' : '' }}">
+                        <i class="fas fa-building"></i>
+                        <span>Clients</span>
                     </a>
                 </div>
 
@@ -827,13 +839,31 @@
                         @endif
                     </a>
 
-                    <a href="{{ route('admin.newsletter.index') }}" class="nav-item">
+                    <a href="{{ route('admin.newsletter.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.newsletter.*') ? 'active' : '' }}">
                         <i class="fas fa-newspaper"></i>
                         <span>Newsletter</span>
-                        @php $unreadNewsletter = \App\Models\Newsletter::where('is_active', true)->count(); @endphp
-                        @if($unreadNewsletter > 0)
-                        <span class="nav-badge">{{ $unreadNewsletter }}</span>
+                        @php $activeSubscribers = \App\Models\Newsletter::where('is_active', true)->count(); @endphp
+                        @if($activeSubscribers > 0)
+                        <span class="nav-badge">{{ $activeSubscribers }}</span>
                         @endif
+                    </a>
+                </div>
+
+                <!-- Finance & Facturation -->
+                <div class="nav-group">
+                    <div class="nav-group-label">Finance</div>
+
+                    <a href="{{ route('admin.billing.invoices.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.billing.invoices.*') ? 'active' : '' }}">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Factures</span>
+                    </a>
+
+                    <a href="{{ route('admin.billing.payments.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.billing.payments.*') ? 'active' : '' }}">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Paiements</span>
                     </a>
                 </div>
 

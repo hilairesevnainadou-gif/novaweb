@@ -18,10 +18,10 @@
             <h1>{{ $company->hero_title ?? 'Vous voulez <span class="highlight">plus de clients ?</span><br>On vous offre la solution' }}</h1>
             <p>{{ $company->hero_description ?? 'Arrêtez de perdre du temps et de l\'argent avec des promesses non tenues. Notre équipe de passionnés construit pour vous un <strong>site web ou une application qui vous ressemble et qui rapporte</strong>. Simple, transparent, efficace.' }}</p>
             <div class="hero-actions">
-                <a href="#contact" class="btn btn-primary">
+                <a href="{{ route('home') }}#contact" class="btn btn-primary">
                     Discutons de votre projet
                 </a>
-                <a href="#services" class="btn btn-outline">
+                <a href="{{ route('services') }}" class="btn btn-outline">
                     Pourquoi nous choisir ?
                 </a>
             </div>
@@ -58,7 +58,7 @@
 </section>
 
 <!-- ========== SERVICES : CARROUSEL ========== -->
-<section id="services" class="section services">
+<section  class="section services">
     <div class="container">
         <div class="section-header">
             <span class="label">Nos services</span>
@@ -100,7 +100,7 @@
 </section>
 
 <!-- ========== PORTFOLIO : CARROUSEL ========== -->
-<section id="portfolio" class="section portfolio-bg">
+<section  class="section portfolio-bg">
     <div class="container">
         <div class="section-header light">
             <span class="label label-light">Nos réalisations</span>

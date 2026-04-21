@@ -1143,7 +1143,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             <nav class="header-nav">
                 <a href="{{ route('home') }}" class="nav-link" id="homeLink">Accueil</a>
-                <a href="{{ route('home') }}#about" class="nav-link" id="aboutLink">À propos</a>
+                <a href="{{ route('about') }}" class="nav-link" id="aboutLink">À propos</a>
                 <a href="{{ route('services') }}" class="nav-link" id="servicesLink">Services</a>
                 <a href="{{ route('portfolio.index') }}" class="nav-link" id="portfolioLink">Portfolio</a>
                 <a href="{{ route('blog.index') }}" class="nav-link" id="blogLink">Blog</a>
@@ -1169,7 +1169,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <nav class="mobile-menu-nav">
             <a href="{{ route('home') }}">Accueil</a>
-            <a href="{{ route('home') }}#about">À propos</a>
+            <a href="{{ route('about') }}">À propos</a>
             <a href="{{ route('services') }}">Services</a>
             <a href="{{ route('portfolio.index') }}">Portfolio</a>
             <a href="{{ route('blog.index') }}">Blog</a>
@@ -1245,7 +1245,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         </h4>
                         <ul class="footer-list" id="footer-links">
                             <li><a href="{{ route('home') }}"><i class="fa fa-chevron-right"></i> Accueil</a></li>
-                            <li><a href="{{ route('home') }}#about"><i class="fa fa-chevron-right"></i> À propos</a></li>
+                            <li><a href="{{ route('about') }}"><i class="fa fa-chevron-right"></i> À propos</a></li>
                             <li><a href="{{ route('services') }}"><i class="fa fa-chevron-right"></i> Services</a></li>
                             <li><a href="{{ route('portfolio.index') }}"><i class="fa fa-chevron-right"></i> Portfolio</a></li>
                             <li><a href="{{ route('blog.index') }}"><i class="fa fa-chevron-right"></i> Blog</a></li>
@@ -1406,7 +1406,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                     anchor.addEventListener('click', function(e) {
                         const href = this.getAttribute('href');
-                        if (href && href !== '#' && href !== '#about' && href !== '#services' && href !== '#contact') {
+                        if (href && href !== '#' && href !== '#contact') {
                             const targetId = href.split('#')[1];
                             const target = document.getElementById(targetId);
                             if (target) {

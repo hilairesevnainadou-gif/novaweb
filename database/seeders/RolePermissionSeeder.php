@@ -118,6 +118,25 @@ class RolePermissionSeeder extends Seeder
     'faqs.edit',
     'faqs.delete',
 
+     'clients.view',
+    'clients.create',
+    'clients.edit',
+    'clients.delete',
+
+    'billing.view',
+    'billing.invoices.view',
+    'billing.invoices.create',
+    'billing.invoices.edit',
+    'billing.invoices.delete',
+    'billing.invoices.send',
+    'billing.payments.view',
+    'billing.payments.create',
+    'billing.payments.resend',
+
+    'team.view',
+    'team.create',
+    'team.edit',
+    'team.delete',
         ];
 
         // ── Créer toutes les permissions (idempotent) ─────────────────────

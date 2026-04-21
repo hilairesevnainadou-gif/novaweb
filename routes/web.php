@@ -13,6 +13,7 @@ Route::get('/newsletter/unsubscribe/{email}', [NewsletterController::class, 'uns
 Route::get('/mentions-legales', [PageController::class, 'mentionsLegales'])->name('mentions.legales');
 Route::get('/politique-confidentialite', [PageController::class, 'politiqueConfidentialite'])->name('politique.confidentialite');
 Route::get('/services', [PageController::class, 'services'])->name('services');
+
 /*
 |--------------------------------------------------------------------------
 | Routes Publiques
@@ -20,6 +21,8 @@ Route::get('/services', [PageController::class, 'services'])->name('services');
 */
 Route::post('/contact/submit', [ContactController::class, 'submit'])->name('contact.submit');
 Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/about', [\App\Http\Controllers\HomeController::class, 'about'])->name('about');
+
 
 Route::get('/portfolio', [\App\Http\Controllers\PortfolioController::class, 'index'])->name('portfolio.index');
 Route::get('/portfolio/{slug}', [\App\Http\Controllers\PortfolioController::class, 'show'])->name('portfolio.show');

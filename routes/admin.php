@@ -2,7 +2,9 @@
 
 // routes/admin.php
 
+use App\Http\Controllers\Admin\BillingController;
 use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FaqController;
@@ -12,6 +14,7 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\ToolController;
@@ -491,4 +494,155 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             ->middleware('permission:newsletter.view')
             ->name('export');
     });
+
+    // routes/admin.php
+
+
+// routes/admin.php (ajouter cette section)
+
+/*─────────────────────────────────────────
+  Facturation (Billing)
+──────────────────────────────────────────*/
+Route::prefix('billing')->name('billing.')->middleware('permission:billing.view')->group(function () {
+
+    // Factures
+    Route::prefix('invoices')->name('invoices.')->group(function () {
+        Route::get('/', [BillingController::class, 'invoices'])
+            ->middleware('permission:billing.invoices.view')
+            ->name('index');
+
+        Route::get('/create', [BillingController::class, 'createInvoiceForm'])
+            ->middleware('permission:billing.invoices.create')
+            ->name('create');
+
+        Route::post('/', [BillingController::class, 'createInvoice'])
+            ->middleware('permission:billing.invoices.create')
+            ->name('store');
+
+        Route::get('/{invoice}', [BillingController::class, 'showInvoice'])
+            ->middleware('permission:billing.invoices.view')
+            ->name('show');
+
+        Route::post('/{invoice}/send', [BillingController::class, 'sendInvoice'])
+            ->middleware('permission:billing.invoices.send')
+            ->name('send');
+
+        Route::post('/{invoice}/payment', [BillingController::class, 'recordPayment'])
+            ->middleware('permission:billing.payments.create')
+            ->name('payment');
+    });
+
+    // Paiements
+    Route::prefix('payments')->name('payments.')->group(function () {
+        Route::get('/', [BillingController::class, 'payments'])
+            ->middleware('permission:billing.payments.view')
+            ->name('index');
+
+        Route::get('/{payment}', [BillingController::class, 'showPayment'])
+            ->middleware('permission:billing.payments.view')
+            ->name('show');
+
+        Route::post('/{payment}/resend', [BillingController::class, 'resendReceipt'])
+            ->middleware('permission:billing.payments.resend')
+            ->name('resend');
+    });
+
+    // Tâches automatiques
+    Route::post('/update-overdue', [BillingController::class, 'updateOverdueStatus'])
+        ->name('update-overdue');
+});
+/*─────────────────────────────────────────
+  Clients
+──────────────────────────────────────────*/
+Route::prefix('clients')->name('clients.')->group(function () {
+
+    Route::get('/', [ClientController::class, 'index'])
+        ->middleware('permission:clients.view')
+        ->name('index');
+
+    Route::get('/create', [ClientController::class, 'create'])
+        ->middleware('permission:clients.create')
+        ->name('create');
+
+    Route::post('/', [ClientController::class, 'store'])
+        ->middleware('permission:clients.create')
+        ->name('store');
+
+    Route::post('/reorder', [ClientController::class, 'reorder'])
+        ->middleware('permission:clients.edit')
+        ->name('reorder');
+
+    Route::get('/export', [ClientController::class, 'export'])
+        ->middleware('permission:clients.view')
+        ->name('export');
+
+    Route::get('/{client}', [ClientController::class, 'show'])
+        ->middleware('permission:clients.view')
+        ->name('show');
+
+    Route::get('/{client}/edit', [ClientController::class, 'edit'])
+        ->middleware('permission:clients.edit')
+        ->name('edit');
+
+    Route::put('/{client}', [ClientController::class, 'update'])
+        ->middleware('permission:clients.edit')
+        ->name('update');
+
+    Route::post('/{client}/toggle', [ClientController::class, 'toggleActive'])
+        ->middleware('permission:clients.edit')
+        ->name('toggle');
+
+    Route::delete('/{client}', [ClientController::class, 'destroy'])
+        ->middleware('permission:clients.delete')
+        ->name('destroy');
+});
+/*─────────────────────────────────────────
+  Équipe (Team)
+──────────────────────────────────────────*/
+Route::prefix('team')->name('team.')->group(function () {
+
+    Route::get('/', [TeamController::class, 'index'])
+        ->middleware('permission:team.view')
+        ->name('index');
+
+    Route::get('/create', [TeamController::class, 'create'])
+        ->middleware('permission:team.create')
+        ->name('create');
+
+    Route::post('/', [TeamController::class, 'store'])
+        ->middleware('permission:team.create')
+        ->name('store');
+
+    Route::post('/reorder', [TeamController::class, 'reorder'])
+        ->middleware('permission:team.edit')
+        ->name('reorder');
+
+    Route::get('/export', [TeamController::class, 'export'])
+        ->middleware('permission:team.view')
+        ->name('export');
+
+    Route::get('/{teamMember}', [TeamController::class, 'show'])
+        ->middleware('permission:team.view')
+        ->name('show');
+
+    Route::get('/{teamMember}/edit', [TeamController::class, 'edit'])
+        ->middleware('permission:team.edit')
+        ->name('edit');
+
+    Route::put('/{teamMember}', [TeamController::class, 'update'])
+        ->middleware('permission:team.edit')
+        ->name('update');
+
+    Route::post('/{teamMember}/toggle', [TeamController::class, 'toggleActive'])
+        ->middleware('permission:team.edit')
+        ->name('toggle');
+
+    Route::post('/{teamMember}/featured', [TeamController::class, 'toggleFeatured'])
+        ->middleware('permission:team.edit')
+        ->name('featured');
+
+    Route::delete('/{teamMember}', [TeamController::class, 'destroy'])
+        ->middleware('permission:team.delete')
+        ->name('destroy');
+});
 });
