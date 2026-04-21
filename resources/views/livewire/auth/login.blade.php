@@ -4,16 +4,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Connexion | Nova Tech</title>
+<title>Connexion | {{ $company->name ?? 'Nova Tech' }}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
- <!-- Favicon -->
-    @if(isset($company) && $company && $company->favicon)
-        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $company->favicon) }}">
-        <link rel="shortcut icon" type="image/x-icon" href="{{ asset('storage/' . $company->favicon) }}">
-    @else
-        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    @endif
+
+<!-- Favicon -->
+@if(isset($company) && $company && $company->favicon)
+    <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $company->favicon) }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('storage/' . $company->favicon) }}">
+@else
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+@endif
+
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -448,7 +450,7 @@ body {
 .field-meta {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     margin-bottom: 8px;
     flex-wrap: wrap;
     gap: 8px;
@@ -547,14 +549,17 @@ body {
     color: rgba(255,255,255,0.35);
 }
 
-.card-footer a {
-    color: #818cf8;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
+.card-footer .access-restricted {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
 }
 
-.card-footer a:hover { color: #a5b4fc; }
+.card-footer .access-restricted i {
+    font-size: 10px;
+}
 
 /* ─── TRUST BADGES ─── */
 .trust-row {
@@ -660,11 +665,6 @@ body {
     .trust-badge {
         font-size: 10px;
     }
-
-    .field-meta {
-        flex-direction: column;
-        align-items: flex-start;
-    }
 }
 
 /* Très petits mobiles */
@@ -763,7 +763,7 @@ body {
     <div class="left">
         <div class="badge">
             <span class="badge-dot"></span>
-            Plateforme nouvelle génération
+            Plateforme nouvelle generation
         </div>
 
         <h1 class="headline">
@@ -772,7 +772,7 @@ body {
         </h1>
 
         <p class="subtext">
-            Nova Tech conçoit des solutions digitales haute performance pour les entreprises ambitieuses qui visent l'excellence.
+            {{ $company->name ?? 'Nova Tech' }} conçoit des solutions digitales haute performance pour les entreprises ambitieuses qui visent l'excellence.
         </p>
 
         <div class="features">
@@ -798,6 +798,21 @@ body {
                 </div>
             </div>
         </div>
+
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-num">5+</div>
+                <div class="stat-label">Années d'expertise</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">100+</div>
+                <div class="stat-label">Projets livrés</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">50+</div>
+                <div class="stat-label">Clients satisfaits</div>
+            </div>
+        </div>
     </div>
 
     <!-- ─── RIGHT PANEL (LOGIN FORM) ─── -->
@@ -805,7 +820,7 @@ body {
         <div class="card">
 
             <div class="card-header">
-                <h2>Bon retour 👋</h2>
+                <h2>Bon retour</h2>
                 <p>Connectez-vous pour accéder à votre espace</p>
             </div>
 
@@ -820,6 +835,12 @@ body {
             @if(session('status'))
             <div class="alert-success">
                 <div>{{ session('status') }}</div>
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div class="alert-error">
+                <div>{{ session('error') }}</div>
             </div>
             @endif
 
@@ -843,7 +864,6 @@ body {
                 </div>
 
                 <div class="field-meta">
-                    <label class="field-label" for="password" style="margin-bottom:0;">Mot de passe</label>
                     @if(Route::has('password.request'))
                     <a href="{{ route('password.request') }}">Mot de passe oublié ?</a>
                     @endif
@@ -876,7 +896,9 @@ body {
             </form>
 
             <div class="card-footer">
-                <p>Pas encore de compte ? <a href="{{ route('register') }}">Créer un compte</a></p>
+                <p class="access-restricted">
+                    <i class="fas fa-lock"></i> Accès réservé aux utilisateurs autorisés
+                </p>
             </div>
 
             <div class="trust-row">

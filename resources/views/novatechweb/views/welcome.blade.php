@@ -18,11 +18,11 @@
             <h1>{{ $company->hero_title ?? 'Vous voulez <span class="highlight">plus de clients ?</span><br>On vous offre la solution' }}</h1>
             <p>{{ $company->hero_description ?? 'Arrêtez de perdre du temps et de l\'argent avec des promesses non tenues. Notre équipe de passionnés construit pour vous un <strong>site web ou une application qui vous ressemble et qui rapporte</strong>. Simple, transparent, efficace.' }}</p>
             <div class="hero-actions">
-                <a href="{{ route('home') }}#contact" class="btn btn-primary">
+                <a href="#contact" class="btn btn-primary">
                     Discutons de votre projet
                 </a>
-                <a href="{{ route('services') }}" class="btn btn-outline">
-                    Pourquoi nous choisir ?
+                <a href="{{ route('about') }}" class="btn btn-outline">
+                    En savoir plus sur nous
                 </a>
             </div>
             <div class="hero-guarantee">
@@ -46,8 +46,13 @@
                 <h2>{{ $company->about_title ?? 'On a créé Nova Tech parce que <span class="accent">le web peut être simple</span>' }}</h2>
                 <p>{{ $company->about_description_1 ?? 'Nous sommes une petite équipe de passionnés basée au Bénin. On aime ce qu\'on fait, et ça se voit. Chaque projet est unique, chaque client est un ami qu\'on aide à réussir en ligne.' }}</p>
                 <p>{{ $company->about_description_2 ?? 'Pas de machines, pas de templates copiés-collés. Juste du travail fait avec le cœur, de l\'écoute et des résultats qui vous ressemblent.' }}</p>
-                <div class="story-signature">
-                    <span class="signature-text">{{ $company->signature_text ?? 'L\'équipe Nova Tech' }}</span>
+                <div class="story-footer">
+                    <div class="story-signature">
+                        <span class="signature-text">{{ $company->signature_text ?? 'L\'équipe Nova Tech' }}</span>
+                    </div>
+                    <a href="{{ route('about') }}" class="btn-about-more">
+                        En savoir plus sur notre histoire <i class="fa fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
             <div class="story-image">
@@ -58,7 +63,7 @@
 </section>
 
 <!-- ========== SERVICES : CARROUSEL ========== -->
-<section  class="section services">
+<section class="section services">
     <div class="container">
         <div class="section-header">
             <span class="label">Nos services</span>
@@ -82,7 +87,7 @@
                         <h3>{{ $service->title }}</h3>
                         <p>{{ Str::limit($service->description, 100) }}</p>
                         <div class="service-price">À partir de sur devis</div>
-                        <a href="#contact" class="service-link">En savoir plus →</a>
+                        <a href="{{ route('services') }}" class="service-link">En savoir plus →</a>
                     </div>
                 </div>
                 @endforeach
@@ -90,6 +95,9 @@
             <button class="carousel-btn prev" onclick="moveCarousel('servicesCarousel', -1)">‹</button>
             <button class="carousel-btn next" onclick="moveCarousel('servicesCarousel', 1)">›</button>
             <div class="carousel-dots" id="servicesDots"></div>
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ route('services') }}" class="btn btn-outline-primary">Voir tous nos services →</a>
         </div>
         @else
         <div class="empty-state">
@@ -100,7 +108,7 @@
 </section>
 
 <!-- ========== PORTFOLIO : CARROUSEL ========== -->
-<section  class="section portfolio-bg">
+<section class="section portfolio-bg">
     <div class="container">
         <div class="section-header light">
             <span class="label label-light">Nos réalisations</span>
@@ -193,7 +201,7 @@
     </div>
 </section>
 
-<!-- ========== NOS OUTILS & TECHNOLOGIES - CARROUSEL SANS DESCRIPTION ========== -->
+<!-- ========== NOS OUTILS & TECHNOLOGIES - CARROUSEL ========== -->
 @if(isset($tools) && !$tools->isEmpty())
 <section class="section tools-carousel-section">
     <div class="container">
@@ -429,6 +437,11 @@
                         </div>
                     </div>
                 </div>
+                <div class="why-footer">
+                    <a href="{{ route('about') }}" class="btn-why-more">
+                        Découvrir nos valeurs <i class="fa fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -450,6 +463,10 @@
                 <div class="faq-answer">{!! $faq->answer !!}</div>
             </div>
             @endforeach
+        </div>
+
+        <div class="faq-more">
+            <a href="#contact" class="btn btn-outline-primary">Vous avez d'autres questions ? Contactez-nous</a>
         </div>
     </div>
 </section>
@@ -478,6 +495,10 @@
                 <h3>Et après, vous nous laissez ?</h3>
                 <p>Jamais ! On vous forme, on reste disponibles pour les questions, les modifications, les pépins.</p>
             </div>
+        </div>
+
+        <div class="faq-more">
+            <a href="#contact" class="btn btn-outline-primary">Vous avez d'autres questions ? Contactez-nous</a>
         </div>
     </div>
 </section>
@@ -852,6 +873,30 @@
     box-shadow: 0 20px 40px -12px rgba(0,0,0,0.15);
 }
 
+.story-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 32px;
+}
+
+.btn-about-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-about-more:hover {
+    gap: 12px;
+    color: var(--primary-dark);
+}
+
 /* ========== SERVICES ========== */
 .section-header {
     text-align: center;
@@ -1038,6 +1083,37 @@ h2 {
     transform: translateX(5px);
 }
 
+.btn-outline-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--primary);
+    padding: 12px 28px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 2px solid var(--primary);
+    cursor: pointer;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-4 {
+    margin-top: 40px;
+}
+
 /* ========== PORTFOLIO ========== */
 .portfolio-bg {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -1175,15 +1251,7 @@ h2 {
     color: var(--primary);
 }
 
-.text-center {
-    text-align: center;
-}
-
-.mt-4 {
-    margin-top: 40px;
-}
-
-/* ========== OUTILS & TECHNOLOGIES - CARROUSEL SANS DESCRIPTION ========== */
+/* ========== OUTILS & TECHNOLOGIES ========== */
 .tools-carousel-section {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     padding: 80px 0;
@@ -1380,6 +1448,25 @@ h2 {
     line-height: 1.6;
 }
 
+.why-footer {
+    margin-top: 16px;
+}
+
+.btn-why-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-why-more:hover {
+    gap: 12px;
+    color: var(--primary-dark);
+}
+
 /* ========== FAQ ========== */
 .faq-section {
     background: var(--bg-light);
@@ -1422,6 +1509,11 @@ h2 {
 .faq-answer ol {
     margin-left: 20px;
     margin-bottom: 12px;
+}
+
+.faq-more {
+    text-align: center;
+    margin-top: 40px;
 }
 
 /* ========== CONTACT ========== */
@@ -1637,6 +1729,11 @@ h2 {
 
     .tool-card-name {
         font-size: 14px;
+    }
+
+    .story-footer {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
 

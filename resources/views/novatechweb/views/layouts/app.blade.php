@@ -61,6 +61,7 @@
             --primary-dark: #4f46e5;
             --primary-light: #818cf8;
             --accent: #06b6d4;
+            --accent-light: #67e8f9;
             --bg-white: #ffffff;
             --bg-light: #f8fafc;
             --text-dark: #0f172a;
@@ -1406,7 +1407,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                     anchor.addEventListener('click', function(e) {
                         const href = this.getAttribute('href');
-                        if (href && href !== '#' && href !== '#contact') {
+                        if (href && href !== '#' && href !== '#about' && href !== '#services' && href !== '#contact') {
                             const targetId = href.split('#')[1];
                             const target = document.getElementById(targetId);
                             if (target) {
@@ -1449,6 +1450,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 }
                 else if (currentPath.includes('/services')) {
                     if (servicesLink) servicesLink.classList.add('active');
+                }
+                else if (currentPath.includes('/about')) {
+                    if (aboutLink) aboutLink.classList.add('active');
                 }
                 else if (isHomePage) {
                     // Sur la page d'accueil, gérer le scroll

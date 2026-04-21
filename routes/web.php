@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PageController;
@@ -29,6 +30,37 @@ Route::get('/portfolio/{slug}', [\App\Http\Controllers\PortfolioController::clas
 
 Route::get('/blog', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
+
+/*
+|--------------------------------------------------------------------------
+| Routes d'Authentification Supplémentaires
+|--------------------------------------------------------------------------
+*/
+
+// Désactiver l'inscription publique - rediriger vers login avec message
+Route::get('/register', function () {
+    return redirect()->route('login')->with('error', 'Les inscriptions ne sont pas ouvertes au public. Veuillez contacter un administrateur.');
+})->name('register');
+
+Route::post('/register', function () {
+    return redirect()->route('login')->with('error', 'Les inscriptions ne sont pas ouvertes au public.');
+});
+
+// Routes pour l'authentification sociale
+Route::middleware('guest')->group(function () {
+    Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect'])
+        ->name('auth.social.redirect');
+
+    Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback'])
+        ->name('auth.social.callback');
+});
+
+// Routes pour la vérification d'email personnalisée
+Route::middleware(['auth'])->group(function () {
+    Route::get('/email/verify', function () {
+        return view('auth.verify-email');
+    })->name('verification.notice');
+});
 
 /*
 |--------------------------------------------------------------------------

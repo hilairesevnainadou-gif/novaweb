@@ -43,7 +43,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'home' => '/admin/dashboard',  // ← Changé de /dashboard à /admin/dashboard
+    'home' => '/admin/dashboard',
 
     /*
     |--------------------------------------------------------------------------
@@ -88,7 +88,10 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Désactiver l'inscription - commenter ou supprimer cette ligne
+        // Features::registration(),
+
+        // Garder les autres fonctionnalités
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::updateProfileInformation(),

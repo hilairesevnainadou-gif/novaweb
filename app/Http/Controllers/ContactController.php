@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use App\Models\Contact;
+use App\Mail\ContactMail;
 
 class ContactController extends Controller
 {
@@ -41,6 +42,8 @@ class ContactController extends Controller
             $serviceOptions = [
                 'site-vitrine' => 'Site Vitrine',
                 'ecommerce' => 'Site E-commerce / Vente en ligne',
+                'application-web' => 'Application Web',
+                'application-mobile' => 'Application Mobile',
                 'refonte' => 'Refonte de site existant',
                 'autre' => 'Autre projet',
             ];
@@ -57,48 +60,8 @@ class ContactController extends Controller
                 'is_read' => false
             ]);
 
-            // Envoi de l'email SANS AUTHENTIFICATION
-            try {
-                $adminEmail = config('mail.from.address');
-
-                // Configuration spéciale pour serveur sans auth
-                config([
-                    'mail.mailers.smtp.username' => null,
-                    'mail.mailers.smtp.password' => null,
-                    'mail.mailers.smtp.encryption' => null,
-                    'mail.mailers.smtp.auth_mode' => null,
-                ]);
-
-                $emailData = [
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'phone' => $request->phone ?? 'Non renseigné',
-                    'service' => $serviceLabel,
-                    'message' => $request->message,
-                    'created_at' => now()->format('d/m/Y H:i:s')
-                ];
-
-                $emailBody = "Nouvelle demande de contact\n";
-                $emailBody .= "========================\n\n";
-                $emailBody .= "Nom: {$emailData['name']}\n";
-                $emailBody .= "Email: {$emailData['email']}\n";
-                $emailBody .= "Téléphone: {$emailData['phone']}\n";
-                $emailBody .= "Service: {$emailData['service']}\n";
-                $emailBody .= "Message:\n{$emailData['message']}\n\n";
-                $emailBody .= "Reçu le: {$emailData['created_at']}\n";
-
-                Mail::raw($emailBody, function($message) use ($adminEmail, $emailData) {
-                    $message->to($adminEmail)
-                            ->subject('Nouvelle demande de contact - ' . $emailData['name'])
-                            ->replyTo($emailData['email'], $emailData['name']);
-                });
-
-                Log::info('Email envoyé sans authentification avec succès');
-
-            } catch (\Exception $mailError) {
-                Log::warning("Erreur d'envoi d'email (mode sans auth): " . $mailError->getMessage());
-                // Ne pas bloquer - on continue
-            }
+            // Envoi de l'email (avec gestion d'erreur silencieuse)
+            $this->sendEmailNotification($contact, $serviceLabel);
 
             return response()->json([
                 'success' => true,
@@ -113,5 +76,121 @@ class ContactController extends Controller
                 'message' => 'Une erreur technique est survenue. Veuillez nous appeler directement ou réessayer plus tard.'
             ], 500);
         }
+    }
+
+    /**
+     * Envoi de l'email de notification
+     */
+    private function sendEmailNotification($contact, $serviceLabel)
+    {
+        try {
+            $adminEmail = config('mail.from.address');
+
+            if (!$adminEmail) {
+                Log::warning('Email admin non configuré');
+                return false;
+            }
+
+            // Vérifier si le mailer est configuré
+            $mailer = config('mail.default');
+
+            if ($mailer === 'log') {
+                // Mode log, simuler l'envoi
+                Log::info('Email notification (mode log):', [
+                    'to' => $adminEmail,
+                    'subject' => 'Nouvelle demande de contact - ' . $contact->name,
+                    'name' => $contact->name,
+                    'email' => $contact->email,
+                    'service' => $serviceLabel
+                ]);
+                return true;
+            }
+
+            // Construction du message
+            $emailBody = $this->buildEmailBody($contact, $serviceLabel);
+
+            // Envoi avec Mail::send
+            Mail::send([], [], function($message) use ($adminEmail, $contact, $emailBody) {
+                $message->to($adminEmail)
+                        ->subject('Nouvelle demande de contact - ' . $contact->name)
+                        ->replyTo($contact->email, $contact->name)
+                        ->setBody($emailBody, 'text/html');
+            });
+
+            Log::info('Email envoyé avec succès vers: ' . $adminEmail);
+            return true;
+
+        } catch (\Exception $e) {
+            Log::error("Erreur d'envoi d'email: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Construction du corps de l'email
+     */
+    private function buildEmailBody($contact, $serviceLabel)
+    {
+        $html = '
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+                .content { background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px; }
+                .info-row { margin-bottom: 15px; padding: 10px; background: white; border-radius: 8px; }
+                .label { font-weight: bold; color: #4f46e5; width: 120px; display: inline-block; }
+                .value { color: #333; }
+                .message-box { background: white; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #6366f1; }
+                .footer { text-align: center; padding: 20px; font-size: 12px; color: #6b7280; }
+                hr { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2>📩 Nouvelle demande de contact</h2>
+                </div>
+                <div class="content">
+                    <div class="info-row">
+                        <span class="label">👤 Nom :</span>
+                        <span class="value">' . htmlspecialchars($contact->name) . '</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">📧 Email :</span>
+                        <span class="value"><a href="mailto:' . htmlspecialchars($contact->email) . '">' . htmlspecialchars($contact->email) . '</a></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">📞 Téléphone :</span>
+                        <span class="value">' . htmlspecialchars($contact->phone ?: 'Non renseigné') . '</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">🛠️ Service :</span>
+                        <span class="value">' . htmlspecialchars($serviceLabel) . '</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">📅 Date :</span>
+                        <span class="value">' . $contact->created_at->format('d/m/Y H:i:s') . '</span>
+                    </div>
+                    <hr>
+                    <div class="info-row">
+                        <span class="label">💬 Message :</span>
+                    </div>
+                    <div class="message-box">
+                        ' . nl2br(htmlspecialchars($contact->message)) . '
+                    </div>
+                </div>
+                <div class="footer">
+                    <p>Cet email a été envoyé depuis le formulaire de contact de votre site web.</p>
+                    <p>© ' . date('Y') . ' Nova Tech - Tous droits réservés.</p>
+                </div>
+            </div>
+        </body>
+        </html>';
+
+        return $html;
     }
 }
