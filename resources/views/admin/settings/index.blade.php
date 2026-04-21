@@ -449,6 +449,24 @@
     .toast-notification.error i {
         color: #ef4444;
     }
+
+    /* Section bancaire spécifique */
+    .banking-info-card {
+        background: var(--bg-tertiary);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-top: 0.5rem;
+    }
+    .banking-info-card p {
+        font-size: 0.75rem;
+        margin: 0.25rem 0;
+        color: var(--text-secondary);
+    }
+    hr {
+        margin: 1.5rem 0;
+        border: none;
+        border-top: 1px solid var(--border-light);
+    }
 </style>
 @endpush
 
@@ -462,23 +480,27 @@
         <nav class="settings-nav">
             <div class="settings-nav-item active" data-section="general">
                 <i class="fas fa-building"></i>
-                <span>Informations générales</span>
+                <span>Informations generales</span>
+            </div>
+            <div class="settings-nav-item" data-section="banking">
+                <i class="fas fa-university"></i>
+                <span>Informations bancaires</span>
             </div>
             <div class="settings-nav-item" data-section="social">
                 <i class="fas fa-share-alt"></i>
-                <span>Réseaux sociaux</span>
+                <span>Reseaux sociaux</span>
             </div>
             <div class="settings-nav-item" data-section="seo">
                 <i class="fas fa-chart-line"></i>
-                <span>SEO & Métadonnées</span>
+                <span>SEO & Metadonnees</span>
             </div>
             <div class="settings-nav-item" data-section="branding">
                 <i class="fas fa-palette"></i>
-                <span>Identité visuelle</span>
+                <span>Identite visuelle</span>
             </div>
             <div class="settings-nav-item" data-section="legal">
                 <i class="fas fa-gavel"></i>
-                <span>Mentions légales</span>
+                <span>Mentions legales</span>
             </div>
             <div class="settings-nav-item" data-section="contact">
                 <i class="fas fa-address-card"></i>
@@ -490,27 +512,27 @@
             </div>
             <div class="settings-nav-item" data-section="about">
                 <i class="fas fa-info-circle"></i>
-                <span>À propos</span>
+                <span>A propos</span>
             </div>
         </nav>
     </aside>
 
     <!-- Contenu principal -->
     <main class="settings-content">
-        <!-- Section Général -->
+        <!-- Section General -->
         <div id="section-general" class="settings-section active">
             <form action="{{ route('admin.settings.update-general') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="section-header">
-                    <h2><i class="fas fa-building"></i> Informations générales</h2>
-                    <p>Gérez les informations de base de votre entreprise</p>
+                    <h2><i class="fas fa-building"></i> Informations generales</h2>
+                    <p>Gerer les informations de base de votre entreprise</p>
                 </div>
                 <div class="section-body">
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label"><i class="fas fa-building"></i> Nom du site</label>
                             <input type="text" name="site_name" class="form-input" value="{{ old('site_name', $companyInfo->name ?? config('app.name')) }}" required>
-                            <div class="form-help"><i class="fas fa-info-circle"></i> Apparaît dans l'onglet du navigateur et l'en-tête</div>
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Apparait dans l'onglet du navigateur et l'en-tete</div>
                         </div>
                         <div class="form-group">
                             <label class="form-label"><i class="fas fa-tag"></i> Slogan</label>
@@ -523,19 +545,19 @@
                             <div class="form-help"><i class="fas fa-info-circle"></i> Email public pour les visiteurs</div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label"><i class="fas fa-phone"></i> Téléphone</label>
+                            <label class="form-label"><i class="fas fa-phone"></i> Telephone</label>
                             <input type="text" name="site_phone" class="form-input" value="{{ old('site_phone', $companyInfo->phone ?? '') }}">
-                            <div class="form-help"><i class="fas fa-info-circle"></i> Format international recommandé</div>
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Format international recommande</div>
                         </div>
                         <div class="form-group-full">
                             <label class="form-label"><i class="fas fa-align-left"></i> Description courte</label>
                             <textarea name="site_description" class="form-textarea" rows="3">{{ old('site_description', $companyInfo->description ?? '') }}</textarea>
-                            <div class="form-help"><i class="fas fa-info-circle"></i> Description de l'entreprise (150-160 caractères recommandés)</div>
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Description de l'entreprise (150-160 caracteres recommandes)</div>
                         </div>
                         <div class="form-group-full">
                             <label class="form-label"><i class="fas fa-globe"></i> Site web</label>
                             <input type="url" name="website" class="form-input" value="{{ old('website', $companyInfo->website ?? '') }}" placeholder="https://www.votre-site.com">
-                            <div class="form-help"><i class="fas fa-info-circle"></i> URL complète du site web</div>
+                            <div class="form-help"><i class="fas fa-info-circle"></i> URL complete du site web</div>
                         </div>
                     </div>
                     <div class="form-actions">
@@ -545,13 +567,83 @@
             </form>
         </div>
 
-        <!-- Section Réseaux sociaux -->
+        <!-- Section Informations bancaires -->
+        <div id="section-banking" class="settings-section">
+            <form action="{{ route('admin.settings.update-banking') }}" method="POST">
+                @csrf
+                <div class="section-header">
+                    <h2><i class="fas fa-university"></i> Informations bancaires</h2>
+                    <p>Configurez les coordonnees bancaires pour les paiements sur les factures</p>
+                </div>
+                <div class="section-body">
+                    <div class="form-grid">
+                        <div class="form-group-full">
+                            <label class="form-label"><i class="fas fa-university"></i> Nom de la banque</label>
+                            <input type="text" name="bank_name" class="form-input" value="{{ old('bank_name', $companyInfo->bank_name ?? '') }}" placeholder="Ex: Banque Atlantique, Ecobank, BIBE">
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Nom de l'etablissement bancaire</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-user"></i> Titulaire du compte</label>
+                            <input type="text" name="bank_account_name" class="form-input" value="{{ old('bank_account_name', $companyInfo->bank_account_name ?? '') }}" placeholder="Nom du titulaire du compte">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-credit-card"></i> Numero de compte</label>
+                            <input type="text" name="bank_account_number" class="form-input" value="{{ old('bank_account_number', $companyInfo->bank_account_number ?? '') }}" placeholder="Numero de compte bancaire">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-code"></i> IBAN</label>
+                            <input type="text" name="bank_iban" class="form-input" value="{{ old('bank_iban', $companyInfo->bank_iban ?? '') }}" placeholder="IBAN international">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-exchange-alt"></i> SWIFT / BIC</label>
+                            <input type="text" name="bank_swift" class="form-input" value="{{ old('bank_swift', $companyInfo->bank_swift ?? '') }}" placeholder="Code SWIFT/BIC">
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h3 style="margin-bottom: 1rem; font-size: 0.875rem;"><i class="fas fa-mobile-alt"></i> Mobile Money</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-mobile-alt"></i> Numero Mobile Money</label>
+                            <input type="text" name="mobile_money_number" class="form-input" value="{{ old('mobile_money_number', $companyInfo->mobile_money_number ?? '') }}" placeholder="Ex: 01 XX XX XX XX">
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Numero pour les paiements Mobile Money</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-signal"></i> Operateur</label>
+                            <select name="mobile_money_operator" class="form-select">
+                                <option value="">Selectionner</option>
+                                <option value="mtn" {{ old('mobile_money_operator', $companyInfo->mobile_money_operator ?? '') == 'mtn' ? 'selected' : '' }}>MTN</option>
+                                <option value="moov" {{ old('mobile_money_operator', $companyInfo->mobile_money_operator ?? '') == 'moov' ? 'selected' : '' }}>MOOV</option>
+                                <option value="celcom" {{ old('mobile_money_operator', $companyInfo->mobile_money_operator ?? '') == 'celcom' ? 'selected' : '' }}>Celcom</option>
+                            </select>
+                        </div>
+                        <div class="form-group-full">
+                            <label class="form-label"><i class="fas fa-file-alt"></i> Instructions de paiement</label>
+                            <textarea name="payment_instructions" class="form-textarea" rows="4" placeholder="Instructions additionnelles pour le client...">{{ old('payment_instructions', $companyInfo->payment_instructions ?? '') }}</textarea>
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Ces instructions apparaitront sur la facture envoyee par email</div>
+                        </div>
+                    </div>
+
+                    <div class="banking-info-card">
+                        <p><i class="fas fa-info-circle"></i> Les informations saisies ici seront utilisees sur les factures envoyees par email.</p>
+                        <p>Le client recevra les coordonnees bancaires et Mobile Money pour effectuer son paiement.</p>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Section Reseaux sociaux -->
         <div id="section-social" class="settings-section">
             <form action="{{ route('admin.settings.update-social') }}" method="POST">
                 @csrf
                 <div class="section-header">
-                    <h2><i class="fas fa-share-alt"></i> Réseaux sociaux</h2>
-                    <p>Connectez votre site à vos profils sociaux</p>
+                    <h2><i class="fas fa-share-alt"></i> Reseaux sociaux</h2>
+                    <p>Connectez votre site a vos profils sociaux</p>
                 </div>
                 <div class="section-body">
                     <div class="form-grid">
@@ -578,7 +670,7 @@
                         <div class="form-group">
                             <label class="form-label"><i class="fab fa-whatsapp"></i> WhatsApp</label>
                             <input type="text" name="whatsapp" class="form-input" value="{{ old('whatsapp', $companyInfo->whatsapp ?? '') }}" placeholder="+229XXXXXXXXX">
-                            <div class="form-help"><i class="fas fa-info-circle"></i> Numéro avec indicatif international</div>
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Numero avec indicatif international</div>
                         </div>
                     </div>
                     <div class="form-actions">
@@ -593,20 +685,20 @@
             <form action="{{ route('admin.settings.update-seo') }}" method="POST">
                 @csrf
                 <div class="section-header">
-                    <h2><i class="fas fa-chart-line"></i> SEO & Métadonnées</h2>
-                    <p>Optimisez votre référencement naturel</p>
+                    <h2><i class="fas fa-chart-line"></i> SEO & Metadonnees</h2>
+                    <p>Optimisez votre referencement naturel</p>
                 </div>
                 <div class="section-body">
                     <div class="form-grid">
                         <div class="form-group-full">
-                            <label class="form-label"><i class="fas fa-tags"></i> Mots-clés</label>
-                            <input type="text" name="site_keywords" class="form-input" value="{{ old('site_keywords', $companyInfo->meta_keywords ?? '') }}" placeholder="web, design, développement, marketing">
-                            <div class="form-help"><i class="fas fa-info-circle"></i> Séparez les mots-clés par des virgules</div>
+                            <label class="form-label"><i class="fas fa-tags"></i> Mots-cles</label>
+                            <input type="text" name="site_keywords" class="form-input" value="{{ old('site_keywords', $companyInfo->meta_keywords ?? '') }}" placeholder="web, design, developpement, marketing">
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Separez les mots-cles par des virgules</div>
                         </div>
                         <div class="form-group-full">
                             <label class="form-label"><i class="fas fa-search"></i> Meta description</label>
                             <textarea name="site_meta_description" class="form-textarea" rows="2" placeholder="Description pour les moteurs de recherche...">{{ old('site_meta_description', $companyInfo->meta_description ?? '') }}</textarea>
-                            <div class="form-help"><i class="fas fa-info-circle"></i> 150-160 caractères maximum</div>
+                            <div class="form-help"><i class="fas fa-info-circle"></i> 150-160 caracteres maximum</div>
                         </div>
                     </div>
                     <div class="form-actions">
@@ -616,12 +708,12 @@
             </form>
         </div>
 
-        <!-- Section Identité visuelle -->
+        <!-- Section Identite visuelle -->
         <div id="section-branding" class="settings-section">
             <form action="{{ route('admin.settings.update-branding') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="section-header">
-                    <h2><i class="fas fa-palette"></i> Identité visuelle</h2>
+                    <h2><i class="fas fa-palette"></i> Identite visuelle</h2>
                     <p>Personnalisez l'apparence de votre site</p>
                 </div>
                 <div class="section-body">
@@ -630,8 +722,8 @@
                             <label class="form-label"><i class="fas fa-image"></i> Logo</label>
                             <div class="upload-area" onclick="document.getElementById('logoInput').click()">
                                 <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Cliquez pour télécharger votre logo</p>
-                                <p class="upload-hint">PNG, JPG jusqu'à 2MB</p>
+                                <p>Cliquez pour telecharger votre logo</p>
+                                <p class="upload-hint">PNG, JPG jusqu'a 2MB</p>
                                 <input type="file" id="logoInput" name="site_logo" accept="image/*" style="display: none;">
                             </div>
                             @if($companyInfo && $companyInfo->logo)
@@ -651,7 +743,7 @@
                             <label class="form-label"><i class="fas fa-star"></i> Favicon</label>
                             <div class="upload-area" onclick="document.getElementById('faviconInput').click()">
                                 <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Cliquez pour télécharger votre favicon</p>
+                                <p>Cliquez pour telecharger votre favicon</p>
                                 <p class="upload-hint">ICO ou PNG, 16x16 ou 32x32 pixels, max 1MB</p>
                                 <input type="file" id="faviconInput" name="site_favicon" accept="image/*" style="display: none;">
                             </div>
@@ -669,18 +761,18 @@
                             @endif
                         </div>
                         <div class="form-group-full">
-                            <label class="form-label"><i class="fas fa-image"></i> Image de bannière</label>
+                            <label class="form-label"><i class="fas fa-image"></i> Image de banniere</label>
                             <div class="upload-area" onclick="document.getElementById('bannerInput').click()">
                                 <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Cliquez pour télécharger l'image de bannière</p>
-                                <p class="upload-hint">PNG, JPG jusqu'à 5MB, dimensions recommandées : 1920x1080px</p>
+                                <p>Cliquez pour telecharger l'image de banniere</p>
+                                <p class="upload-hint">PNG, JPG jusqu'a 5MB, dimensions recommandees : 1920x1080px</p>
                                 <input type="file" id="bannerInput" name="banner_image" accept="image/*" style="display: none;">
                             </div>
                             @if($companyInfo && $companyInfo->banner_image)
                             <div class="image-preview" id="bannerPreview">
-                                <img src="{{ asset('storage/' . $companyInfo->banner_image) }}" alt="Bannière">
+                                <img src="{{ asset('storage/' . $companyInfo->banner_image) }}" alt="Banniere">
                                 <div class="preview-info">
-                                    <div class="preview-title">Bannière actuelle</div>
+                                    <div class="preview-title">Banniere actuelle</div>
                                     <div class="preview-size">{{ basename($companyInfo->banner_image) }}</div>
                                 </div>
                                 <button type="button" class="remove-image" data-type="banner" data-field="banner_image">
@@ -690,18 +782,18 @@
                             @endif
                         </div>
                         <div class="form-group-full">
-                            <label class="form-label"><i class="fas fa-image"></i> Image À propos</label>
+                            <label class="form-label"><i class="fas fa-image"></i> Image A propos</label>
                             <div class="upload-area" onclick="document.getElementById('aboutImageInput').click()">
                                 <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Cliquez pour télécharger l'image de la section À propos</p>
-                                <p class="upload-hint">PNG, JPG jusqu'à 2MB, dimensions recommandées : 800x600px</p>
+                                <p>Cliquez pour telecharger l'image de la section A propos</p>
+                                <p class="upload-hint">PNG, JPG jusqu'a 2MB, dimensions recommandees : 800x600px</p>
                                 <input type="file" id="aboutImageInput" name="about_image" accept="image/*" style="display: none;">
                             </div>
                             @if($companyInfo && $companyInfo->about_image)
                             <div class="image-preview" id="aboutImagePreview">
-                                <img src="{{ asset('storage/' . $companyInfo->about_image) }}" alt="Image À propos">
+                                <img src="{{ asset('storage/' . $companyInfo->about_image) }}" alt="Image A propos">
                                 <div class="preview-info">
-                                    <div class="preview-title">Image À propos actuelle</div>
+                                    <div class="preview-title">Image A propos actuelle</div>
                                     <div class="preview-size">{{ basename($companyInfo->about_image) }}</div>
                                 </div>
                                 <button type="button" class="remove-image" data-type="about" data-field="about_image">
@@ -718,12 +810,12 @@
             </form>
         </div>
 
-        <!-- Section Mentions légales -->
+        <!-- Section Mentions legales -->
         <div id="section-legal" class="settings-section">
             <form action="{{ route('admin.settings.update-legal') }}" method="POST">
                 @csrf
                 <div class="section-header">
-                    <h2><i class="fas fa-gavel"></i> Mentions légales</h2>
+                    <h2><i class="fas fa-gavel"></i> Mentions legales</h2>
                     <p>Informations juridiques de l'entreprise</p>
                 </div>
                 <div class="section-body">
@@ -740,48 +832,48 @@
                         <div class="form-group">
                             <label class="form-label"><i class="fas fa-id-card"></i> RCCM</label>
                             <input type="text" name="rccm" class="form-input" value="{{ old('rccm', $companyInfo->rccm ?? '') }}">
-                            <div class="form-help"><i class="fas fa-info-circle"></i> Numéro d'immatriculation au RCCM</div>
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Numero d'immatriculation au RCCM</div>
                         </div>
                         <div class="form-group">
                             <label class="form-label"><i class="fas fa-file-invoice"></i> IFU</label>
                             <input type="text" name="ifu" class="form-input" value="{{ old('ifu', $companyInfo->ifu ?? '') }}">
-                            <div class="form-help"><i class="fas fa-info-circle"></i> Numéro d'identification fiscale</div>
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Numero d'identification fiscale</div>
                         </div>
                         <div class="form-group">
                             <label class="form-label"><i class="fas fa-user-tie"></i> Directeur de publication</label>
                             <input type="text" name="director" class="form-input" value="{{ old('director', $companyInfo->director ?? '') }}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label"><i class="fas fa-percent"></i> Numéro de TVA</label>
+                            <label class="form-label"><i class="fas fa-percent"></i> Numero de TVA</label>
                             <input type="text" name="vat_number" class="form-input" value="{{ old('vat_number', $companyInfo->vat_number ?? '') }}">
                         </div>
                         <div class="form-group-full">
-                            <label class="form-label"><i class="fas fa-map-marker-alt"></i> Adresse légale</label>
+                            <label class="form-label"><i class="fas fa-map-marker-alt"></i> Adresse legale</label>
                             <input type="text" name="legal_address" class="form-input" value="{{ old('legal_address', $companyInfo->legal_address ?? '') }}">
-                            <div class="form-help"><i class="fas fa-info-circle"></i> Si différente de l'adresse de contact</div>
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Si differente de l'adresse de contact</div>
                         </div>
                         <div class="form-group-full">
-                            <label class="form-label"><i class="fas fa-shield-alt"></i> DPO (Délégué protection des données)</label>
+                            <label class="form-label"><i class="fas fa-shield-alt"></i> DPO (Delegue protection des donnees)</label>
                             <input type="text" name="data_protection_officer" class="form-input" value="{{ old('data_protection_officer', $companyInfo->data_protection_officer ?? '') }}">
                         </div>
                     </div>
 
-                    <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1rem;">Hébergement</h3>
+                    <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1rem;">Hebergement</h3>
                     <div class="form-grid">
                         <div class="form-group-full">
-                            <label class="form-label"><i class="fas fa-server"></i> Nom de l'hébergeur</label>
+                            <label class="form-label"><i class="fas fa-server"></i> Nom de l'hebergeur</label>
                             <input type="text" name="hosting_name" class="form-input" value="{{ old('hosting_name', $companyInfo->hosting_name ?? 'Hostinger International Ltd') }}">
                         </div>
                         <div class="form-group-full">
-                            <label class="form-label"><i class="fas fa-map-marker-alt"></i> Adresse de l'hébergeur</label>
+                            <label class="form-label"><i class="fas fa-map-marker-alt"></i> Adresse de l'hebergeur</label>
                             <input type="text" name="hosting_address" class="form-input" value="{{ old('hosting_address', $companyInfo->hosting_address ?? '') }}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label"><i class="fas fa-phone"></i> Téléphone hébergeur</label>
+                            <label class="form-label"><i class="fas fa-phone"></i> Telephone hebergeur</label>
                             <input type="text" name="hosting_phone" class="form-input" value="{{ old('hosting_phone', $companyInfo->hosting_phone ?? '') }}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label"><i class="fas fa-globe"></i> Site web hébergeur</label>
+                            <label class="form-label"><i class="fas fa-globe"></i> Site web hebergeur</label>
                             <input type="url" name="hosting_url" class="form-input" value="{{ old('hosting_url', $companyInfo->hosting_url ?? 'https://www.hostinger.com') }}">
                         </div>
                     </div>
@@ -799,7 +891,7 @@
                 @csrf
                 <div class="section-header">
                     <h2><i class="fas fa-address-card"></i> Contact & Localisation</h2>
-                    <p>Informations de contact et localisation géographique</p>
+                    <p>Informations de contact et localisation geographique</p>
                 </div>
                 <div class="section-body">
                     <div class="form-grid">
@@ -810,7 +902,7 @@
                         <div class="form-group">
                             <label class="form-label"><i class="fas fa-map-pin"></i> Latitude</label>
                             <input type="text" name="latitude" class="form-input" value="{{ old('latitude', $companyInfo->latitude ?? '6.3703') }}" placeholder="Ex: 6.3703">
-                            <div class="form-help"><i class="fas fa-info-circle"></i> Coordonnées GPS pour Google Maps</div>
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Coordonnees GPS pour Google Maps</div>
                         </div>
                         <div class="form-group">
                             <label class="form-label"><i class="fas fa-map-pin"></i> Longitude</label>
@@ -819,7 +911,7 @@
                         <div class="form-group-full">
                             <label class="form-label"><i class="fas fa-map"></i> Google Maps URL</label>
                             <textarea name="google_maps_url" class="form-textarea" rows="2" placeholder="URL d'embed Google Maps">{{ old('google_maps_url', $companyInfo->google_maps_url ?? '') }}</textarea>
-                            <div class="form-help"><i class="fas fa-info-circle"></i> Lien d'intégration Google Maps</div>
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Lien d'integration Google Maps</div>
                         </div>
                     </div>
                     <div class="form-actions">
@@ -835,7 +927,7 @@
                 @csrf
                 <div class="section-header">
                     <h2><i class="fas fa-clock"></i> Horaires d'ouverture</h2>
-                    <p>Définissez les horaires de votre entreprise</p>
+                    <p>Definissez les horaires de votre entreprise</p>
                 </div>
                 <div class="section-body">
                     <div class="form-grid">
@@ -846,8 +938,8 @@
                         </div>
                         <div class="form-group-full">
                             <label class="form-label"><i class="fas fa-calendar-weekend"></i> Horaires week-end (Samedi-Dimanche)</label>
-                            <input type="text" name="opening_hours_weekend" class="form-input" value="{{ old('opening_hours_weekend', $companyInfo->opening_hours_weekend ?? '09:00 - 13:00') }}" placeholder="09:00 - 13:00 ou Fermé">
-                            <div class="form-help"><i class="fas fa-info-circle"></i> Ex: 09:00 - 13:00 ou Fermé</div>
+                            <input type="text" name="opening_hours_weekend" class="form-input" value="{{ old('opening_hours_weekend', $companyInfo->opening_hours_weekend ?? '09:00 - 13:00') }}" placeholder="09:00 - 13:00 ou Ferme">
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Ex: 09:00 - 13:00 ou Ferme</div>
                         </div>
                     </div>
                     <div class="form-actions">
@@ -857,13 +949,13 @@
             </form>
         </div>
 
-        <!-- Section À propos -->
+        <!-- Section A propos -->
         <div id="section-about" class="settings-section">
             <form action="{{ route('admin.settings.update-about') }}" method="POST">
                 @csrf
                 <div class="section-header">
-                    <h2><i class="fas fa-info-circle"></i> À propos</h2>
-                    <p>Contenu de la section "À propos" de votre site</p>
+                    <h2><i class="fas fa-info-circle"></i> A propos</h2>
+                    <p>Contenu de la section "A propos" de votre site</p>
                 </div>
                 <div class="section-body">
                     <div class="form-grid">
@@ -890,10 +982,10 @@
                         <div class="form-group-full">
                             <label class="form-label"><i class="fas fa-heart"></i> Valeurs</label>
                             <textarea name="values" class="form-textarea" rows="3">{{ old('values', $companyInfo->values ?? '') }}</textarea>
-                            <div class="form-help"><i class="fas fa-info-circle"></i> Séparez les valeurs par des virgules</div>
+                            <div class="form-help"><i class="fas fa-info-circle"></i> Separez les valeurs par des virgules</div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label"><i class="fas fa-chart-line"></i> Années d'expérience</label>
+                            <label class="form-label"><i class="fas fa-chart-line"></i> Annees d'experience</label>
                             <input type="number" name="years_experience" class="form-input" value="{{ old('years_experience', $companyInfo->years_experience ?? '5') }}">
                         </div>
                     </div>
@@ -911,7 +1003,7 @@
     <span id="toastMessage"></span>
 </div>
 
-<!-- Formulaire caché pour supprimer les images -->
+<!-- Formulaire cache pour supprimer les images -->
 <form id="removeImageForm" method="POST" style="display: none;">
     @csrf
     @method('DELETE')
@@ -934,12 +1026,12 @@
             sections.forEach(section => section.classList.remove('active'));
             document.getElementById(`section-${sectionId}`).classList.add('active');
 
-            // Sauvegarder la dernière section active dans localStorage
+            // Sauvegarder la derniere section active dans localStorage
             localStorage.setItem('activeSettingsSection', sectionId);
         });
     });
 
-    // Restaurer la dernière section active
+    // Restaurer la derniere section active
     const lastActiveSection = localStorage.getItem('activeSettingsSection');
     if (lastActiveSection) {
         const lastNavItem = document.querySelector(`.settings-nav-item[data-section="${lastActiveSection}"]`);
@@ -948,7 +1040,7 @@
         }
     }
 
-    // Prévisualisation des images
+    // Preview des images
     function setupImagePreview(inputId, previewId, previewContainerId) {
         const input = document.getElementById(inputId);
         if (!input) return;
@@ -957,20 +1049,18 @@
             if (this.files && this.files[0]) {
                 const file = this.files[0];
 
-                // Vérifier le type de fichier
                 if (!file.type.match('image.*')) {
-                    showToast('Veuillez sélectionner une image valide', 'error');
+                    showToast('Veuillez selectionner une image valide', 'error');
                     this.value = '';
                     return;
                 }
 
-                // Vérifier la taille
-                let maxSize = 2 * 1024 * 1024; // 2MB par défaut
-                if (inputId === 'bannerInput') maxSize = 5 * 1024 * 1024; // 5MB pour bannière
-                if (inputId === 'faviconInput') maxSize = 1 * 1024 * 1024; // 1MB pour favicon
+                let maxSize = 2 * 1024 * 1024;
+                if (inputId === 'bannerInput') maxSize = 5 * 1024 * 1024;
+                if (inputId === 'faviconInput') maxSize = 1 * 1024 * 1024;
 
                 if (file.size > maxSize) {
-                    showToast(`Le fichier ne doit pas dépasser ${maxSize / (1024 * 1024)}MB`, 'error');
+                    showToast(`Le fichier ne doit pas depasser ${maxSize / (1024 * 1024)}MB`, 'error');
                     this.value = '';
                     return;
                 }
@@ -993,7 +1083,7 @@
                     if (inputId === 'aboutImageInput') fieldType = 'about';
 
                     previewContainer.innerHTML = `
-                        <img src="${event.target.result}" alt="Aperçu">
+                        <img src="${event.target.result}" alt="Apercu">
                         <div class="preview-info">
                             <div class="preview-title">Nouvelle image</div>
                             <div class="preview-size">${(file.size / 1024).toFixed(2)} KB</div>
@@ -1058,18 +1148,18 @@
         });
     }
 
-    // Initialiser les prévisualisations
+    // Initialiser les previews
     setupImagePreview('logoInput', 'logoPreview', 'logoPreview');
     setupImagePreview('faviconInput', 'faviconPreview', 'faviconPreview');
     setupImagePreview('bannerInput', 'bannerPreview', 'bannerPreview');
     setupImagePreview('aboutImageInput', 'aboutImagePreview', 'aboutImagePreview');
 
-    // Gérer la suppression des images existantes
+    // Suppression des images existantes
     document.querySelectorAll('.remove-image').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             const type = this.dataset.type;
-            if (type && confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
+            if (type && confirm('Etes-vous sur de vouloir supprimer cette image ?')) {
                 removeImage(type);
             }
         });
@@ -1096,7 +1186,7 @@
         }, 3000);
     }
 
-    // Afficher les messages de session
+    // Messages de session
     @if(session('success'))
         showToast('{{ session('success') }}', 'success');
     @endif

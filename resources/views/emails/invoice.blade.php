@@ -26,7 +26,7 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         .header {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            background: #1e293b;
             color: white;
             padding: 32px 24px;
             text-align: center;
@@ -78,9 +78,10 @@
         .amount-box {
             text-align: center;
             padding: 24px;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            background: #f8fafc;
             border-radius: 12px;
             margin: 24px 0;
+            border: 1px solid #e2e8f0;
         }
         .amount-label {
             font-size: 14px;
@@ -90,7 +91,7 @@
         .amount-value {
             font-size: 32px;
             font-weight: 700;
-            color: #3b82f6;
+            color: #2563eb;
         }
         .status-badge {
             display: inline-block;
@@ -112,38 +113,98 @@
             background: #fee2e2;
             color: #dc2626;
         }
-        .button {
+
+        /* Section paiement */
+        .payment-section {
+            margin: 24px 0;
+        }
+        .payment-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #2563eb;
             display: inline-block;
-            background: #3b82f6;
-            color: white;
-            text-decoration: none;
-            padding: 12px 28px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            transition: background 0.3s;
         }
-        .button:hover {
-            background: #2563eb;
-        }
-        .bank-info {
+
+        /* Carte bancaire */
+        .bank-card {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            padding: 16px;
-            margin: 24px 0;
-            font-size: 13px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
-        .bank-info h4 {
+        .bank-card h4 {
             font-size: 14px;
             font-weight: 600;
-            margin: 0 0 12px 0;
+            margin: 0 0 16px 0;
             color: #1e293b;
         }
-        .bank-info p {
-            margin: 6px 0;
+        .bank-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #e2e8f0;
+            font-size: 13px;
+        }
+        .bank-detail:last-child {
+            border-bottom: none;
+        }
+        .bank-label {
+            font-weight: 600;
             color: #475569;
         }
+        .bank-value {
+            color: #1e293b;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        /* Mobile Money */
+        .mobile-card {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .mobile-card h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 16px 0;
+            color: #92400e;
+        }
+        .mobile-number {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: #92400e;
+            font-family: monospace;
+            letter-spacing: 2px;
+            margin: 10px 0;
+        }
+        .mobile-operator {
+            text-align: center;
+            font-size: 12px;
+            color: #b45309;
+        }
+
+        /* Instructions */
+        .instructions {
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+            font-size: 13px;
+            color: #1e40af;
+        }
+        .instructions p {
+            margin: 0;
+        }
+
         .footer {
             background: #f8fafc;
             padding: 20px 24px;
@@ -164,6 +225,21 @@
         .mb-4 {
             margin-bottom: 24px;
         }
+        .warning-note {
+            background: #fef2f2;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #991b1b;
+            text-align: center;
+            border: 1px solid #fecaca;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            margin: 20px 0;
+        }
         @media (max-width: 600px) {
             .container {
                 padding: 10px;
@@ -177,6 +253,13 @@
             }
             .info-value {
                 margin-top: 4px;
+            }
+            .bank-detail {
+                flex-direction: column;
+                gap: 4px;
+            }
+            .mobile-number {
+                font-size: 18px;
             }
         }
     </style>
@@ -194,31 +277,31 @@
                     Bonjour <strong>{{ $invoice->client->name }}</strong>,
                 </div>
 
-                <p>Veuillez trouver ci-joint votre facture <strong>{{ $invoice->invoice_number }}</strong>.</p>
+                <p>Veuillez trouver ci-joint votre facture <strong>{{ $invoice->invoice_number }}</strong> d'un montant de <strong>{{ number_format($invoice->total, 0, ',', ' ') }} FCFA</strong>.</p>
 
                 <div class="info-box">
                     <div class="info-row">
-                        <span class="info-label">Date d'émission</span>
+                        <span class="info-label">Date d'emission</span>
                         <span class="info-value">{{ $invoice->issue_date->format('d/m/Y') }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Date d'échéance</span>
+                        <span class="info-label">Date d'echéance</span>
                         <span class="info-value">{{ $invoice->due_date->format('d/m/Y') }}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Description</span>
-                        <span class="info-value">{{ $invoice->description }}</span>
+                        <span class="info-value">{{ $invoice->description ?? ($invoice->service->name ?? 'Prestation de services') }}</span>
                     </div>
                 </div>
 
                 <div class="amount-box">
-                    <div class="amount-label">Montant total TTC</div>
+                    <div class="amount-label">Montant total a payer</div>
                     <div class="amount-value">{{ number_format($invoice->total, 0, ',', ' ') }} FCFA</div>
                 </div>
 
                 <div class="text-center mb-4">
                     @if($invoice->status == 'paid')
-                        <span class="status-badge status-paid">Payée</span>
+                        <span class="status-badge status-paid">Payee</span>
                     @elseif($invoice->due_date < now())
                         <span class="status-badge status-overdue">En retard</span>
                     @else
@@ -226,29 +309,108 @@
                     @endif
                 </div>
 
-                <div class="text-center mt-4">
-                    <a href="{{ route('admin.billing.invoices.show', $invoice) }}" class="button">
-                        Voir la facture en ligne
-                    </a>
+                <hr>
+
+                <!-- SECTION PAIEMENT -->
+                <div class="payment-section">
+                    <div class="payment-title">Instructions de paiement</div>
+
+                    <!-- Paiement par virement bancaire -->
+                    @if($company->bank_name || $company->bank_account_number)
+                    <div class="bank-card">
+                        <h4>Virement bancaire</h4>
+                        @if($company->bank_name)
+                        <div class="bank-detail">
+                            <span class="bank-label">Banque :</span>
+                            <span class="bank-value">{{ $company->bank_name }}</span>
+                        </div>
+                        @endif
+                        @if($company->bank_account_name)
+                        <div class="bank-detail">
+                            <span class="bank-label">Titulaire du compte :</span>
+                            <span class="bank-value">{{ $company->bank_account_name }}</span>
+                        </div>
+                        @endif
+                        @if($company->bank_account_number)
+                        <div class="bank-detail">
+                            <span class="bank-label">Numero de compte :</span>
+                            <span class="bank-value">{{ $company->bank_account_number }}</span>
+                        </div>
+                        @endif
+                        @if($company->bank_iban)
+                        <div class="bank-detail">
+                            <span class="bank-label">IBAN :</span>
+                            <span class="bank-value">{{ $company->bank_iban }}</span>
+                        </div>
+                        @endif
+                        @if($company->bank_swift)
+                        <div class="bank-detail">
+                            <span class="bank-label">SWIFT / BIC :</span>
+                            <span class="bank-value">{{ $company->bank_swift }}</span>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
+
+                    <!-- Paiement par Mobile Money -->
+                    @if($company->mobile_money_number)
+                    <div class="mobile-card">
+                        <h4>Paiement Mobile Money</h4>
+                        <div class="mobile-number">
+                            {{ $company->mobile_money_number }}
+                        </div>
+                        <div class="mobile-operator">
+                            @if($company->mobile_money_operator == 'mtn')
+                                Operateur: MTN
+                            @elseif($company->mobile_money_operator == 'moov')
+                                Operateur: MOOV
+                            @elseif($company->mobile_money_operator == 'celcom')
+                                Operateur: Celcom
+                            @else
+                                Operateur: {{ $company->mobile_money_operator }}
+                            @endif
+                        </div>
+                        <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #92400e;">
+                            Utilisez le numero ci-dessus pour effectuer votre paiement
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Instructions supplementaires -->
+                    @if($company->payment_instructions)
+                    <div class="instructions">
+                        <p><strong>Instructions :</strong></p>
+                        <p>{{ $company->payment_instructions }}</p>
+                    </div>
+                    @endif
+
+                    <!-- Message par defaut si aucune info bancaire -->
+                    @if(!$company->bank_name && !$company->bank_account_number && !$company->mobile_money_number)
+                    <div class="bank-card">
+                        <p style="text-align: center; color: #64748b;">
+                            Veuillez nous contacter pour obtenir les informations de paiement.
+                        </p>
+                    </div>
+                    @endif
                 </div>
 
-                <div class="bank-info">
-                    <h4>Informations de paiement</h4>
-                    <p>Banque : {{ $company->bank_name ?? 'Banque Atlantique Benin' }}</p>
-                    <p>Compte : {{ $company->bank_account ?? 'CI 123 456 789' }}</p>
-                    <p>IBAN : {{ $company->bank_iban ?? 'BJ23 1234 5678 9012 3456 7890 12' }}</p>
+                <!-- Information importante -->
+                <div class="warning-note">
+                    <strong>Important :</strong> Veuillez utiliser le numero de facture <strong>{{ $invoice->invoice_number }}</strong> comme reference de votre paiement.
                 </div>
 
-                <p style="font-size: 13px; color: #64748b; margin-top: 24px;">
+                <hr>
+
+                <p style="font-size: 13px; color: #64748b; margin-top: 24px; text-align: center;">
                     Merci de votre confiance.<br>
-                    L'equipe {{ $company->name ?? config('app.name') }}
+                    <strong>{{ $company->name ?? config('app.name') }}</strong>
                 </p>
             </div>
 
             <div class="footer">
-                <p>{{ $company->name ?? config('app.name') }}</p>
+                <p><strong>{{ $company->name ?? config('app.name') }}</strong></p>
                 <p>{{ $company->address ?? 'Abomey-Calavi, Benin' }}</p>
-                <p>Email: {{ $company->email ?? 'contact@novatech.bj' }} | Tel: {{ $company->phone ?? '+229 66 18 55 95' }}</p>
+                <p>Email : {{ $company->email ?? 'contact@exemple.bj' }} | Tel : {{ $company->phone ?? '+229 XX XX XX XX' }}</p>
                 <p>&copy; {{ date('Y') }} {{ $company->name ?? config('app.name') }}. Tous droits reserves.</p>
             </div>
         </div>

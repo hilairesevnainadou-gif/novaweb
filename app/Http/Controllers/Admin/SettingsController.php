@@ -330,4 +330,38 @@ class SettingsController extends Controller
             'message' => 'Aucune image à supprimer'
         ], 404);
     }
+
+    public function updateBanking(Request $request)
+{
+    $request->validate([
+        'bank_name' => 'nullable|string|max:255',
+        'bank_account_name' => 'nullable|string|max:255',
+        'bank_account_number' => 'nullable|string|max:255',
+        'bank_iban' => 'nullable|string|max:255',
+        'bank_swift' => 'nullable|string|max:255',
+        'mobile_money_number' => 'nullable|string|max:255',
+        'mobile_money_operator' => 'nullable|string|max:50',
+        'payment_instructions' => 'nullable|string'
+    ]);
+
+    $settings = CompanyInfo::first();
+
+    if (!$settings) {
+        $settings = new CompanyInfo();
+    }
+
+    $settings->bank_name = $request->bank_name;
+    $settings->bank_account_name = $request->bank_account_name;
+    $settings->bank_account_number = $request->bank_account_number;
+    $settings->bank_iban = $request->bank_iban;
+    $settings->bank_swift = $request->bank_swift;
+    $settings->mobile_money_number = $request->mobile_money_number;
+    $settings->mobile_money_operator = $request->mobile_money_operator;
+    $settings->payment_instructions = $request->payment_instructions;
+
+    $settings->save();
+
+    return redirect()->route('admin.settings.index')
+        ->with('success', 'Informations bancaires mises à jour avec succès');
+}
 }

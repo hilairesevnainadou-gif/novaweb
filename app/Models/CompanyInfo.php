@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class CompanyInfo extends Model
 {
+
+ protected $table = 'company_infos';
+
     protected $fillable = [
         // ========== IDENTITÉ & INFORMATIONS DE BASE ==========
         'name',
@@ -46,6 +49,12 @@ class CompanyInfo extends Model
 
         // ========== STATISTIQUES ==========
         'years_experience',
+        'web_development_percentage',
+        'it_maintenance_percentage',
+        'client_satisfaction_percentage',
+        'happy_clients_count',
+        'projects_completed',
+        'support_hours',
 
         // ========== HORAIRES ==========
         'opening_hours',
@@ -63,27 +72,35 @@ class CompanyInfo extends Model
         'values',
 
         // ========== MENTIONS LÉGALES ==========
-        // Informations juridiques
-        'legal_form',           // Forme juridique (SARL, SAS, etc.)
-        'capital',              // Capital social
-        'rccm',                 // Numéro RCCM
-        'ifu',                  // Numéro IFU (Impôt)
-        'director',             // Directeur de publication
-        'legal_address',        // Adresse légale (si différente)
+        'legal_form',
+        'capital',
+        'rccm',
+        'ifu',
+        'director',
+        'legal_address',
 
         // Informations d'hébergement
-        'hosting_name',         // Nom de l'hébergeur
-        'hosting_address',      // Adresse de l'hébergeur
-        'hosting_phone',        // Téléphone de l'hébergeur
-        'hosting_url',          // Site web de l'hébergeur
+        'hosting_name',
+        'hosting_address',
+        'hosting_phone',
+        'hosting_url',
 
         // Mentions supplémentaires
-        'data_protection_officer',  // DPO (Délégué à la protection des données)
-        'cnie_number',              // Numéro CNIE (si applicable)
-        'trade_register',           // Registre du commerce
-        'vat_number',               // Numéro de TVA
-    ];
+        'data_protection_officer',
+        'cnie_number',
+        'trade_register',
+        'vat_number',
 
+        // ========== INFORMATIONS BANCAIRES ==========
+        'bank_name',
+        'bank_account_name',
+        'bank_account_number',
+        'bank_iban',
+        'bank_swift',
+        'mobile_money_number',
+        'mobile_money_operator',
+        'payment_instructions',
+    ];
     // Accesseurs pour les URLs des médias
     public function getLogoUrlAttribute()
     {

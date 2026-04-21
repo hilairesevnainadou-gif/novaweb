@@ -373,51 +373,56 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             ->name('destroy');
     });
 
-    /*─────────────────────────────────────────
+
+  /*─────────────────────────────────────────
   Paramètres
-─────────────────────────────────────────*/
-    Route::prefix('settings')->name('settings.')->group(function () {
+──────────────────────────────────────────*/
+Route::prefix('settings')->name('settings.')->group(function () {
 
-        Route::get('/', [SettingsController::class, 'index'])
-            ->middleware('permission:settings.view')
-            ->name('index');
+    Route::get('/', [SettingsController::class, 'index'])
+        ->middleware('permission:settings.view')
+        ->name('index');
 
-        Route::post('/update-general', [SettingsController::class, 'updateGeneral'])
-            ->middleware('permission:settings.edit')
-            ->name('update-general');
+    Route::post('/update-general', [SettingsController::class, 'updateGeneral'])
+        ->middleware('permission:settings.edit')
+        ->name('update-general');
 
-        Route::post('/update-social', [SettingsController::class, 'updateSocial'])
-            ->middleware('permission:settings.edit')
-            ->name('update-social');
+    Route::post('/update-social', [SettingsController::class, 'updateSocial'])
+        ->middleware('permission:settings.edit')
+        ->name('update-social');
 
-        Route::post('/update-seo', [SettingsController::class, 'updateSeo'])
-            ->middleware('permission:settings.edit')
-            ->name('update-seo');
+    Route::post('/update-seo', [SettingsController::class, 'updateSeo'])
+        ->middleware('permission:settings.edit')
+        ->name('update-seo');
 
-        Route::post('/update-branding', [SettingsController::class, 'updateBranding'])
-            ->middleware('permission:settings.edit')
-            ->name('update-branding');
+    Route::post('/update-branding', [SettingsController::class, 'updateBranding'])
+        ->middleware('permission:settings.edit')
+        ->name('update-branding');
 
-        Route::post('/update-legal', [SettingsController::class, 'updateLegal'])
-            ->middleware('permission:settings.edit')
-            ->name('update-legal');
+    Route::post('/update-legal', [SettingsController::class, 'updateLegal'])
+        ->middleware('permission:settings.edit')
+        ->name('update-legal');
 
-        Route::post('/update-contact', [SettingsController::class, 'updateContact'])
-            ->middleware('permission:settings.edit')
-            ->name('update-contact');
+    Route::post('/update-banking', [SettingsController::class, 'updateBanking'])
+        ->middleware('permission:settings.edit')
+        ->name('update-banking');
 
-        Route::post('/update-hours', [SettingsController::class, 'updateHours'])
-            ->middleware('permission:settings.edit')
-            ->name('update-hours');
+    Route::post('/update-contact', [SettingsController::class, 'updateContact'])
+        ->middleware('permission:settings.edit')
+        ->name('update-contact');
 
-        Route::post('/update-about', [SettingsController::class, 'updateAbout'])
-            ->middleware('permission:settings.edit')
-            ->name('update-about');
+    Route::post('/update-hours', [SettingsController::class, 'updateHours'])
+        ->middleware('permission:settings.edit')
+        ->name('update-hours');
 
-        Route::delete('/remove-image', [SettingsController::class, 'removeImage'])
-            ->middleware('permission:settings.edit')
-            ->name('remove-image');
-    });
+    Route::post('/update-about', [SettingsController::class, 'updateAbout'])
+        ->middleware('permission:settings.edit')
+        ->name('update-about');
+
+    Route::delete('/remove-image', [SettingsController::class, 'removeImage'])
+        ->middleware('permission:settings.edit')
+        ->name('remove-image');
+});
     /*─────────────────────────────────────────
       Profil utilisateur
     ─────────────────────────────────────────*/
