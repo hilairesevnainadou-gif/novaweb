@@ -81,7 +81,11 @@ Artisan::command('nova:backup-clean', function () {
 | Tâches planifiées
 |--------------------------------------------------------------------------
 */
-
+// Dans routes/console.php, ajoutez :
+Schedule::call(function () {
+    $controller = new App\Http\Controllers\Admin\BillingController();
+    $controller->checkAndSendReminders();
+})->dailyAt('09:00')->name('billing-check-reminders');
 Schedule::command('nova:clean-contacts')->weekly();
 Schedule::command('nova:generate-sitemap')->daily();
 Schedule::command('backup:clean')->daily();
