@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use App\Http\Controllers\Admin\BackupController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,40 @@ Artisan::command('nova:check-permissions', function () {
     );
 })->purpose('Vérifier les permissions des utilisateurs');
 
+// Commande pour exécuter le backup manuellement
+Artisan::command('nova:backup', function () {
+    $controller = new BackupController();
+    $controller->runAutoBackup();
+    $this->info('Backup exécuté avec succès');
+})->purpose('Exécuter un backup manuellement');
+
+// Commande pour nettoyer les anciens backups
+Artisan::command('nova:backup-clean', function () {
+    $settings = App\Models\BackupSetting::first();
+    $days = $settings ? $settings->auto_clean_days : 30;
+
+    $backupDir = storage_path('app/backups');
+    if (file_exists($backupDir)) {
+        $files = File::files($backupDir);
+        $now = time();
+        $deleted = 0;
+
+        foreach ($files as $file) {
+            $fileAge = $now - $file->getMTime();
+            $daysOld = $fileAge / (60 * 60 * 24);
+
+            if ($daysOld > $days) {
+                File::delete($file->getRealPath());
+                $deleted++;
+            }
+        }
+
+        $this->info("{$deleted} anciens backups supprimés.");
+    } else {
+        $this->info("Aucun dossier de backup trouvé.");
+    }
+})->purpose('Nettoyer les anciens backups');
+
 /*
 |--------------------------------------------------------------------------
 | Tâches planifiées
@@ -51,3 +86,9 @@ Schedule::command('nova:clean-contacts')->weekly();
 Schedule::command('nova:generate-sitemap')->daily();
 Schedule::command('backup:clean')->daily();
 Schedule::command('backup:run')->daily()->at('02:00');
+
+// Nouvelle tâche pour le backup automatique via Laravel
+Schedule::call(function () {
+    $controller = new BackupController();
+    $controller->runAutoBackup();
+})->daily()->at('02:00')->name('nova:auto-backup');

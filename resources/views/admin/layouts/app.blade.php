@@ -1138,6 +1138,14 @@
                         <span>Paramètres</span>
                     </a>
                     @endcan
+
+                    @can('backups.view')
+                    <a href="{{ route('admin.backup.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.backup.*') ? 'active' : '' }}">
+                        <i class="fas fa-database"></i>
+                        <span>Sauvegardes</span>
+                    </a>
+                    @endcan
                 </div>
                 @endif
 

@@ -1,5 +1,4 @@
 <?php
-
 // routes/admin.php
 
 use App\Http\Controllers\Admin\BillingController;
@@ -21,6 +20,7 @@ use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\ToolController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\BackupController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -651,14 +651,12 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     });
 
     /*─────────────────────────────────────────
-      Maintenance (CORRIGÉ)
+      Maintenance
     ─────────────────────────────────────────*/
     Route::prefix('maintenance')->name('maintenance.')->middleware('permission:maintenance.view')->group(function () {
 
-        // Dashboard
         Route::get('/', [MaintenanceController::class, 'dashboard'])->name('dashboard');
 
-        // Appareils (Devices)
         Route::prefix('devices')->name('devices.')->group(function () {
             Route::get('/', [MaintenanceController::class, 'devices'])->name('index');
             Route::get('/create', [MaintenanceController::class, 'createDevice'])->name('create');
@@ -669,7 +667,6 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             Route::delete('/{device}', [MaintenanceController::class, 'destroyDevice'])->name('destroy');
         });
 
-        // Interventions
         Route::prefix('interventions')->name('interventions.')->group(function () {
             Route::get('/', [MaintenanceController::class, 'interventions'])->name('index');
             Route::get('/create', [MaintenanceController::class, 'createIntervention'])->name('create');
@@ -680,21 +677,71 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             Route::post('/{intervention}/status', [MaintenanceController::class, 'changeInterventionStatus'])->name('status');
             Route::post('/{intervention}/assign', [MaintenanceController::class, 'assignTechnician'])->name('assign');
             Route::post('/{intervention}/rating', [MaintenanceController::class, 'clientRating'])->name('rating');
-
-            // Dépenses
             Route::post('/{intervention}/expenses', [MaintenanceController::class, 'addExpense'])->name('expenses.store');
             Route::delete('/{intervention}/expenses/{expense}', [MaintenanceController::class, 'deleteExpense'])->name('expenses.destroy');
         });
 
-        // Statistiques et exports
         Route::get('/statistics', [MaintenanceController::class, 'statistics'])->name('statistics');
         Route::get('/export/interventions', [MaintenanceController::class, 'exportInterventions'])->name('export.interventions');
     });
 
-    // Notifications
-Route::prefix('notifications')->name('notifications.')->group(function () {
-    Route::get('/', [NotificationController::class, 'index'])->name('index');
-    Route::post('/{notification}/read', [NotificationController::class, 'markAsRead'])->name('mark-read');
-    Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
-});
+    /*─────────────────────────────────────────
+      Notifications
+    ─────────────────────────────────────────*/
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::post('/{notification}/read', [NotificationController::class, 'markAsRead'])->name('mark-read');
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+    });
+
+    /*─────────────────────────────────────────
+      Backup - AVEC PERMISSIONS APPLIQUÉES
+    ─────────────────────────────────────────*/
+    Route::prefix('backup')->name('backup.')->group(function () {
+
+        // Page principale - permission backups.view
+        Route::get('/', [BackupController::class, 'index'])
+            ->middleware('permission:backups.view')
+            ->name('index');
+
+        // Créer un backup - permission backups.create
+        Route::post('/create', [BackupController::class, 'create'])
+            ->middleware('permission:backups.create')
+            ->name('create');
+
+        // Télécharger un backup - permission backups.view
+        Route::get('/download/{filename}', [BackupController::class, 'download'])
+            ->middleware('permission:backups.view')
+            ->name('download');
+
+        // Supprimer un backup - permission backups.delete
+        Route::delete('/{filename}', [BackupController::class, 'destroy'])
+            ->middleware('permission:backups.delete')
+            ->name('destroy');
+
+        // Restaurer un backup - permission backups.restore
+        Route::post('/{filename}/restore', [BackupController::class, 'restore'])
+            ->middleware('permission:backups.restore')
+            ->name('restore');
+
+        // Mettre à jour les paramètres - permission backups.view
+        Route::post('/settings', [BackupController::class, 'updateSettings'])
+            ->middleware('permission:backups.view')
+            ->name('settings');
+
+        // Effacer les logs - permission backups.view
+        Route::delete('/logs/clear', [BackupController::class, 'clearLogs'])
+            ->middleware('permission:backups.view')
+            ->name('logs.clear');
+
+        // Tester l'email - permission backups.view
+        Route::post('/test-email', [BackupController::class, 'testEmail'])
+            ->middleware('permission:backups.view')
+            ->name('test-email');
+
+        // Espace disque - permission backups.view
+        Route::get('/disk-space', [BackupController::class, 'getDiskSpace'])
+            ->middleware('permission:backups.view')
+            ->name('disk-space');
+    });
 });
