@@ -43,4 +43,46 @@ class User extends Authenticatable
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
+
+    // ===== RELATIONS =====
+
+    /**
+     * Interventions assignées au technicien
+     */
+    public function interventions()
+    {
+        return $this->hasMany(Intervention::class, 'technician_id');
+    }
+
+    /**
+     * Interventions créées par l'utilisateur
+     */
+    public function createdInterventions()
+    {
+        return $this->hasMany(Intervention::class, 'created_by');
+    }
+
+    /**
+     * Évolutions d'intervention enregistrées par l'utilisateur
+     */
+    public function interventionEvolutions()
+    {
+        return $this->hasMany(InterventionEvolution::class, 'user_id');
+    }
+
+    /**
+     * Tickets créés par l'utilisateur
+     */
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class, 'user_id');
+    }
+
+    /**
+     * Tickets assignés à l'utilisateur
+     */
+    public function assignedTickets()
+    {
+        return $this->hasMany(Ticket::class, 'assigned_to');
+    }
 }

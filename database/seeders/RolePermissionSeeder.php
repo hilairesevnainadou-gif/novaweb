@@ -30,8 +30,9 @@ class RolePermissionSeeder extends Seeder
             'users.edit',
             'users.delete',
             'users.assign.roles',
-            'users.reset-password',      // ← ajout : route /{user}/reset-password
-            'users.toggle-status',       // ← ajout : route /{user}/toggle-status
+            'users.reset-password',
+            'users.toggle-status',
+            'users.resend-invitation',
 
             // ── Portfolio ─────────────────────────────────────────────────
             'portfolio.view',
@@ -39,7 +40,7 @@ class RolePermissionSeeder extends Seeder
             'portfolio.edit',
             'portfolio.delete',
             'portfolio.publish',
-            'portfolio.reorder',         // ← ajout : route /reorder
+            'portfolio.reorder',
 
             // ── Blog ──────────────────────────────────────────────────────
             'blog.view',
@@ -47,14 +48,14 @@ class RolePermissionSeeder extends Seeder
             'blog.edit',
             'blog.delete',
             'blog.publish',
-            'blog.duplicate',            // ← ajout : route /{blog}/duplicate
+            'blog.duplicate',
 
             // ── Services ──────────────────────────────────────────────────
             'services.view',
             'services.create',
             'services.edit',
             'services.delete',
-            'services.reorder',          // ← ajout : route /reorder
+            'services.reorder',
 
             // ── Témoignages ───────────────────────────────────────────────
             'testimonials.view',
@@ -65,78 +66,97 @@ class RolePermissionSeeder extends Seeder
             // ── Contacts ──────────────────────────────────────────────────
             'contact.view',
             'contact.delete',
-            'contact.reply',             // ← ajout : cohérence métier
+            'contact.reply',
 
             // ── Tickets ───────────────────────────────────────────────────
             'tickets.view',
             'tickets.create',
             'tickets.edit',
             'tickets.delete',
-            'tickets.assign',            // ← ajout : manquait dans le tableau principal
+            'tickets.assign',
 
-            // ── Maintenance ───────────────────────────────────────────────
+            // ── Maintenance (Dashboard et vue principale) ─────────────────
             'maintenance.view',
-            'maintenance.create',
-            'maintenance.edit',
-            'maintenance.delete',        // ← ajout : cohérence CRUD
+            'maintenance.access',
+
+            // ── Interventions ─────────────────────────────────────────────
+            'interventions.view.all',
+            'interventions.view',
+            'interventions.create',
+            'interventions.edit',
+            'interventions.delete',
+            'interventions.assign',
+            'interventions.rate',
+
+            // ── Devices ───────────────────────────────────────────────────
+            'devices.view',
+            'devices.create',
+            'devices.edit',
+            'devices.delete',
+
+            // ── Maintenance reports & exports ─────────────────────────────
+            'maintenance.export',
+            'maintenance.statistics',
 
             // ── Sauvegardes ───────────────────────────────────────────────
             'backups.view',
             'backups.create',
             'backups.restore',
-            'backups.delete',            // ← ajout : cohérence CRUD
+            'backups.delete',
 
             // ── Paramètres ────────────────────────────────────────────────
             'settings.view',
             'settings.edit',
 
             // ── Profil ────────────────────────────────────────────────────
-            'profile.view',              // ← ajout : route /admin/profile (GET)
-            'profile.edit',              // ← ajout : route /admin/profile (PUT)
+            'profile.view',
+            'profile.edit',
 
             // ── Rôles & Permissions (gestion UI) ──────────────────────────
-            'roles.view',                // ← ajout : pour la vue de gestion
-            'roles.create',              // ← ajout
-            'roles.edit',                // ← ajout
-            'roles.delete',              // ← ajout
+            'roles.view',
+            'roles.create',
+            'roles.edit',
+            'roles.delete',
 
-            // Ajoutez dans le tableau $permissions
+            // ── Newsletter ────────────────────────────────────────────────
             'newsletter.view',
             'newsletter.edit',
             'newsletter.delete',
 
+            // ── Tools ─────────────────────────────────────────────────────
+            'tools.view',
+            'tools.create',
+            'tools.edit',
+            'tools.delete',
 
-             // Tools
-    'tools.view',
-    'tools.create',
-    'tools.edit',
-    'tools.delete',
+            // ── FAQ ───────────────────────────────────────────────────────
+            'faqs.view',
+            'faqs.create',
+            'faqs.edit',
+            'faqs.delete',
 
-    // FAQ
-    'faqs.view',
-    'faqs.create',
-    'faqs.edit',
-    'faqs.delete',
+            // ── Clients ───────────────────────────────────────────────────
+            'clients.view',
+            'clients.create',
+            'clients.edit',
+            'clients.delete',
 
-     'clients.view',
-    'clients.create',
-    'clients.edit',
-    'clients.delete',
+            // ── Billing ───────────────────────────────────────────────────
+            'billing.view',
+            'billing.invoices.view',
+            'billing.invoices.create',
+            'billing.invoices.edit',
+            'billing.invoices.delete',
+            'billing.invoices.send',
+            'billing.payments.view',
+            'billing.payments.create',
+            'billing.payments.resend',
 
-    'billing.view',
-    'billing.invoices.view',
-    'billing.invoices.create',
-    'billing.invoices.edit',
-    'billing.invoices.delete',
-    'billing.invoices.send',
-    'billing.payments.view',
-    'billing.payments.create',
-    'billing.payments.resend',
-
-    'team.view',
-    'team.create',
-    'team.edit',
-    'team.delete',
+            // ── Team ──────────────────────────────────────────────────────
+            'team.view',
+            'team.create',
+            'team.edit',
+            'team.delete',
         ];
 
         // ── Créer toutes les permissions (idempotent) ─────────────────────
@@ -165,7 +185,9 @@ class RolePermissionSeeder extends Seeder
                 'description'  => 'Gestion complète du contenu sans accès aux paramètres système',
                 'permissions'  => [
                     'dashboard.view',
-'newsletter.view', 'newsletter.edit', 'newsletter.delete',
+                    'newsletter.view', 'newsletter.edit', 'newsletter.delete',
+
+                    // Utilisateurs
                     'users.view',
                     'users.create',
                     'users.edit',
@@ -173,7 +195,9 @@ class RolePermissionSeeder extends Seeder
                     'users.assign.roles',
                     'users.reset-password',
                     'users.toggle-status',
+                    'users.resend-invitation',
 
+                    // Portfolio
                     'portfolio.view',
                     'portfolio.create',
                     'portfolio.edit',
@@ -181,6 +205,7 @@ class RolePermissionSeeder extends Seeder
                     'portfolio.publish',
                     'portfolio.reorder',
 
+                    // Blog
                     'blog.view',
                     'blog.create',
                     'blog.edit',
@@ -188,32 +213,94 @@ class RolePermissionSeeder extends Seeder
                     'blog.publish',
                     'blog.duplicate',
 
+                    // Services
                     'services.view',
                     'services.create',
                     'services.edit',
                     'services.delete',
                     'services.reorder',
 
+                    // Témoignages
                     'testimonials.view',
                     'testimonials.create',
                     'testimonials.edit',
                     'testimonials.delete',
 
+                    // Contacts
                     'contact.view',
                     'contact.delete',
                     'contact.reply',
 
+                    // Tickets
                     'tickets.view',
                     'tickets.create',
                     'tickets.edit',
                     'tickets.delete',
                     'tickets.assign',
 
+                    // Maintenance
+                    'maintenance.view',
+                    'maintenance.access',
+                    'maintenance.export',
+                    'maintenance.statistics',
+
+                    // Interventions
+                    'interventions.view.all',
+                    'interventions.view',
+                    'interventions.create',
+                    'interventions.edit',
+                    'interventions.delete',
+                    'interventions.assign',
+                    'interventions.rate',
+
+                    // Devices
+                    'devices.view',
+                    'devices.create',
+                    'devices.edit',
+                    'devices.delete',
+
+                    // Paramètres
                     'settings.view',
                     'settings.edit',
 
+                    // Profil
                     'profile.view',
                     'profile.edit',
+
+                    // Tools
+                    'tools.view',
+                    'tools.create',
+                    'tools.edit',
+                    'tools.delete',
+
+                    // FAQ
+                    'faqs.view',
+                    'faqs.create',
+                    'faqs.edit',
+                    'faqs.delete',
+
+                    // Clients
+                    'clients.view',
+                    'clients.create',
+                    'clients.edit',
+                    'clients.delete',
+
+                    // Billing
+                    'billing.view',
+                    'billing.invoices.view',
+                    'billing.invoices.create',
+                    'billing.invoices.edit',
+                    'billing.invoices.delete',
+                    'billing.invoices.send',
+                    'billing.payments.view',
+                    'billing.payments.create',
+                    'billing.payments.resend',
+
+                    // Team
+                    'team.view',
+                    'team.create',
+                    'team.edit',
+                    'team.delete',
                 ],
             ],
 
@@ -253,7 +340,7 @@ class RolePermissionSeeder extends Seeder
             // ── Support — tickets et maintenance ──────────────────────────
             'support' => [
                 'display_name' => 'Support Technique',
-                'description'  => 'Gestion des tickets et de la maintenance',
+                'description'  => 'Gestion des tickets, interventions et périphériques',
                 'permissions'  => [
                     'dashboard.view',
 
@@ -263,12 +350,43 @@ class RolePermissionSeeder extends Seeder
                     'tickets.delete',
                     'tickets.assign',
 
+                    'maintenance.view',
+                    'maintenance.access',
+
+                    'interventions.view.all',
+                    'interventions.view',
+                    'interventions.create',
+                    'interventions.edit',
+                    'interventions.assign',
+                    'interventions.rate',
+
+                    'devices.view',
+                    'devices.create',
+                    'devices.edit',
+
                     'contact.view',
                     'contact.reply',
 
+                    'profile.view',
+                    'profile.edit',
+                ],
+            ],
+
+            // ── Technicien — interventions uniquement ─────────────────────
+            'technician' => [
+                'display_name' => 'Technicien',
+                'description'  => 'Gestion des interventions et des périphériques',
+                'permissions'  => [
+                    'dashboard.view',
+
                     'maintenance.view',
-                    'maintenance.create',
-                    'maintenance.edit',
+
+                    'interventions.view',
+                    'interventions.create',
+                    'interventions.edit',
+                    'interventions.rate',
+
+
 
                     'profile.view',
                     'profile.edit',
@@ -287,6 +405,9 @@ class RolePermissionSeeder extends Seeder
                     'testimonials.view',
                     'contact.view',
                     'tickets.view',
+                    'maintenance.view',
+                    'interventions.view',
+                    'devices.view',
                     'profile.view',
                 ],
             ],
@@ -311,7 +432,7 @@ class RolePermissionSeeder extends Seeder
             ['email' => 'admin@novatech.com'],
             [
                 'name'     => 'Super Admin',
-                'password' => bcrypt('NovaTech@2026!'),  // mot de passe plus sécurisé
+                'password' => bcrypt('NovaTech@2026!'),
             ]
         );
 
@@ -319,17 +440,55 @@ class RolePermissionSeeder extends Seeder
             $superAdmin->assignRole('super-admin');
         }
 
-        $this->command->info(' RolePermissionSeeder exécuté avec succès.');
+        // ── Créer un utilisateur technicien de test ───────────────────────
+        $technician = User::firstOrCreate(
+            ['email' => 'technicien@novatech.com'],
+            [
+                'name'     => 'Technicien Test',
+                'password' => bcrypt('password'),
+            ]
+        );
+
+        if (! $technician->hasRole('technician')) {
+            $technician->assignRole('technician');
+        }
+
+        // ── Créer un utilisateur support de test ──────────────────────────
+        $support = User::firstOrCreate(
+            ['email' => 'support@novatech.com'],
+            [
+                'name'     => 'Support Test',
+                'password' => bcrypt('password'),
+            ]
+        );
+
+        if (! $support->hasRole('support')) {
+            $support->assignRole('support');
+        }
+
+        $this->command->info('✅ RolePermissionSeeder exécuté avec succès !');
+        $this->command->newLine();
+
+        // Afficher le tableau des rôles
         $this->command->table(
-            ['Rôle', 'Permissions attribuées'],
+            ['Rôle', 'Description', 'Permissions attribuées'],
             collect($roles)->map(fn($r, $k) => [
                 $k,
-                count(
-                    $r['permissions'] instanceof \Illuminate\Support\Collection
-                        ? $r['permissions']->toArray()
-                        : $r['permissions']
-                ) . ' permissions',
+                $r['description'],
+                count($r['permissions']) . ' permissions'
             ])->values()->toArray()
+        );
+
+        // Afficher les utilisateurs créés
+        $this->command->newLine();
+        $this->command->info(' Utilisateurs créés :');
+        $this->command->table(
+            ['Email', 'Rôle', 'Mot de passe'],
+            [
+                ['admin@novatech.com', 'super-admin', 'NovaTech@2026!'],
+                ['technicien@novatech.com', 'technician', 'password'],
+                ['support@novatech.com', 'support', 'password'],
+            ]
         );
     }
 }

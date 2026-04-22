@@ -1,3 +1,4 @@
+{{-- resources/views/admin/dashboard.blade.php --}}
 @extends('admin.layouts.app')
 
 @section('title', 'Dashboard - NovaTech Admin')
@@ -5,864 +6,921 @@
 
 @section('content')
 <style>
-    /* Dashboard specific styles - Compatible avec le thème */
-    .dashboard-stats-grid {
+    /* ============================================
+       DASHBOARD SIMPLIFIÉ - DESIGN COMPACT
+    ============================================ */
+
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    /* Welcome Banner */
+    .welcome-banner {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-radius: 0.875rem;
+        padding: 0.875rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    [data-theme="light"] .welcome-banner {
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    }
+
+    .welcome-content h2 {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0 0 0.125rem 0;
+    }
+
+    [data-theme="light"] .welcome-content h2 {
+        color: #1e293b;
+    }
+
+    .welcome-content p {
+        font-size: 0.6875rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+    }
+
+    [data-theme="light"] .welcome-content p {
+        color: #475569;
+    }
+
+    .welcome-date {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.25rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.625rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 1.5rem;
-        margin-bottom: 2rem;
+        gap: 0.75rem;
     }
 
-    .dashboard-stat-card {
-        background: var(--bg-secondary, #ffffff);
-        border-radius: 1rem;
-        padding: 1.25rem;
-        border: 1px solid var(--border-light, #e5e7eb);
-        transition: all 0.3s ease;
+    .stat-card {
+        background: var(--bg-secondary);
+        border-radius: 0.75rem;
+        border: 1px solid var(--border-light);
+        padding: 0.75rem;
+        transition: all 0.2s ease;
     }
 
-    .dashboard-stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
-    }
-
-    [data-theme="dark"] .dashboard-stat-card {
-        background: #1f1f24;
-        border-color: #27272a;
+    .stat-card:hover {
+        transform: translateY(-1px);
+        border-color: var(--border-medium);
     }
 
     .stat-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 0.75rem;
-    }
-
-    .stat-icon {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 0.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .stat-icon.portfolio { background: rgba(99, 102, 241, 0.1); }
-    .stat-icon.blog { background: rgba(6, 182, 212, 0.1); }
-    .stat-icon.messages { background: rgba(16, 185, 129, 0.1); }
-    .stat-icon.users { background: rgba(139, 92, 246, 0.1); }
-
-    .stat-icon.portfolio i { color: #6366f1; }
-    .stat-icon.blog i { color: #06b6d4; }
-    .stat-icon.messages i { color: #10b981; }
-    .stat-icon.users i { color: #8b5cf6; }
-
-    [data-theme="dark"] .stat-icon.portfolio { background: rgba(99, 102, 241, 0.2); }
-    [data-theme="dark"] .stat-icon.blog { background: rgba(6, 182, 212, 0.2); }
-    [data-theme="dark"] .stat-icon.messages { background: rgba(16, 185, 129, 0.2); }
-    [data-theme="dark"] .stat-icon.users { background: rgba(139, 92, 246, 0.2); }
-
-    .stat-badge {
-        font-size: 0.75rem;
-        font-weight: 500;
-        padding: 0.25rem 0.5rem;
-        border-radius: 9999px;
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
-    }
-
-    [data-theme="dark"] .stat-badge {
-        background: rgba(16, 185, 129, 0.2);
-    }
-
-    .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--text-primary, #111827);
-        margin-bottom: 0.25rem;
-    }
-
-    [data-theme="dark"] .stat-value {
-        color: #fafafa;
-    }
-
-    .stat-label {
-        font-size: 0.875rem;
-        color: var(--text-secondary, #6b7280);
-    }
-
-    .stat-progress {
-        margin-top: 0.75rem;
-        padding-top: 0.75rem;
-        border-top: 1px solid var(--border-light, #e5e7eb);
-    }
-
-    [data-theme="dark"] .stat-progress {
-        border-top-color: #27272a;
-    }
-
-    .progress-text {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.75rem;
-        color: var(--text-tertiary, #9ca3af);
         margin-bottom: 0.5rem;
     }
 
-    .progress-bar-container {
-        width: 100%;
-        background: var(--bg-tertiary, #f3f4f6);
-        border-radius: 9999px;
-        height: 0.375rem;
-        overflow: hidden;
-    }
-
-    [data-theme="dark"] .progress-bar-container {
-        background: #3f3f46;
-    }
-
-    .progress-bar {
-        height: 0.375rem;
-        border-radius: 9999px;
-        transition: width 0.5s ease;
-    }
-
-    .progress-bar.primary { background: linear-gradient(90deg, #6366f1, #818cf8); }
-    .progress-bar.cyan { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
-
-    /* Charts section */
-    .charts-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .chart-card {
-        background: var(--bg-secondary, #ffffff);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        border: 1px solid var(--border-light, #e5e7eb);
-    }
-
-    [data-theme="dark"] .chart-card {
-        background: #1f1f24;
-        border-color: #27272a;
-    }
-
-    .chart-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1.5rem;
-    }
-
-    .chart-title {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--text-primary, #111827);
-    }
-
-    [data-theme="dark"] .chart-title {
-        color: #fafafa;
-    }
-
-    .chart-select {
-        font-size: 0.875rem;
-        border: 1px solid var(--border-light, #e5e7eb);
-        border-radius: 0.5rem;
-        padding: 0.375rem 0.75rem;
-        background: var(--bg-secondary, #ffffff);
-        color: var(--text-primary, #111827);
-        cursor: pointer;
-    }
-
-    [data-theme="dark"] .chart-select {
-        background: #27272a;
-        border-color: #3f3f46;
-        color: #fafafa;
-    }
-
-    /* Actions grid */
-    .actions-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .action-card {
-        background: var(--bg-secondary, #ffffff);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        border: 1px solid var(--border-light, #e5e7eb);
-    }
-
-    [data-theme="dark"] .action-card {
-        background: #1f1f24;
-        border-color: #27272a;
-    }
-
-    .action-item {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        color: inherit;
-        cursor: pointer;
-    }
-
-    .action-item:hover {
-        background: var(--bg-hover, #f3f4f6);
-    }
-
-    [data-theme="dark"] .action-item:hover {
-        background: #27272a;
-    }
-
-    .action-icon {
-        width: 2.5rem;
-        height: 2.5rem;
+    .stat-icon {
+        width: 1.875rem;
+        height: 1.875rem;
         border-radius: 0.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: transform 0.2s ease;
+        font-size: 0.8125rem;
     }
 
-    .action-item:hover .action-icon {
-        transform: scale(1.1);
-    }
+    .stat-icon.primary { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .stat-icon.info { background: rgba(6, 182, 212, 0.1); color: #06b6d4; }
+    .stat-icon.success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .stat-icon.warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .stat-icon.danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .stat-icon.purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+    .stat-icon.slate { background: rgba(100, 116, 139, 0.1); color: #64748b; }
 
-    .action-icon.portfolio { background: rgba(99, 102, 241, 0.1); }
-    .action-icon.blog { background: rgba(6, 182, 212, 0.1); }
-    .action-icon.users { background: rgba(139, 92, 246, 0.1); }
-    .action-icon.services { background: rgba(245, 158, 11, 0.1); }
-
-    .action-icon.portfolio i { color: #6366f1; }
-    .action-icon.blog i { color: #06b6d4; }
-    .action-icon.users i { color: #8b5cf6; }
-    .action-icon.services i { color: #f59e0b; }
-
-    .action-text p {
-        font-weight: 500;
-        color: var(--text-primary, #111827);
-        margin-bottom: 0.125rem;
-    }
-
-    [data-theme="dark"] .action-text p {
-        color: #fafafa;
-    }
-
-    .action-text small {
-        font-size: 0.75rem;
-        color: var(--text-secondary, #6b7280);
-    }
-
-    /* Lists */
-    .list-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1rem;
-    }
-
-    .list-title {
-        font-size: 1.125rem;
+    .stat-badge {
+        font-size: 0.5625rem;
         font-weight: 600;
-        color: var(--text-primary, #111827);
-    }
-
-    [data-theme="dark"] .list-title {
-        color: #fafafa;
-    }
-
-    .list-link {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #6366f1;
-        text-decoration: none;
-    }
-
-    .list-link:hover {
-        color: #4f46e5;
-    }
-
-    .recent-list {
-        max-height: 24rem;
-        overflow-y: auto;
-    }
-
-    .recent-item {
-        padding: 0.75rem;
-        border-bottom: 1px solid var(--border-light, #e5e7eb);
-        transition: background 0.2s ease;
-    }
-
-    .recent-item:hover {
-        background: var(--bg-hover, #f9fafb);
-    }
-
-    [data-theme="dark"] .recent-item {
-        border-bottom-color: #27272a;
-    }
-
-    [data-theme="dark"] .recent-item:hover {
-        background: #27272a;
-    }
-
-    .recent-content {
-        display: flex;
-        align-items: start;
-        justify-content: space-between;
-    }
-
-    .recent-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .recent-title {
-        font-weight: 500;
-        color: var(--text-primary, #111827);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    [data-theme="dark"] .recent-title {
-        color: #fafafa;
-    }
-
-    .recent-meta {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-top: 0.25rem;
-        flex-wrap: wrap;
-    }
-
-    .recent-date {
-        font-size: 0.75rem;
-        color: var(--text-tertiary, #9ca3af);
-    }
-
-    .status-badge {
-        font-size: 0.7rem;
-        padding: 0.125rem 0.5rem;
-        border-radius: 9999px;
-    }
-
-    .status-badge.published {
+        padding: 0.125rem 0.375rem;
+        border-radius: 1rem;
         background: rgba(16, 185, 129, 0.1);
         color: #10b981;
     }
 
-    .status-badge.draft {
-        background: var(--bg-tertiary, #f3f4f6);
-        color: var(--text-secondary, #6b7280);
+    .stat-badge.warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
     }
 
-    [data-theme="dark"] .status-badge.draft {
-        background: #3f3f46;
-        color: #a1a1aa;
+    .stat-badge.danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
     }
 
-    .recent-action {
-        color: var(--text-tertiary, #9ca3af);
-        transition: color 0.2s ease;
-        margin-left: 0.75rem;
+    .stat-value {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+        margin-bottom: 0.125rem;
     }
 
-    .recent-action:hover {
-        color: #6366f1;
+    .stat-label {
+        font-size: 0.625rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        color: var(--text-tertiary);
     }
 
-    .empty-state {
-        padding: 2rem;
-        text-align: center;
-        color: var(--text-tertiary, #9ca3af);
+    .stat-footer {
+        margin-top: 0.5rem;
+        padding-top: 0.375rem;
+        border-top: 1px solid var(--border-light);
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.5625rem;
+        color: var(--text-tertiary);
     }
 
-    .empty-state i {
-        font-size: 2.5rem;
-        margin-bottom: 0.75rem;
-        opacity: 0.5;
+    /* Section Header */
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.625rem;
     }
 
-    /* User avatar in recent users */
-    .user-avatar-small {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 9999px;
-        background: linear-gradient(135deg, #a855f7, #ec4899);
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .section-title i {
+        font-size: 0.6875rem;
+        color: var(--brand-primary);
+    }
+
+    .section-title h3 {
+        font-size: 0.625rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    .section-link {
+        font-size: 0.5625rem;
+        font-weight: 500;
+        color: var(--brand-primary);
+        text-decoration: none;
+    }
+
+    /* Charts Grid */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .chart-card {
+        background: var(--bg-secondary);
+        border-radius: 0.75rem;
+        border: 1px solid var(--border-light);
+        padding: 0.75rem;
+    }
+
+    .chart-title {
+        font-size: 0.625rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-tertiary);
+        margin-bottom: 0.625rem;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    /* Actions Rapides */
+    .actions-wrapper {
+        background: var(--bg-secondary);
+        border-radius: 0.75rem;
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+    }
+
+    .actions-header {
+        padding: 0.5rem 0.875rem;
+        background: var(--bg-tertiary);
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .actions-header .section-title {
+        margin-bottom: 0;
+    }
+
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 0.5rem;
+        padding: 0.625rem;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.625rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-light);
+    }
+
+    .action-btn:hover {
+        background: var(--bg-hover);
+        border-color: var(--brand-primary);
+        transform: translateY(-1px);
+    }
+
+    .action-btn-icon {
+        width: 1.625rem;
+        height: 1.625rem;
+        border-radius: 0.375rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
+        font-size: 0.6875rem;
+    }
+
+    .action-btn-icon.primary { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .action-btn-icon.info { background: rgba(6, 182, 212, 0.1); color: #06b6d4; }
+    .action-btn-icon.purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+    .action-btn-icon.warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .action-btn-icon.success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .action-btn-icon.slate { background: rgba(100, 116, 139, 0.1); color: #64748b; }
+
+    .action-btn-text {
+        flex: 1;
+    }
+
+    .action-btn-title {
+        font-size: 0.6875rem;
         font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.0625rem;
+    }
+
+    .action-btn-desc {
+        font-size: 0.5625rem;
+        color: var(--text-tertiary);
+    }
+
+    /* Cards Grid */
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+
+    .widget-card {
+        background: var(--bg-secondary);
+        border-radius: 0.75rem;
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+    }
+
+    .widget-header {
+        padding: 0.5rem 0.75rem;
+        background: var(--bg-tertiary);
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .widget-title {
+        font-size: 0.625rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .widget-body {
+        padding: 0.5rem;
+        max-height: 250px;
+        overflow-y: auto;
+    }
+
+    /* List Items */
+    .list-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.5rem;
+        border-bottom: 1px solid var(--border-light);
+        transition: background 0.2s;
+    }
+
+    .list-item:last-child {
+        border-bottom: none;
+    }
+
+    .list-item:hover {
+        background: var(--bg-hover);
+    }
+
+    .list-icon {
+        width: 1.625rem;
+        height: 1.625rem;
+        border-radius: 0.375rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-tertiary);
+        color: var(--brand-primary);
+        font-size: 0.625rem;
         flex-shrink: 0;
     }
 
-    .user-info {
+    .list-content {
         flex: 1;
         min-width: 0;
     }
 
-    .user-name {
+    .list-title {
+        font-size: 0.6875rem;
         font-weight: 500;
-        color: var(--text-primary, #111827);
+        color: var(--text-primary);
+        white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
+        margin-bottom: 0.125rem;
     }
 
-    [data-theme="dark"] .user-name {
-        color: #fafafa;
+    .list-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        flex-wrap: wrap;
+        font-size: 0.5rem;
+        color: var(--text-tertiary);
     }
 
-    .user-email {
-        font-size: 0.75rem;
-        color: var(--text-secondary, #6b7280);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+    .list-badge {
+        font-size: 0.4375rem;
+        font-weight: 600;
+        padding: 0.0625rem 0.3125rem;
+        border-radius: 1rem;
     }
 
-    .user-date {
-        font-size: 0.75rem;
-        color: var(--text-tertiary, #9ca3af);
-        text-align: right;
+    .list-badge.active { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .list-badge.pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .list-badge.draft { background: rgba(100, 116, 139, 0.1); color: #64748b; }
+
+    .list-link {
+        color: var(--text-tertiary);
+        width: 1.25rem;
+        height: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.25rem;
     }
 
-    .admin-badge {
-        font-size: 0.7rem;
-        color: #a855f7;
+    .list-link:hover {
+        background: var(--bg-hover);
+        color: var(--brand-primary);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 0.75rem;
+        color: var(--text-tertiary);
+    }
+
+    .empty-state i {
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        font-size: 0.5625rem;
+        margin: 0;
     }
 
     /* Responsive */
     @media (max-width: 1200px) {
-        .dashboard-stats-grid {
+        .stats-grid {
             grid-template-columns: repeat(2, 1fr);
         }
-
+        .cards-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
         .charts-grid {
             grid-template-columns: 1fr;
         }
-
         .actions-grid {
             grid-template-columns: repeat(2, 1fr);
         }
     }
 
     @media (max-width: 768px) {
-        .dashboard-stats-grid {
+        .stats-grid {
             grid-template-columns: 1fr;
-            gap: 1rem;
         }
-
+        .cards-grid {
+            grid-template-columns: 1fr;
+        }
         .actions-grid {
             grid-template-columns: 1fr;
-            gap: 1rem;
         }
-
-        .stat-value {
-            font-size: 1.5rem;
-        }
-
-        .chart-header {
+        .welcome-banner {
             flex-direction: column;
-            gap: 0.75rem;
-            align-items: stretch;
-        }
-
-        .chart-select {
-            width: 100%;
+            text-align: center;
         }
     }
 
     /* Animations */
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
-    .dashboard-stat-card,
-    .chart-card,
-    .action-card {
-        animation: slideIn 0.3s ease forwards;
-    }
-
-    .dashboard-stat-card:nth-child(1) { animation-delay: 0.05s; }
-    .dashboard-stat-card:nth-child(2) { animation-delay: 0.1s; }
-    .dashboard-stat-card:nth-child(3) { animation-delay: 0.15s; }
-    .dashboard-stat-card:nth-child(4) { animation-delay: 0.2s; }
-
-    /* Welcome banner */
-    .welcome-banner {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
-        border-radius: 1rem;
-        padding: 1.5rem 2rem;
-        margin-bottom: 2rem;
-        animation: slideIn 0.3s ease forwards;
-    }
-
-    @media (max-width: 768px) {
-        .welcome-banner {
-            padding: 1rem 1.25rem;
-        }
+    .stat-card, .chart-card, .widget-card, .actions-wrapper {
+        animation: fadeInUp 0.3s ease forwards;
     }
 </style>
 
-<div class="space-y-6">
-    <!-- Welcome Banner -->
+@php
+    $user = auth()->user();
+    $isSuperAdmin = $user->hasRole('super-admin');
+    $isAdmin = $user->hasRole('admin');
+    $isEditor = $user->hasRole('editor');
+    $isSupport = $user->hasRole('support');
+    $isTechnician = $user->hasRole('technician');
+    $isViewer = $user->hasRole('viewer');
+
+    // Message selon l'heure
+    $hour = date('H');
+    if ($hour >= 5 && $hour < 12) {
+        $greeting = 'Bonjour';
+        $emoji = '🌅';
+        $message = 'Belle journée qui commence !';
+    } elseif ($hour >= 12 && $hour < 14) {
+        $greeting = 'Bon appétit';
+        $emoji = '🍽️';
+        $message = 'Prenez le temps de déjeuner.';
+    } elseif ($hour >= 14 && $hour < 18) {
+        $greeting = 'Bon après-midi';
+        $emoji = '☀️';
+        $message = 'Continuez votre bonne lancée !';
+    } elseif ($hour >= 18 && $hour < 22) {
+        $greeting = 'Bonsoir';
+        $emoji = '🌙';
+        $message = 'Une belle soirée de travail.';
+    } else {
+        $greeting = 'Bonne nuit';
+        $emoji = '💤';
+        $message = 'Reposez-vous bien !';
+    }
+
+    // Permissions
+    $canViewPortfolio = $user->can('portfolio.view');
+    $canViewBlog = $user->can('blog.view');
+    $canViewContacts = $user->can('contact.view');
+    $canViewUsers = $user->can('users.view');
+    $canViewClients = $user->can('clients.view');
+    $canViewBilling = $user->can('billing.view');
+    $canViewTickets = $user->can('tickets.view');
+    $canViewServices = $user->can('services.view');
+    $canViewMaintenance = $user->can('maintenance.view');
+    $canViewInterventions = $user->can('interventions.view');
+    $canViewAllInterventions = $user->can('interventions.view.all');
+
+    // Permissions de création
+    $canCreatePortfolio = $user->can('portfolio.create');
+    $canCreateBlog = $user->can('blog.create');
+    $canCreateUsers = $user->can('users.create');
+    $canCreateMaintenance = $user->can('maintenance.create');
+    $canCreateServices = $user->can('services.create');
+    $canCreateClients = $user->can('clients.create');
+
+    // Stats pour technicien
+    $myPendingInterventions = 0;
+    $myCompletedInterventions = 0;
+    if ($isTechnician && $canViewMaintenance) {
+        $myPendingInterventions = \App\Models\Intervention::where('technician_id', $user->id)->pending()->count();
+        $myCompletedInterventions = \App\Models\Intervention::where('technician_id', $user->id)
+            ->completed()
+            ->whereMonth('end_date', now()->month)
+            ->count();
+    }
+@endphp
+
+<div class="dashboard-container">
+    <!-- Welcome Banner avec message personnalisé -->
     <div class="welcome-banner">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-            <div>
-                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">
-                    Bonjour, {{ auth()->user()->name ?? 'Administrateur' }} 👋
-                </h2>
-                <p class="text-white/80 text-sm md:text-base">
-                    Voici ce qui se passe sur votre plateforme aujourd'hui.
-                </p>
-            </div>
-            <div class="mt-4 md:mt-0">
-                <span class="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg text-sm font-medium text-white">
-                    {{ \Carbon\Carbon::now()->locale('fr')->isoFormat('dddd D MMMM YYYY') }}
-                </span>
-            </div>
+        <div class="welcome-content">
+            <h2>{{ $greeting }}, {{ $user->name ?? 'Administrateur' }} {{ $emoji }}</h2>
+            <p>{{ $message }}</p>
+        </div>
+        <div class="welcome-date">
+            <i class="fas fa-calendar-alt"></i>
+            <span>{{ \Carbon\Carbon::now()->locale('fr')->isoFormat('dddd D MMMM YYYY') }}</span>
+            <span style="margin-left: 0.25rem;">|</span>
+            <i class="fas fa-clock"></i>
+            <span>{{ \Carbon\Carbon::now()->format('H:i') }}</span>
         </div>
     </div>
 
     <!-- Stats Cards -->
-    <div class="dashboard-stats-grid">
-        <!-- Portfolio Card -->
-        <div class="dashboard-stat-card">
+    <div class="stats-grid">
+        @if($canViewPortfolio)
+        <div class="stat-card">
             <div class="stat-header">
-                <div class="stat-icon portfolio">
-                    <i class="fas fa-briefcase"></i>
-                </div>
-                <span class="stat-badge">
-                    <i class="fas fa-arrow-up text-xs"></i> +{{ $newPortfolio ?? 0 }}
-                </span>
+                <div class="stat-icon primary"><i class="fas fa-briefcase"></i></div>
+                <span class="stat-badge">+{{ $newPortfolio }}</span>
             </div>
-            <div class="stat-value">{{ $totalPortfolio ?? 0 }}</div>
-            <div class="stat-label">Projets Portfolio</div>
-            <div class="stat-progress">
-                <div class="progress-text">
-                    <span>Publiés: {{ $publishedPortfolio ?? 0 }}</span>
-                    <span>Brouillons: {{ ($totalPortfolio ?? 0) - ($publishedPortfolio ?? 0) }}</span>
-                </div>
-                <div class="progress-bar-container">
-                    @php $publishedPercent = ($totalPortfolio ?? 0) > 0 ? (($publishedPortfolio ?? 0) / ($totalPortfolio ?? 0)) * 100 : 0 @endphp
-                    <div class="progress-bar primary" style="width: {{ $publishedPercent }}%"></div>
-                </div>
+            <div class="stat-value">{{ number_format($totalPortfolio) }}</div>
+            <div class="stat-label">Projets</div>
+            <div class="stat-footer">
+                <span>Publiés: {{ $publishedPortfolio }}</span>
+                <span>Brouillons: {{ $totalPortfolio - $publishedPortfolio }}</span>
             </div>
         </div>
+        @endif
 
-        <!-- Blog Card -->
-        <div class="dashboard-stat-card">
+        @if($canViewBlog)
+        <div class="stat-card">
             <div class="stat-header">
-                <div class="stat-icon blog">
-                    <i class="fas fa-newspaper"></i>
-                </div>
-                <span class="stat-badge">
-                    <i class="fas fa-arrow-up text-xs"></i> +{{ $newBlogPosts ?? 0 }}
-                </span>
+                <div class="stat-icon info"><i class="fas fa-newspaper"></i></div>
+                <span class="stat-badge">+{{ $newBlogPosts }}</span>
             </div>
-            <div class="stat-value">{{ $totalBlogPosts ?? 0 }}</div>
-            <div class="stat-label">Articles Blog</div>
-            <div class="stat-progress">
-                <div class="progress-text">
-                    <span>Publiés: {{ $publishedPosts ?? 0 }}</span>
-                    <span>Brouillons: {{ ($totalBlogPosts ?? 0) - ($publishedPosts ?? 0) }}</span>
-                </div>
-                <div class="progress-bar-container">
-                    @php $publishedPercent = ($totalBlogPosts ?? 0) > 0 ? (($publishedPosts ?? 0) / ($totalBlogPosts ?? 0)) * 100 : 0 @endphp
-                    <div class="progress-bar cyan" style="width: {{ $publishedPercent }}%"></div>
-                </div>
+            <div class="stat-value">{{ number_format($totalBlogPosts) }}</div>
+            <div class="stat-label">Articles</div>
+            <div class="stat-footer">
+                <span>Publiés: {{ $publishedPosts }}</span>
+                <span>Brouillons: {{ $totalBlogPosts - $publishedPosts }}</span>
             </div>
         </div>
+        @endif
 
-        <!-- Messages Card -->
-        <div class="dashboard-stat-card">
+        @if($canViewContacts)
+        <div class="stat-card">
             <div class="stat-header">
-                <div class="stat-icon messages">
-                    <i class="fas fa-envelope"></i>
-                </div>
-                @if(($unreadContacts ?? 0) > 0)
-                    <span class="stat-badge" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
-                        <i class="fas fa-circle text-xs"></i> {{ $unreadContacts }} non lus
-                    </span>
+                <div class="stat-icon success"><i class="fas fa-envelope"></i></div>
+                @if($unreadContacts > 0)
+                <span class="stat-badge warning">{{ $unreadContacts }}</span>
                 @endif
             </div>
-            <div class="stat-value">{{ $totalContacts ?? 0 }}</div>
-            <div class="stat-label">Messages reçus</div>
-            <div class="stat-progress">
-                <div class="progress-text">
-                    <span>Lus: {{ ($totalContacts ?? 0) - ($unreadContacts ?? 0) }}</span>
-                    <span>Non lus: {{ $unreadContacts ?? 0 }}</span>
-                </div>
+            <div class="stat-value">{{ number_format($totalContacts) }}</div>
+            <div class="stat-label">Messages</div>
+            <div class="stat-footer">
+                <span>Lus: {{ $totalContacts - $unreadContacts }}</span>
+                <span>Non lus: {{ $unreadContacts }}</span>
             </div>
         </div>
+        @endif
 
-        <!-- Users Card -->
-        <div class="dashboard-stat-card">
+        @if($canViewUsers)
+        <div class="stat-card">
             <div class="stat-header">
-                <div class="stat-icon users">
-                    <i class="fas fa-users"></i>
-                </div>
-                <span class="stat-badge">
-                    <i class="fas fa-user-plus text-xs"></i> +{{ $newUsers ?? 0 }}
-                </span>
+                <div class="stat-icon purple"><i class="fas fa-users"></i></div>
+                <span class="stat-badge">+{{ $newUsers }}</span>
             </div>
-            <div class="stat-value">{{ $totalUsers ?? 0 }}</div>
-            <div class="stat-label">Utilisateurs inscrits</div>
-            <div class="stat-progress">
-                <div class="progress-text">
-                    <span>Admins: {{ $adminCount ?? 0 }}</span>
-                    <span>Tickets ouverts: {{ $openTickets ?? 0 }}</span>
-                </div>
+            <div class="stat-value">{{ number_format($totalUsers) }}</div>
+            <div class="stat-label">Utilisateurs</div>
+            <div class="stat-footer">
+                <span>Admins: {{ $adminCount }}</span>
+                <span>Tickets: {{ $openTickets }}</span>
             </div>
+        </div>
+        @endif
+
+        @if($canViewClients)
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon warning"><i class="fas fa-building"></i></div>
+                <span class="stat-badge">+{{ $newClients }}</span>
+            </div>
+            <div class="stat-value">{{ number_format($totalClients) }}</div>
+            <div class="stat-label">Clients</div>
+        </div>
+        @endif
+
+        @if($canViewBilling)
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon success"><i class="fas fa-credit-card"></i></div>
+            </div>
+            <div class="stat-value">{{ number_format($totalInvoiced, 0, ',', ' ') }}</div>
+            <div class="stat-label">CA (FCFA)</div>
+            <div class="stat-footer">
+                <span>Payé: {{ number_format($totalPaid, 0, ',', ' ') }}</span>
+                <span>Impayé: {{ number_format($outstandingAmount, 0, ',', ' ') }}</span>
+            </div>
+        </div>
+        @endif
+
+        @if($canViewTickets)
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon danger"><i class="fas fa-ticket-alt"></i></div>
+                @if($openTickets > 0)
+                <span class="stat-badge danger">{{ $openTickets }}</span>
+                @endif
+            </div>
+            <div class="stat-value">{{ number_format($openTickets) }}</div>
+            <div class="stat-label">Tickets</div>
+        </div>
+        @endif
+
+        @if($canViewServices)
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon slate"><i class="fas fa-cogs"></i></div>
+            </div>
+            <div class="stat-value">{{ number_format($totalServices) }}</div>
+            <div class="stat-label">Services</div>
+        </div>
+        @endif
+
+        @if($isTechnician && $canViewMaintenance && !$canViewAllInterventions)
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon warning"><i class="fas fa-tools"></i></div>
+                @if($myPendingInterventions > 0)
+                <span class="stat-badge danger">{{ $myPendingInterventions }}</span>
+                @endif
+            </div>
+            <div class="stat-value">{{ $myCompletedInterventions }}</div>
+            <div class="stat-label">Mes interventions</div>
+            <div class="stat-footer">
+                <span>Terminées: {{ $myCompletedInterventions }}</span>
+                <span>En attente: {{ $myPendingInterventions }}</span>
+            </div>
+        </div>
+        @endif
+    </div>
+
+    <!-- Actions Rapides -->
+    @php
+        $hasActions = $canCreatePortfolio || $canCreateBlog || $canCreateUsers || $canCreateMaintenance || $canCreateServices || $canCreateClients;
+    @endphp
+    @if($hasActions)
+    <div class="actions-wrapper">
+        <div class="actions-header">
+            <div class="section-title">
+                <i class="fas fa-bolt"></i>
+                <h3>Actions rapides</h3>
+            </div>
+        </div>
+        <div class="actions-grid">
+            @if($canCreatePortfolio)
+            <a href="{{ route('admin.portfolio.create') }}" class="action-btn">
+                <div class="action-btn-icon primary"><i class="fas fa-plus"></i></div>
+                <div class="action-btn-text">
+                    <div class="action-btn-title">Nouveau projet</div>
+                    <div class="action-btn-desc">Ajouter un projet</div>
+                </div>
+                <i class="fas fa-chevron-right" style="font-size: 0.5rem; color: var(--text-tertiary);"></i>
+            </a>
+            @endif
+            @if($canCreateBlog)
+            <a href="{{ route('admin.blog.create') }}" class="action-btn">
+                <div class="action-btn-icon info"><i class="fas fa-pen"></i></div>
+                <div class="action-btn-text">
+                    <div class="action-btn-title">Nouvel article</div>
+                    <div class="action-btn-desc">Rédiger un article</div>
+                </div>
+                <i class="fas fa-chevron-right" style="font-size: 0.5rem; color: var(--text-tertiary);"></i>
+            </a>
+            @endif
+            @if($canCreateUsers)
+            <a href="{{ route('admin.users.create') }}" class="action-btn">
+                <div class="action-btn-icon purple"><i class="fas fa-user-plus"></i></div>
+                <div class="action-btn-text">
+                    <div class="action-btn-title">Nouvel utilisateur</div>
+                    <div class="action-btn-desc">Ajouter un admin</div>
+                </div>
+                <i class="fas fa-chevron-right" style="font-size: 0.5rem; color: var(--text-tertiary);"></i>
+            </a>
+            @endif
+            @if($canCreateMaintenance)
+            <a href="{{ route('admin.maintenance.interventions.create') }}" class="action-btn">
+                <div class="action-btn-icon warning"><i class="fas fa-tools"></i></div>
+                <div class="action-btn-text">
+                    <div class="action-btn-title">Intervention</div>
+                    <div class="action-btn-desc">Nouvelle intervention</div>
+                </div>
+                <i class="fas fa-chevron-right" style="font-size: 0.5rem; color: var(--text-tertiary);"></i>
+            </a>
+            @endif
+            @if($canCreateServices)
+            <a href="{{ route('admin.services.create') }}" class="action-btn">
+                <div class="action-btn-icon slate"><i class="fas fa-cog"></i></div>
+                <div class="action-btn-text">
+                    <div class="action-btn-title">Nouveau service</div>
+                    <div class="action-btn-desc">Ajouter un service</div>
+                </div>
+                <i class="fas fa-chevron-right" style="font-size: 0.5rem; color: var(--text-tertiary);"></i>
+            </a>
+            @endif
+            @if($canCreateClients)
+            <a href="{{ route('admin.clients.create') }}" class="action-btn">
+                <div class="action-btn-icon success"><i class="fas fa-building"></i></div>
+                <div class="action-btn-text">
+                    <div class="action-btn-title">Nouveau client</div>
+                    <div class="action-btn-desc">Ajouter un client</div>
+                </div>
+                <i class="fas fa-chevron-right" style="font-size: 0.5rem; color: var(--text-tertiary);"></i>
+            </a>
+            @endif
         </div>
     </div>
+    @endif
 
     <!-- Charts Section -->
+    @if(($canViewPortfolio || $canViewBlog) && ($isSuperAdmin || $isAdmin || $isEditor))
     <div class="charts-grid">
-        <!-- Monthly Activity Chart -->
         <div class="chart-card">
-            <div class="chart-header">
-                <h3 class="chart-title">Activité mensuelle</h3>
-                <select id="chartType" class="chart-select">
-                    <option value="both">Les deux</option>
-                    <option value="portfolio">Projets uniquement</option>
-                    <option value="blog">Articles uniquement</option>
-                </select>
+            <div class="chart-title">
+                <i class="fas fa-chart-line"></i> Évolution mensuelle
             </div>
-            <canvas id="activityChart" height="250"></canvas>
+            <canvas id="activityChart" style="width:100%; height:160px;"></canvas>
         </div>
-
-        <!-- Portfolio Categories Chart -->
+        @if($canViewPortfolio)
         <div class="chart-card">
-            <h3 class="chart-title" style="margin-bottom: 1.5rem;">Catégories de projets</h3>
-            <canvas id="categoryChart" height="250"></canvas>
+            <div class="chart-title">
+                <i class="fas fa-chart-pie"></i> Catégories de projets
+            </div>
+            <canvas id="categoryChart" style="width:100%; height:160px;"></canvas>
         </div>
+        @endif
     </div>
+    @endif
 
-    <!-- Quick Actions & Recent Items -->
-    <div class="actions-grid">
-        <!-- Quick Actions -->
-        <div class="action-card">
-            <div class="list-header">
-                <h3 class="list-title">Actions rapides</h3>
+    <!-- Contenu récent -->
+    @if($canViewPortfolio || $canViewContacts || $canViewBlog || $canViewUsers || ($canViewInterventions && $recentInterventions->count() > 0))
+    <div class="cards-grid">
+        @if($canViewPortfolio && $recentPortfolio->count() > 0)
+        <div class="widget-card">
+            <div class="widget-header">
+                <div class="widget-title"><i class="fas fa-clock"></i> Projets récents</div>
+                <a href="{{ route('admin.portfolio.index') }}" class="section-link">Voir</a>
             </div>
-            <div class="space-y-2">
-                <a href="{{ route('admin.portfolio.create') }}" class="action-item">
-                    <div class="action-icon portfolio">
-                        <i class="fas fa-plus"></i>
-                    </div>
-                    <div class="action-text">
-                        <p>Ajouter un projet</p>
-                        <small>Nouveau projet portfolio</small>
-                    </div>
-                </a>
-                <a href="{{ route('admin.blog.create') }}" class="action-item">
-                    <div class="action-icon blog">
-                        <i class="fas fa-pen"></i>
-                    </div>
-                    <div class="action-text">
-                        <p>Nouvel article</p>
-                        <small>Rédiger un article de blog</small>
-                    </div>
-                </a>
-                <a href="{{ route('admin.users.create') }}" class="action-item">
-                    <div class="action-icon users">
-                        <i class="fas fa-user-plus"></i>
-                    </div>
-                    <div class="action-text">
-                        <p>Ajouter un utilisateur</p>
-                        <small>Nouvel administrateur</small>
-                    </div>
-                </a>
-                <a href="{{ route('admin.services.index') }}" class="action-item">
-                    <div class="action-icon services">
-                        <i class="fas fa-cog"></i>
-                    </div>
-                    <div class="action-text">
-                        <p>Gérer les services</p>
-                        <small>Ajouter ou modifier un service</small>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- Recent Portfolio Items -->
-        <div class="action-card">
-            <div class="list-header">
-                <h3 class="list-title">Derniers projets</h3>
-                <a href="{{ route('admin.portfolio.index') }}" class="list-link">Voir tout →</a>
-            </div>
-            <div class="recent-list">
-                @forelse(($recentPortfolio ?? []) as $project)
-                <div class="recent-item">
-                    <div class="recent-content">
-                        <div class="recent-info">
-                            <p class="recent-title">{{ $project->title }}</p>
-                            <div class="recent-meta">
-                                <span class="recent-date">
-                                    <i class="far fa-calendar-alt"></i> {{ $project->created_at->diffForHumans() }}
-                                </span>
-                                @if($project->is_active ?? false)
-                                    <span class="status-badge published">Publié</span>
-                                @else
-                                    <span class="status-badge draft">Brouillon</span>
-                                @endif
-                            </div>
+            <div class="widget-body">
+                @foreach($recentPortfolio->take(4) as $project)
+                <div class="list-item">
+                    <div class="list-icon"><i class="fas fa-briefcase"></i></div>
+                    <div class="list-content">
+                        <div class="list-title">{{ Str::limit($project->title, 28) }}</div>
+                        <div class="list-meta">
+                            <span>{{ $project->created_at->diffForHumans() }}</span>
+                            <span class="list-badge {{ $project->is_active ? 'active' : 'draft' }}">
+                                {{ $project->is_active ? 'Publié' : 'Brouillon' }}
+                            </span>
                         </div>
-                        <a href="{{ route('admin.portfolio.edit', $project) }}" class="recent-action">
-                            <i class="fas fa-edit"></i>
-                        </a>
                     </div>
+                    <a href="{{ route('admin.portfolio.edit', $project) }}" class="list-link"><i class="fas fa-edit"></i></a>
                 </div>
-                @empty
-                <div class="empty-state">
-                    <i class="fas fa-folder-open"></i>
-                    <p>Aucun projet pour le moment</p>
-                    <a href="{{ route('admin.portfolio.create') }}" class="list-link" style="display: inline-block; margin-top: 0.5rem;">
-                        Créer votre premier projet →
-                    </a>
-                </div>
-                @endforelse
+                @endforeach
             </div>
         </div>
+        @endif
 
-        <!-- Recent Messages -->
-        <div class="action-card">
-            <div class="list-header">
-                <h3 class="list-title">Derniers messages</h3>
-                <a href="{{ route('admin.contacts.index') }}" class="list-link">Voir tout →</a>
+        @if($canViewContacts && $recentContacts->count() > 0)
+        <div class="widget-card">
+            <div class="widget-header">
+                <div class="widget-title"><i class="fas fa-inbox"></i> Messages récents</div>
+                <a href="{{ route('admin.contacts.index') }}" class="section-link">Voir</a>
             </div>
-            <div class="recent-list">
-                @forelse(($recentContacts ?? []) as $contact)
-                <div class="recent-item">
-                    <div class="recent-content">
-                        <div class="recent-info">
-                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-                                <p class="recent-title" style="font-weight: 600;">{{ $contact->name }}</p>
-                                @if(!($contact->is_read ?? false))
-                                    <span class="w-2 h-2 bg-red-500 rounded-full"></span>
-                                @endif
-                            </div>
-                            <p class="recent-title" style="font-weight: normal; font-size: 0.875rem; color: var(--text-secondary);">
-                                {{ $contact->subject ?? 'Nouveau message' }}
-                            </p>
-                            <p class="recent-date" style="margin-top: 0.25rem;">{{ $contact->created_at->diffForHumans() }}</p>
+            <div class="widget-body">
+                @foreach($recentContacts->take(4) as $contact)
+                <div class="list-item">
+                    <div class="list-icon"><i class="fas fa-user"></i></div>
+                    <div class="list-content">
+                        <div class="list-title">{{ $contact->name }}</div>
+                        <div class="list-meta">
+                            <span>{{ $contact->created_at->diffForHumans() }}</span>
+                            @if(!$contact->is_read)<span class="list-badge pending">Non lu</span>@endif
                         </div>
-                        <a href="{{ route('admin.contacts.show', $contact) }}" class="recent-action">
-                            <i class="fas fa-envelope-open-text"></i>
-                        </a>
                     </div>
+                    <a href="{{ route('admin.contacts.show', $contact) }}" class="list-link"><i class="fas fa-envelope-open-text"></i></a>
                 </div>
-                @empty
-                <div class="empty-state">
-                    <i class="fas fa-inbox"></i>
-                    <p>Aucun message</p>
-                </div>
-                @endforelse
+                @endforeach
             </div>
         </div>
+        @endif
+
+        @if($canViewBlog && $recentPosts->count() > 0)
+        <div class="widget-card">
+            <div class="widget-header">
+                <div class="widget-title"><i class="fas fa-newspaper"></i> Articles récents</div>
+                <a href="{{ route('admin.blog.index') }}" class="section-link">Voir</a>
+            </div>
+            <div class="widget-body">
+                @foreach($recentPosts->take(4) as $post)
+                <div class="list-item">
+                    <div class="list-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="list-content">
+                        <div class="list-title">{{ Str::limit($post->title, 28) }}</div>
+                        <div class="list-meta">
+                            <span>{{ $post->created_at->diffForHumans() }}</span>
+                            <span class="list-badge {{ $post->is_published ? 'active' : 'draft' }}">
+                                {{ $post->is_published ? 'Publié' : 'Brouillon' }}
+                            </span>
+                        </div>
+                    </div>
+                    <a href="{{ route('admin.blog.edit', $post) }}" class="list-link"><i class="fas fa-edit"></i></a>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        @if($canViewInterventions && $recentInterventions->count() > 0)
+        <div class="widget-card">
+            <div class="widget-header">
+                <div class="widget-title"><i class="fas fa-tools"></i>
+                    @if($canViewAllInterventions) Interventions
+                    @elseif($isTechnician) Mes interventions
+                    @else Interventions
+                    @endif
+                </div>
+                <a href="{{ route('admin.maintenance.interventions.index') }}" class="section-link">Voir</a>
+            </div>
+            <div class="widget-body">
+                @foreach($recentInterventions->take(4) as $intervention)
+                <div class="list-item">
+                    <div class="list-icon"><i class="fas fa-wrench"></i></div>
+                    <div class="list-content">
+                        <div class="list-title">{{ $intervention->intervention_number }}</div>
+                        <div class="list-meta">
+                            <span>{{ $intervention->created_at->diffForHumans() }}</span>
+                            <span class="list-badge
+                                @if($intervention->status === 'completed') completed
+                                @elseif($intervention->status === 'in_progress') in-progress
+                                @else pending
+                                @endif">
+                                {{ $intervention->status_label }}
+                            </span>
+                        </div>
+                    </div>
+                    <a href="{{ route('admin.maintenance.interventions.show', $intervention) }}" class="list-link"><i class="fas fa-eye"></i></a>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        @if($canViewUsers && $recentUsers->count() > 0)
+        <div class="widget-card">
+            <div class="widget-header">
+                <div class="widget-title"><i class="fas fa-user-plus"></i> Nouveaux utilisateurs</div>
+                <a href="{{ route('admin.users.index') }}" class="section-link">Voir</a>
+            </div>
+            <div class="widget-body">
+                @foreach($recentUsers->take(4) as $userItem)
+                <div class="list-item">
+                    <div class="list-icon"><i class="fas fa-user-circle"></i></div>
+                    <div class="list-content">
+                        <div class="list-title">{{ $userItem->name }}</div>
+                        <div class="list-meta">
+                            <span>{{ $userItem->created_at->diffForHumans() }}</span>
+                            <span>{{ $userItem->email }}</span>
+                        </div>
+                    </div>
+                    <a href="{{ route('admin.users.edit', $userItem) }}" class="list-link"><i class="fas fa-edit"></i></a>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
     </div>
-
-    <!-- Recent Blog Posts & Users -->
-    <div class="actions-grid">
-        <!-- Recent Blog Posts -->
-        <div class="action-card">
-            <div class="list-header">
-                <h3 class="list-title">Articles récents</h3>
-                <a href="{{ route('admin.blog.index') }}" class="list-link">Voir tout →</a>
-            </div>
-            <div>
-                @forelse(($recentPosts ?? []) as $post)
-                <div class="recent-item">
-                    <div class="recent-content" style="gap: 0.75rem;">
-                        @if($post->featured_image ?? false)
-                            <img src="{{ Storage::url($post->featured_image) }}" alt="" style="width: 3rem; height: 3rem; border-radius: 0.5rem; object-fit: cover; flex-shrink: 0;">
-                        @else
-                            <div style="width: 3rem; height: 3rem; border-radius: 0.5rem; background: linear-gradient(135deg, #06b6d4, #3b82f6); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                <i class="fas fa-file-alt text-white"></i>
-                            </div>
-                        @endif
-                        <div class="recent-info">
-                            <p class="recent-title">{{ $post->title }}</p>
-                            <div class="recent-meta">
-                                <span class="recent-date">{{ $post->created_at->diffForHumans() }}</span>
-                                @if($post->is_published ?? false)
-                                    <span class="status-badge published">Publié</span>
-                                @else
-                                    <span class="status-badge draft">Brouillon</span>
-                                @endif
-                            </div>
-                        </div>
-                        <a href="{{ route('admin.blog.edit', $post) }}" class="recent-action">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                    </div>
-                </div>
-                @empty
-                <div class="empty-state">
-                    <i class="fas fa-newspaper"></i>
-                    <p>Aucun article pour le moment</p>
-                    <a href="{{ route('admin.blog.create') }}" class="list-link" style="display: inline-block; margin-top: 0.5rem;">
-                        Écrire un article →
-                    </a>
-                </div>
-                @endforelse
-            </div>
-        </div>
-
-        <!-- Recent Users -->
-        <div class="action-card">
-            <div class="list-header">
-                <h3 class="list-title">Nouveaux utilisateurs</h3>
-                <a href="{{ route('admin.users.index') }}" class="list-link">Voir tout →</a>
-            </div>
-            <div>
-                @forelse(($recentUsers ?? []) as $user)
-                <div class="recent-item">
-                    <div class="recent-content" style="gap: 0.75rem;">
-                        <div class="user-avatar-small">
-                            {{ strtoupper(substr($user->name, 0, 2)) }}
-                        </div>
-                        <div class="user-info">
-                            <p class="user-name">{{ $user->name }}</p>
-                            <p class="user-email">{{ $user->email }}</p>
-                        </div>
-                        <div>
-                            <p class="user-date">{{ $user->created_at->diffForHumans() }}</p>
-                            @if($user->is_admin ?? false)
-                                <p class="admin-badge" style="text-align: right;">Admin</p>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-                @empty
-                <div class="empty-state">
-                    <i class="fas fa-users"></i>
-                    <p>Aucun utilisateur pour le moment</p>
-                </div>
-                @endforelse
-            </div>
-        </div>
-    </div>
+    @endif
 </div>
 @endsection
 
@@ -870,207 +928,68 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Récupération des données PHP vers JavaScript
-    var portfolioData = {{ json_encode($chartPortfolio ?? array_fill(0, 12, 0)) }};
-    var blogData = {{ json_encode($chartBlog ?? array_fill(0, 12, 0)) }};
-    var labelsData = {{ json_encode($chartLabels ?? ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']) }};
-    var categoryLabelsData = {{ json_encode($categoryLabels ?? ['Site Vitrine', 'E-commerce', 'Application Web', 'Maintenance', 'Autres']) }};
-    var categoryDataData = {{ json_encode($categoryData ?? [0, 0, 0, 0, 0]) }};
+    @if(($canViewPortfolio || $canViewBlog) && ($isSuperAdmin || $isAdmin || $isEditor))
+    var portfolioData = {{ json_encode($portfolioMonthly) }};
+    var blogData = {{ json_encode($blogMonthly) }};
+    var labelsData = {{ json_encode($months) }};
+    var categoryLabelsData = {{ json_encode($categoryLabels) }};
+    var categoryDataData = {{ json_encode($categoryData) }};
 
-    // ===== ACTIVITY CHART =====
-    var ctx = document.getElementById('activityChart').getContext('2d');
-    var currentChart = null;
-
-    function getChartColors() {
+    var ctx = document.getElementById('activityChart');
+    if (ctx) {
+        ctx = ctx.getContext('2d');
         var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        return {
-            text: isDark ? '#fafafa' : '#111827',
-            textSecondary: isDark ? '#a1a1aa' : '#6b7280',
-            grid: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'
-        };
-    }
+        var textColor = isDark ? '#fafafa' : '#111827';
+        var gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
 
-    function createChart(type) {
-        if (currentChart) {
-            currentChart.destroy();
-        }
-
-        var colors = getChartColors();
         var datasets = [];
+        @if($canViewPortfolio)
+        datasets.push({
+            label: 'Projets', data: portfolioData, borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 1.5, tension: 0.4, fill: true,
+            pointBackgroundColor: '#3b82f6', pointBorderColor: '#3b82f6', pointRadius: 2, pointHoverRadius: 4
+        });
+        @endif
+        @if($canViewBlog)
+        datasets.push({
+            label: 'Articles', data: blogData, borderColor: '#06b6d4',
+            backgroundColor: 'rgba(6, 182, 212, 0.05)', borderWidth: 1.5, tension: 0.4, fill: true,
+            pointBackgroundColor: '#06b6d4', pointBorderColor: '#06b6d4', pointRadius: 2, pointHoverRadius: 4
+        });
+        @endif
 
-        if (type === 'portfolio' || type === 'both') {
-            datasets.push({
-                label: 'Projets',
-                data: portfolioData,
-                borderColor: '#6366f1',
-                backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                borderWidth: 2,
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#6366f1',
-                pointBorderColor: '#6366f1',
-                pointRadius: 3,
-                pointHoverRadius: 5
-            });
-        }
-
-        if (type === 'blog' || type === 'both') {
-            datasets.push({
-                label: 'Articles',
-                data: blogData,
-                borderColor: '#06b6d4',
-                backgroundColor: 'rgba(6, 182, 212, 0.1)',
-                borderWidth: 2,
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#06b6d4',
-                pointBorderColor: '#06b6d4',
-                pointRadius: 3,
-                pointHoverRadius: 5
-            });
-        }
-
-        currentChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labelsData,
-                datasets: datasets
-            },
+        new Chart(ctx, {
+            type: 'line', data: { labels: labelsData, datasets: datasets },
             options: {
-                responsive: true,
-                maintainAspectRatio: true,
+                responsive: true, maintainAspectRatio: true,
                 plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            color: colors.text,
-                            usePointStyle: true,
-                            boxWidth: 8
-                        }
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: colors.text === '#111827' ? '#ffffff' : '#1f1f24',
-                        titleColor: colors.text,
-                        bodyColor: colors.textSecondary,
-                        borderColor: colors.grid,
-                        borderWidth: 1
-                    }
+                    legend: { position: 'top', labels: { color: textColor, usePointStyle: true, boxWidth: 8, font: { size: 9 } } },
+                    tooltip: { backgroundColor: isDark ? '#1f1f24' : '#fff', titleColor: textColor, bodyColor: textColor }
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1,
-                            color: colors.textSecondary
-                        },
-                        grid: {
-                            color: colors.grid,
-                            drawBorder: false
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: colors.textSecondary
-                        },
-                        grid: {
-                            color: colors.grid,
-                            drawBorder: false,
-                            display: false
-                        }
-                    }
+                    y: { beginAtZero: true, ticks: { stepSize: 1, color: '#64748b', font: { size: 8 } }, grid: { color: gridColor } },
+                    x: { ticks: { color: '#64748b', font: { size: 8 } }, grid: { display: false } }
                 }
             }
         });
     }
 
-    createChart('both');
-
-    var chartTypeSelect = document.getElementById('chartType');
-    if (chartTypeSelect) {
-        chartTypeSelect.addEventListener('change', function() {
-            createChart(this.value);
-        });
-    }
-
-    // ===== CATEGORY CHART =====
-    var categoryCtx = document.getElementById('categoryChart').getContext('2d');
-    var categoryChart = null;
-
-    function createCategoryChart() {
-        var colors = getChartColors();
-
-        if (categoryChart) {
-            categoryChart.destroy();
-        }
-
-        categoryChart = new Chart(categoryCtx, {
+    var categoryCtx = document.getElementById('categoryChart');
+    if (categoryCtx && {{ $canViewPortfolio ? 'true' : 'false' }}) {
+        categoryCtx = categoryCtx.getContext('2d');
+        new Chart(categoryCtx, {
             type: 'doughnut',
-            data: {
-                labels: categoryLabelsData,
-                datasets: [{
-                    data: categoryDataData,
-                    backgroundColor: [
-                        '#6366f1',
-                        '#06b6d4',
-                        '#10b981',
-                        '#f59e0b',
-                        '#8b5cf6'
-                    ],
-                    borderWidth: 0,
-                    hoverOffset: 10
-                }]
-            },
+            data: { labels: categoryLabelsData, datasets: [{ data: categoryDataData, backgroundColor: ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#8b5cf6'], borderWidth: 0, hoverOffset: 8 }] },
             options: {
-                responsive: true,
-                maintainAspectRatio: true,
+                responsive: true, maintainAspectRatio: true, cutout: '60%',
                 plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            color: colors.text,
-                            font: { size: 11 },
-                            usePointStyle: true,
-                            boxWidth: 8
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: colors.text === '#111827' ? '#ffffff' : '#1f1f24',
-                        titleColor: colors.text,
-                        bodyColor: colors.textSecondary,
-                        borderColor: colors.grid,
-                        borderWidth: 1,
-                        callbacks: {
-                            label: function(context) {
-                                var label = context.label || '';
-                                var value = context.raw || 0;
-                                var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
-                                var percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                return label + ': ' + value + ' (' + percentage + '%)';
-                            }
-                        }
-                    }
-                },
-                cutout: '60%'
+                    legend: { position: 'bottom', labels: { color: textColor, font: { size: 8 }, usePointStyle: true, boxWidth: 6 } },
+                    tooltip: { backgroundColor: isDark ? '#1f1f24' : '#fff', titleColor: textColor, bodyColor: textColor }
+                }
             }
         });
     }
-
-    createCategoryChart();
-
-    // Theme change handler
-    var observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.attributeName === 'data-theme') {
-                var selectValue = chartTypeSelect ? chartTypeSelect.value : 'both';
-                createChart(selectValue);
-                createCategoryChart();
-            }
-        });
-    });
-
-    observer.observe(document.documentElement, { attributes: true });
+    @endif
 });
 </script>
 @endpush

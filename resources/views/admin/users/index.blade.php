@@ -156,6 +156,11 @@
         box-shadow: var(--shadow-md);
     }
 
+    .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -280,6 +285,15 @@
 
     .btn-warning:hover {
         background: #d97706;
+    }
+
+    .btn-info {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .btn-info:hover {
+        background: #2563eb;
     }
 
     .grid {
@@ -411,6 +425,11 @@
         color: #f59e0b;
     }
 
+    .badge-pending {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+    }
+
     .actions-cell {
         text-align: right;
         white-space: nowrap;
@@ -437,6 +456,10 @@
 
     .action-btn.delete:hover {
         color: #ef4444;
+    }
+
+    .action-btn.resend:hover {
+        color: #10b981;
     }
 
     .empty-state {
@@ -548,6 +571,34 @@
             gap: 0.75rem;
         }
     }
+
+    .tooltip {
+        position: relative;
+        display: inline-block;
+    }
+
+    .tooltip .tooltip-text {
+        visibility: hidden;
+        width: 120px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px;
+        font-size: 11px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -60px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .tooltip:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
 </style>
 @endpush
 
@@ -589,7 +640,7 @@
     </div>
     <div class="stat-card">
         <div class="stat-header">
-            <div class="stat-icon yellow"><i class="fas fa-user-clock"></i></div>
+            <div class="stat-icon yellow"><i class="fas fa-envelope"></i></div>
         </div>
         <div class="stat-value" id="statPending">
             @php
@@ -600,7 +651,7 @@
             echo $pendingCount;
             @endphp
         </div>
-        <div class="stat-label">En attente</div>
+        <div class="stat-label">En attente d'invitation</div>
     </div>
     <div class="stat-card">
         <div class="stat-header">
@@ -635,7 +686,7 @@
             <select id="statusFilter" class="filter-select">
                 <option value="">Tous statuts</option>
                 <option value="verified">Vérifié</option>
-                <option value="pending">En attente</option>
+                <option value="pending">En attente d'invitation</option>
             </select>
         </div>
         <div><button onclick="resetFilters()" class="btn-reset"><i class="fas fa-undo-alt"></i> Réinitialiser</button>
@@ -697,8 +748,8 @@
                         <i class="fas fa-check-circle"></i> Vérifié
                     </span>
                     @else
-                    <span class="badge badge-inactive">
-                        <i class="fas fa-clock"></i> En attente
+                    <span class="badge badge-pending">
+                        <i class="fas fa-clock"></i> En attente d'invitation
                     </span>
                     @endif
                 </td>
@@ -708,13 +759,19 @@
                         <a href="{{ route('admin.users.edit', $user) }}" class="action-btn" title="Modifier">
                             <i class="fas fa-edit"></i>
                         </a>
+                        @if(!$user->email_verified_at)
+                        <button type="button" class="action-btn resend-invitation-btn" data-id="{{ $user->id }}"
+                            data-name="{{ $user->name }}" title="Renvoyer l'invitation">
+                            <i class="fas fa-envelope"></i>
+                        </button>
+                        @endif
                         <button type="button" class="action-btn reset-password-btn" data-id="{{ $user->id }}"
-                            data-name="{{ $user->name }}">
+                            data-name="{{ $user->name }}" title="Réinitialiser le mot de passe">
                             <i class="fas fa-key"></i>
                         </button>
                         @if($user->id !== auth()->id())
                         <button type="button" class="action-btn delete delete-btn" data-id="{{ $user->id }}"
-                            data-name="{{ $user->name }}">
+                            data-name="{{ $user->name }}" title="Supprimer">
                             <i class="fas fa-trash"></i>
                         </button>
                         @endif
@@ -778,6 +835,7 @@
     const toastMessage = document.getElementById('toastMessage');
 
     let currentAction = null;
+    let currentActionData = null;
 
     // Token CSRF
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
@@ -809,6 +867,7 @@
         modal.classList.remove('active');
         document.body.style.overflow = '';
         currentAction = null;
+        currentActionData = null;
     }
 
     function confirmAction() {
@@ -830,6 +889,56 @@
         }
     });
 
+    // ==================== RENVOYER INVITATION ====================
+    function initResendInvitationButtons() {
+        var buttons = document.querySelectorAll('.resend-invitation-btn');
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].removeEventListener('click', handleResendClick);
+            buttons[i].addEventListener('click', handleResendClick);
+        }
+    }
+
+    function handleResendClick() {
+        var id = this.dataset.id;
+        var name = this.dataset.name;
+        openModal(
+            'Renvoyer l\'invitation',
+            'Êtes-vous sûr de vouloir renvoyer l\'invitation à "' + name + '" ?',
+            'Un nouvel email d\'invitation sera envoyé avec un lien pour définir son mot de passe (valable 72h).',
+            'Renvoyer',
+            'btn-info',
+            function() { resendInvitation(id); }
+        );
+    }
+
+    function resendInvitation(id) {
+        var url = '{{ route("admin.users.resend-invitation", ":id") }}'.replace(':id', id);
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                showToast(data.message, 'success');
+            } else {
+                showToast(data.message || 'Une erreur est survenue', 'error');
+            }
+        })
+        .catch(function(error) {
+            console.error('Erreur:', error);
+            showToast('Une erreur est survenue lors de l\'envoi de l\'invitation', 'error');
+        });
+    }
+
     // ==================== RÉINITIALISATION MOT DE PASSE ====================
     function initResetPasswordButtons() {
         var buttons = document.querySelectorAll('.reset-password-btn');
@@ -843,43 +952,43 @@
         var id = this.dataset.id;
         var name = this.dataset.name;
         openModal(
-            'R\u00e9initialiser le mot de passe',
-            '\u00cates-vous s\u00fbr de vouloir r\u00e9initialiser le mot de passe de "' + name + '" ?',
-            'Un email avec un nouveau mot de passe temporaire sera envoy\u00e9 \u00e0 l\'utilisateur.',
-            'R\u00e9initialiser',
+            'Réinitialiser le mot de passe',
+            'Êtes-vous sûr de vouloir réinitialiser le mot de passe de "' + name + '" ?',
+            'Une invitation lui sera envoyée par email pour définir un nouveau mot de passe.',
+            'Réinitialiser',
             'btn-warning',
             function() { resetPassword(id); }
         );
     }
 
     function resetPassword(id) {
-    // Utilisez la route nommée correcte
-    var url = '{{ route("admin.users.reset-password", ":id") }}'.replace(':id', id);
+        var url = '{{ route("admin.users.reset-password", ":id") }}'.replace(':id', id);
 
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': csrfToken,
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(function(response) {
-        return response.json();
-    })
-    .then(function(data) {
-        if (data.success) {
-            showToast(data.message, 'success');
-        } else {
-            showToast(data.message || 'Une erreur est survenue', 'error');
-        }
-    })
-    .catch(function(error) {
-        console.error('Erreur:', error);
-        showToast('Une erreur est survenue lors de la r\u00e9initialisation', 'error');
-    });
-}
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                showToast(data.message, 'success');
+            } else {
+                showToast(data.message || 'Une erreur est survenue', 'error');
+            }
+        })
+        .catch(function(error) {
+            console.error('Erreur:', error);
+            showToast('Une erreur est survenue lors de la réinitialisation', 'error');
+        });
+    }
+
     // ==================== SUPPRESSION ====================
     function initDeleteButtons() {
         var buttons = document.querySelectorAll('.delete-btn');
@@ -894,8 +1003,8 @@
         var name = this.dataset.name;
         openModal(
             'Supprimer l\'utilisateur',
-            '\u00cates-vous s\u00fbr de vouloir supprimer l\'utilisateur "' + name + '" ?',
-            'Action irr\u00e9versible. Toutes les donn\u00e9es associ\u00e9es seront supprim\u00e9es.',
+            'Êtes-vous sûr de vouloir supprimer l\'utilisateur "' + name + '" ?',
+            'Action irréversible. Toutes les données associées seront supprimées.',
             'Supprimer',
             'btn-danger',
             function() { deleteUser(id); }
@@ -1001,6 +1110,7 @@
 
     // Initialisation
     document.addEventListener('DOMContentLoaded', function() {
+        initResendInvitationButtons();
         initResetPasswordButtons();
         initDeleteButtons();
     });

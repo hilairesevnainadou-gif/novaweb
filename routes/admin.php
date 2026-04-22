@@ -8,7 +8,9 @@ use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FaqController;
+use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\NewsletterController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\RoleController;
@@ -68,6 +70,10 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::post('/{user}/reset-password', [UserController::class, 'resetPassword'])
             ->middleware('permission:users.edit')
             ->name('reset-password');
+
+        Route::post('/{user}/resend-invitation', [UserController::class, 'resendInvitation'])
+            ->middleware('permission:users.resend-invitation')
+            ->name('resend-invitation');
 
         Route::delete('/{user}', [UserController::class, 'destroy'])
             ->middleware('permission:users.delete')
@@ -373,61 +379,60 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             ->name('destroy');
     });
 
+    /*─────────────────────────────────────────
+      Paramètres
+    ─────────────────────────────────────────*/
+    Route::prefix('settings')->name('settings.')->group(function () {
 
-  /*─────────────────────────────────────────
-  Paramètres
-──────────────────────────────────────────*/
-Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])
+            ->middleware('permission:settings.view')
+            ->name('index');
 
-    Route::get('/', [SettingsController::class, 'index'])
-        ->middleware('permission:settings.view')
-        ->name('index');
+        Route::post('/update-general', [SettingsController::class, 'updateGeneral'])
+            ->middleware('permission:settings.edit')
+            ->name('update-general');
 
-    Route::post('/update-general', [SettingsController::class, 'updateGeneral'])
-        ->middleware('permission:settings.edit')
-        ->name('update-general');
+        Route::post('/update-social', [SettingsController::class, 'updateSocial'])
+            ->middleware('permission:settings.edit')
+            ->name('update-social');
 
-    Route::post('/update-social', [SettingsController::class, 'updateSocial'])
-        ->middleware('permission:settings.edit')
-        ->name('update-social');
+        Route::post('/update-seo', [SettingsController::class, 'updateSeo'])
+            ->middleware('permission:settings.edit')
+            ->name('update-seo');
 
-    Route::post('/update-seo', [SettingsController::class, 'updateSeo'])
-        ->middleware('permission:settings.edit')
-        ->name('update-seo');
+        Route::post('/update-branding', [SettingsController::class, 'updateBranding'])
+            ->middleware('permission:settings.edit')
+            ->name('update-branding');
 
-    Route::post('/update-branding', [SettingsController::class, 'updateBranding'])
-        ->middleware('permission:settings.edit')
-        ->name('update-branding');
+        Route::post('/update-legal', [SettingsController::class, 'updateLegal'])
+            ->middleware('permission:settings.edit')
+            ->name('update-legal');
 
-    Route::post('/update-legal', [SettingsController::class, 'updateLegal'])
-        ->middleware('permission:settings.edit')
-        ->name('update-legal');
+        Route::post('/update-banking', [SettingsController::class, 'updateBanking'])
+            ->middleware('permission:settings.edit')
+            ->name('update-banking');
 
-    Route::post('/update-banking', [SettingsController::class, 'updateBanking'])
-        ->middleware('permission:settings.edit')
-        ->name('update-banking');
+        Route::post('/update-contact', [SettingsController::class, 'updateContact'])
+            ->middleware('permission:settings.edit')
+            ->name('update-contact');
 
-    Route::post('/update-contact', [SettingsController::class, 'updateContact'])
-        ->middleware('permission:settings.edit')
-        ->name('update-contact');
+        Route::post('/update-hours', [SettingsController::class, 'updateHours'])
+            ->middleware('permission:settings.edit')
+            ->name('update-hours');
 
-    Route::post('/update-hours', [SettingsController::class, 'updateHours'])
-        ->middleware('permission:settings.edit')
-        ->name('update-hours');
+        Route::post('/update-about', [SettingsController::class, 'updateAbout'])
+            ->middleware('permission:settings.edit')
+            ->name('update-about');
 
-    Route::post('/update-about', [SettingsController::class, 'updateAbout'])
-        ->middleware('permission:settings.edit')
-        ->name('update-about');
+        Route::delete('/remove-image', [SettingsController::class, 'removeImage'])
+            ->middleware('permission:settings.edit')
+            ->name('remove-image');
+    });
 
-    Route::delete('/remove-image', [SettingsController::class, 'removeImage'])
-        ->middleware('permission:settings.edit')
-        ->name('remove-image');
-});
     /*─────────────────────────────────────────
       Profil utilisateur
     ─────────────────────────────────────────*/
     Route::prefix('profile')->name('profile.')->group(function () {
-        // Route pour l'avatar (AJAX)
         Route::post('/avatar', [ProfileController::class, 'updateAvatar'])
             ->name('avatar');
 
@@ -500,154 +505,196 @@ Route::prefix('settings')->name('settings.')->group(function () {
             ->name('export');
     });
 
-    // routes/admin.php
+    /*─────────────────────────────────────────
+      Facturation (Billing)
+    ─────────────────────────────────────────*/
+    Route::prefix('billing')->name('billing.')->middleware('permission:billing.view')->group(function () {
 
+        Route::prefix('invoices')->name('invoices.')->group(function () {
+            Route::get('/', [BillingController::class, 'invoices'])
+                ->middleware('permission:billing.invoices.view')
+                ->name('index');
 
-// routes/admin.php (ajouter cette section)
+            Route::get('/create', [BillingController::class, 'createInvoiceForm'])
+                ->middleware('permission:billing.invoices.create')
+                ->name('create');
 
-/*─────────────────────────────────────────
-  Facturation (Billing)
-──────────────────────────────────────────*/
-Route::prefix('billing')->name('billing.')->middleware('permission:billing.view')->group(function () {
+            Route::post('/', [BillingController::class, 'createInvoice'])
+                ->middleware('permission:billing.invoices.create')
+                ->name('store');
 
-    // Factures
-    Route::prefix('invoices')->name('invoices.')->group(function () {
-        Route::get('/', [BillingController::class, 'invoices'])
-            ->middleware('permission:billing.invoices.view')
+            Route::get('/{invoice}', [BillingController::class, 'showInvoice'])
+                ->middleware('permission:billing.invoices.view')
+                ->name('show');
+
+            Route::post('/{invoice}/send', [BillingController::class, 'sendInvoice'])
+                ->middleware('permission:billing.invoices.send')
+                ->name('send');
+
+            Route::post('/{invoice}/payment', [BillingController::class, 'recordPayment'])
+                ->middleware('permission:billing.payments.create')
+                ->name('payment');
+        });
+
+        Route::prefix('payments')->name('payments.')->group(function () {
+            Route::get('/', [BillingController::class, 'payments'])
+                ->middleware('permission:billing.payments.view')
+                ->name('index');
+
+            Route::get('/{payment}', [BillingController::class, 'showPayment'])
+                ->middleware('permission:billing.payments.view')
+                ->name('show');
+
+            Route::post('/{payment}/resend', [BillingController::class, 'resendReceipt'])
+                ->middleware('permission:billing.payments.resend')
+                ->name('resend');
+        });
+
+        Route::post('/update-overdue', [BillingController::class, 'updateOverdueStatus'])
+            ->name('update-overdue');
+    });
+
+    /*─────────────────────────────────────────
+      Clients
+    ─────────────────────────────────────────*/
+    Route::prefix('clients')->name('clients.')->group(function () {
+
+        Route::get('/', [ClientController::class, 'index'])
+            ->middleware('permission:clients.view')
             ->name('index');
 
-        Route::get('/create', [BillingController::class, 'createInvoiceForm'])
-            ->middleware('permission:billing.invoices.create')
+        Route::get('/create', [ClientController::class, 'create'])
+            ->middleware('permission:clients.create')
             ->name('create');
 
-        Route::post('/', [BillingController::class, 'createInvoice'])
-            ->middleware('permission:billing.invoices.create')
+        Route::post('/', [ClientController::class, 'store'])
+            ->middleware('permission:clients.create')
             ->name('store');
 
-        Route::get('/{invoice}', [BillingController::class, 'showInvoice'])
-            ->middleware('permission:billing.invoices.view')
+        Route::post('/reorder', [ClientController::class, 'reorder'])
+            ->middleware('permission:clients.edit')
+            ->name('reorder');
+
+        Route::get('/export', [ClientController::class, 'export'])
+            ->middleware('permission:clients.view')
+            ->name('export');
+
+        Route::get('/{client}', [ClientController::class, 'show'])
+            ->middleware('permission:clients.view')
             ->name('show');
 
-        Route::post('/{invoice}/send', [BillingController::class, 'sendInvoice'])
-            ->middleware('permission:billing.invoices.send')
-            ->name('send');
+        Route::get('/{client}/edit', [ClientController::class, 'edit'])
+            ->middleware('permission:clients.edit')
+            ->name('edit');
 
-        Route::post('/{invoice}/payment', [BillingController::class, 'recordPayment'])
-            ->middleware('permission:billing.payments.create')
-            ->name('payment');
+        Route::put('/{client}', [ClientController::class, 'update'])
+            ->middleware('permission:clients.edit')
+            ->name('update');
+
+        Route::post('/{client}/toggle', [ClientController::class, 'toggleActive'])
+            ->middleware('permission:clients.edit')
+            ->name('toggle');
+
+        Route::delete('/{client}', [ClientController::class, 'destroy'])
+            ->middleware('permission:clients.delete')
+            ->name('destroy');
     });
 
-    // Paiements
-    Route::prefix('payments')->name('payments.')->group(function () {
-        Route::get('/', [BillingController::class, 'payments'])
-            ->middleware('permission:billing.payments.view')
+    /*─────────────────────────────────────────
+      Équipe (Team)
+    ─────────────────────────────────────────*/
+    Route::prefix('team')->name('team.')->group(function () {
+
+        Route::get('/', [TeamController::class, 'index'])
+            ->middleware('permission:team.view')
             ->name('index');
 
-        Route::get('/{payment}', [BillingController::class, 'showPayment'])
-            ->middleware('permission:billing.payments.view')
+        Route::get('/create', [TeamController::class, 'create'])
+            ->middleware('permission:team.create')
+            ->name('create');
+
+        Route::post('/', [TeamController::class, 'store'])
+            ->middleware('permission:team.create')
+            ->name('store');
+
+        Route::post('/reorder', [TeamController::class, 'reorder'])
+            ->middleware('permission:team.edit')
+            ->name('reorder');
+
+        Route::get('/export', [TeamController::class, 'export'])
+            ->middleware('permission:team.view')
+            ->name('export');
+
+        Route::get('/{teamMember}', [TeamController::class, 'show'])
+            ->middleware('permission:team.view')
             ->name('show');
 
-        Route::post('/{payment}/resend', [BillingController::class, 'resendReceipt'])
-            ->middleware('permission:billing.payments.resend')
-            ->name('resend');
+        Route::get('/{teamMember}/edit', [TeamController::class, 'edit'])
+            ->middleware('permission:team.edit')
+            ->name('edit');
+
+        Route::put('/{teamMember}', [TeamController::class, 'update'])
+            ->middleware('permission:team.edit')
+            ->name('update');
+
+        Route::post('/{teamMember}/toggle', [TeamController::class, 'toggleActive'])
+            ->middleware('permission:team.edit')
+            ->name('toggle');
+
+        Route::post('/{teamMember}/featured', [TeamController::class, 'toggleFeatured'])
+            ->middleware('permission:team.edit')
+            ->name('featured');
+
+        Route::delete('/{teamMember}', [TeamController::class, 'destroy'])
+            ->middleware('permission:team.delete')
+            ->name('destroy');
     });
 
-    // Tâches automatiques
-    Route::post('/update-overdue', [BillingController::class, 'updateOverdueStatus'])
-        ->name('update-overdue');
-});
-/*─────────────────────────────────────────
-  Clients
-──────────────────────────────────────────*/
-Route::prefix('clients')->name('clients.')->group(function () {
+    /*─────────────────────────────────────────
+      Maintenance (CORRIGÉ)
+    ─────────────────────────────────────────*/
+    Route::prefix('maintenance')->name('maintenance.')->middleware('permission:maintenance.view')->group(function () {
 
-    Route::get('/', [ClientController::class, 'index'])
-        ->middleware('permission:clients.view')
-        ->name('index');
+        // Dashboard
+        Route::get('/', [MaintenanceController::class, 'dashboard'])->name('dashboard');
 
-    Route::get('/create', [ClientController::class, 'create'])
-        ->middleware('permission:clients.create')
-        ->name('create');
+        // Appareils (Devices)
+        Route::prefix('devices')->name('devices.')->group(function () {
+            Route::get('/', [MaintenanceController::class, 'devices'])->name('index');
+            Route::get('/create', [MaintenanceController::class, 'createDevice'])->name('create');
+            Route::post('/', [MaintenanceController::class, 'storeDevice'])->name('store');
+            Route::get('/{device}', [MaintenanceController::class, 'showDevice'])->name('show');
+            Route::get('/{device}/edit', [MaintenanceController::class, 'editDevice'])->name('edit');
+            Route::put('/{device}', [MaintenanceController::class, 'updateDevice'])->name('update');
+            Route::delete('/{device}', [MaintenanceController::class, 'destroyDevice'])->name('destroy');
+        });
 
-    Route::post('/', [ClientController::class, 'store'])
-        ->middleware('permission:clients.create')
-        ->name('store');
+        // Interventions
+        Route::prefix('interventions')->name('interventions.')->group(function () {
+            Route::get('/', [MaintenanceController::class, 'interventions'])->name('index');
+            Route::get('/create', [MaintenanceController::class, 'createIntervention'])->name('create');
+            Route::post('/', [MaintenanceController::class, 'storeIntervention'])->name('store');
+            Route::get('/{intervention}', [MaintenanceController::class, 'showIntervention'])->name('show');
+            Route::get('/{intervention}/edit', [MaintenanceController::class, 'editIntervention'])->name('edit');
+            Route::put('/{intervention}', [MaintenanceController::class, 'updateIntervention'])->name('update');
+            Route::post('/{intervention}/status', [MaintenanceController::class, 'changeInterventionStatus'])->name('status');
+            Route::post('/{intervention}/assign', [MaintenanceController::class, 'assignTechnician'])->name('assign');
+            Route::post('/{intervention}/rating', [MaintenanceController::class, 'clientRating'])->name('rating');
 
-    Route::post('/reorder', [ClientController::class, 'reorder'])
-        ->middleware('permission:clients.edit')
-        ->name('reorder');
+            // Dépenses
+            Route::post('/{intervention}/expenses', [MaintenanceController::class, 'addExpense'])->name('expenses.store');
+            Route::delete('/{intervention}/expenses/{expense}', [MaintenanceController::class, 'deleteExpense'])->name('expenses.destroy');
+        });
 
-    Route::get('/export', [ClientController::class, 'export'])
-        ->middleware('permission:clients.view')
-        ->name('export');
+        // Statistiques et exports
+        Route::get('/statistics', [MaintenanceController::class, 'statistics'])->name('statistics');
+        Route::get('/export/interventions', [MaintenanceController::class, 'exportInterventions'])->name('export.interventions');
+    });
 
-    Route::get('/{client}', [ClientController::class, 'show'])
-        ->middleware('permission:clients.view')
-        ->name('show');
-
-    Route::get('/{client}/edit', [ClientController::class, 'edit'])
-        ->middleware('permission:clients.edit')
-        ->name('edit');
-
-    Route::put('/{client}', [ClientController::class, 'update'])
-        ->middleware('permission:clients.edit')
-        ->name('update');
-
-    Route::post('/{client}/toggle', [ClientController::class, 'toggleActive'])
-        ->middleware('permission:clients.edit')
-        ->name('toggle');
-
-    Route::delete('/{client}', [ClientController::class, 'destroy'])
-        ->middleware('permission:clients.delete')
-        ->name('destroy');
-});
-/*─────────────────────────────────────────
-  Équipe (Team)
-──────────────────────────────────────────*/
-Route::prefix('team')->name('team.')->group(function () {
-
-    Route::get('/', [TeamController::class, 'index'])
-        ->middleware('permission:team.view')
-        ->name('index');
-
-    Route::get('/create', [TeamController::class, 'create'])
-        ->middleware('permission:team.create')
-        ->name('create');
-
-    Route::post('/', [TeamController::class, 'store'])
-        ->middleware('permission:team.create')
-        ->name('store');
-
-    Route::post('/reorder', [TeamController::class, 'reorder'])
-        ->middleware('permission:team.edit')
-        ->name('reorder');
-
-    Route::get('/export', [TeamController::class, 'export'])
-        ->middleware('permission:team.view')
-        ->name('export');
-
-    Route::get('/{teamMember}', [TeamController::class, 'show'])
-        ->middleware('permission:team.view')
-        ->name('show');
-
-    Route::get('/{teamMember}/edit', [TeamController::class, 'edit'])
-        ->middleware('permission:team.edit')
-        ->name('edit');
-
-    Route::put('/{teamMember}', [TeamController::class, 'update'])
-        ->middleware('permission:team.edit')
-        ->name('update');
-
-    Route::post('/{teamMember}/toggle', [TeamController::class, 'toggleActive'])
-        ->middleware('permission:team.edit')
-        ->name('toggle');
-
-    Route::post('/{teamMember}/featured', [TeamController::class, 'toggleFeatured'])
-        ->middleware('permission:team.edit')
-        ->name('featured');
-
-    Route::delete('/{teamMember}', [TeamController::class, 'destroy'])
-        ->middleware('permission:team.delete')
-        ->name('destroy');
+    // Notifications
+Route::prefix('notifications')->name('notifications.')->group(function () {
+    Route::get('/', [NotificationController::class, 'index'])->name('index');
+    Route::post('/{notification}/read', [NotificationController::class, 'markAsRead'])->name('mark-read');
+    Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
 });
 });

@@ -1,6 +1,3 @@
-<?php
-// resources/views/novatechweb/views/about.blade.php
-?>
 @extends('novatechweb.views.layouts.app')
 
 @section('title')
@@ -58,7 +55,11 @@
 </section>
 
 <!-- ========== CHIFFRES CLÉS ========== -->
-@if(($company->years_experience ?? false) || ($projectsCount ?? false) || ($clientsCount ?? false) || ($teamCount ?? false))
+@php
+    $teamMembersCount = isset($team) ? $team->count() : 0;
+@endphp
+
+@if(($company->years_experience ?? false) || ($projectsCount ?? false) || ($clientsCount ?? false) || (($teamMembersCount > 1) && ($teamMembersCount ?? false)))
 <section class="section stats-section">
     <div class="container">
         <div class="stats-grid">
@@ -80,9 +81,9 @@
                 <div class="stat-label">Clients satisfaits</div>
             </div>
             @endif
-            @if($teamCount ?? false)
+            @if($teamMembersCount > 1 && ($teamMembersCount ?? false))
             <div class="stat-card">
-                <div class="stat-number">{{ $teamCount }}</div>
+                <div class="stat-number">{{ $teamMembersCount }}</div>
                 <div class="stat-label">Experts passionnés</div>
             </div>
             @endif
@@ -181,7 +182,7 @@
     </div>
 </section>
 
-<!-- ========== NOTRE ÉQUIPE (TEAM MEMBERS) - CARROUSEL ========== -->
+<!-- ========== NOTRE ÉQUIPE (TEAM MEMBERS) ========== -->
 @if(isset($team) && $team->count() > 0)
 <section class="section team-section">
     <div class="container">
@@ -191,46 +192,205 @@
             <p class="subtitle">Des passionnés à votre service</p>
         </div>
 
-        <div class="carousel-container" id="teamCarousel">
-            <div class="carousel-track">
-                @foreach($team as $member)
-                <div class="carousel-slide">
-                    <div class="team-card">
-                        <div class="team-image">
-                            @if($member->photo)
-                                <img src="{{ asset('storage/' . $member->photo) }}" alt="{{ $member->name }}">
-                            @else
-                                <div class="team-image-placeholder">
-                                    <i class="fa fa-user-circle"></i>
-                                </div>
-                            @endif
+        @php $teamCount = $team->count(); @endphp
+
+        @if($teamCount === 1)
+            {{-- PRÉSENTATION TYPE PORTFOLIO POUR UNE SEULE PERSONNE --}}
+            @foreach($team as $member)
+            <div class="portfolio-expert">
+                <div class="portfolio-expert-container">
+                    <div class="portfolio-expert-image">
+                        @if($member->photo)
+                            <img src="{{ asset('storage/' . $member->photo) }}" alt="{{ $member->name }}">
+                        @else
+                            <div class="portfolio-expert-placeholder">
+                                <i class="fa fa-user-circle"></i>
+                            </div>
+                        @endif
+                        <div class="portfolio-expert-status">
+                            <i class="fa fa-check-circle"></i> Expert certifié
                         </div>
-                        <div class="team-info">
-                            <h3>{{ $member->name }}</h3>
-                            <span class="team-position">{{ $member->position }}</span>
-                            <p class="team-bio">{{ Str::limit($member->bio ?? '', 100) }}</p>
-                            @if($member->email || $member->linkedin || $member->twitter)
-                            <div class="team-social">
+                    </div>
+                    <div class="portfolio-expert-info">
+                        <h3>{{ $member->name }}</h3>
+                        <div class="portfolio-expert-position">
+                            <span class="position-badge">{{ $member->position }}</span>
+                        </div>
+
+                        @if($member->quote)
+                        <div class="portfolio-expert-quote">
+                            <i class="fa fa-quote-left"></i>
+                            <p>{{ $member->quote }}</p>
+                        </div>
+                        @endif
+
+                        <div class="portfolio-expert-bio">
+                            <p>{{ $member->bio ?? 'Expert passionné par son domaine, je mets mon expertise au service de vos projets pour vous garantir des résultats exceptionnels.' }}</p>
+                        </div>
+
+                        {{-- Compétences / Expertises --}}
+                        @if($member->skills && count($member->skills_list) > 0)
+                        <div class="portfolio-expert-skills">
+                            <h4>Expertises</h4>
+                            <div class="skills-tags">
+                                @foreach($member->skills_list as $skill)
+                                <span class="skill-tag">{{ $skill }}</span>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+
+                        {{-- Coordonnées et réseaux sociaux --}}
+                        <div class="portfolio-contact-section">
+                            <h4>Me contacter</h4>
+                            <div class="contact-grid">
                                 @if($member->email)
-                                <a href="mailto:{{ $member->email }}" class="team-social-link"><i class="fa fa-envelope"></i></a>
+                                <a href="mailto:{{ $member->email }}" class="contact-card">
+                                    <div class="contact-icon">
+                                        <i class="fa fa-envelope"></i>
+                                    </div>
+                                    <div class="contact-info">
+                                        <span class="contact-label">Email</span>
+                                        <span class="contact-value">{{ $member->email }}</span>
+                                    </div>
+                                </a>
                                 @endif
+
                                 @if($member->linkedin)
-                                <a href="{{ $member->linkedin }}" target="_blank" class="team-social-link"><i class="fa fa-linkedin"></i></a>
+                                <a href="{{ $member->linkedin }}" target="_blank" class="contact-card">
+                                    <div class="contact-icon linkedin">
+                                        <i class="fa fa-linkedin"></i>
+                                    </div>
+                                    <div class="contact-info">
+                                        <span class="contact-label">LinkedIn</span>
+                                        <span class="contact-value">Profil professionnel</span>
+                                    </div>
+                                </a>
                                 @endif
+
+                                @if($member->github)
+                                <a href="{{ $member->github }}" target="_blank" class="contact-card">
+                                    <div class="contact-icon github">
+                                        <i class="fa fa-github"></i>
+                                    </div>
+                                    <div class="contact-info">
+                                        <span class="contact-label">GitHub</span>
+                                        <span class="contact-value">Dépôts de code</span>
+                                    </div>
+                                </a>
+                                @endif
+
                                 @if($member->twitter)
-                                <a href="{{ $member->twitter }}" target="_blank" class="team-social-link"><i class="fa fa-twitter"></i></a>
+                                <a href="{{ $member->twitter }}" target="_blank" class="contact-card">
+                                    <div class="contact-icon twitter">
+                                        <i class="fa fa-twitter"></i>
+                                    </div>
+                                    <div class="contact-info">
+                                        <span class="contact-label">Twitter</span>
+                                        <span class="contact-value">@{{ explode('/', $member->twitter)[array_key_last(explode('/', $member->twitter))] }}</span>
+                                    </div>
+                                </a>
+                                @endif
+
+                                @if($member->facebook)
+                                <a href="{{ $member->facebook }}" target="_blank" class="contact-card">
+                                    <div class="contact-icon facebook">
+                                        <i class="fa fa-facebook"></i>
+                                    </div>
+                                    <div class="contact-info">
+                                        <span class="contact-label">Facebook</span>
+                                        <span class="contact-value">Page professionnelle</span>
+                                    </div>
+                                </a>
                                 @endif
                             </div>
-                            @endif
                         </div>
                     </div>
                 </div>
-                @endforeach
             </div>
-            <button class="carousel-btn prev" onclick="moveCarousel('teamCarousel', -1)">‹</button>
-            <button class="carousel-btn next" onclick="moveCarousel('teamCarousel', 1)">›</button>
-            <div class="carousel-dots" id="teamDots"></div>
-        </div>
+            @endforeach
+        @else
+            {{-- CARROUSEL POUR 2 PERSONNES OU PLUS --}}
+            <div class="carousel-container" id="teamCarousel">
+                <div class="carousel-track">
+                    @foreach($team as $member)
+                    <div class="carousel-slide">
+                        <div class="team-card">
+                            <div class="team-image">
+                                @if($member->photo)
+                                    <img src="{{ asset('storage/' . $member->photo) }}" alt="{{ $member->name }}">
+                                @else
+                                    <div class="team-image-placeholder">
+                                        <i class="fa fa-user-circle"></i>
+                                    </div>
+                                @endif
+                                <div class="team-expert-badge">
+                                    <i class="fa fa-star"></i> Expert
+                                </div>
+                            </div>
+                            <div class="team-info">
+                                <h3>{{ $member->name }}</h3>
+                                <span class="team-position">{{ $member->position }}</span>
+
+                                @if($member->quote)
+                                <div class="team-quote">
+                                    <i class="fa fa-quote-left"></i>
+                                    <p>{{ Str::limit($member->quote, 80) }}</p>
+                                </div>
+                                @endif
+
+                                <p class="team-bio">{{ Str::limit($member->bio ?? 'Expert passionné par son métier, il met son expertise au service de vos projets.', 100) }}</p>
+
+                                {{-- Compétences --}}
+                                @if($member->skills && count($member->skills_list) > 0)
+                                <div class="team-skills">
+                                    @foreach(array_slice($member->skills_list, 0, 3) as $skill)
+                                    <span class="team-skill-tag">{{ $skill }}</span>
+                                    @endforeach
+                                    @if(count($member->skills_list) > 3)
+                                    <span class="team-skill-tag">+{{ count($member->skills_list) - 3 }}</span>
+                                    @endif
+                                </div>
+                                @endif
+
+                                {{-- Réseaux sociaux simplifiés --}}
+                                <div class="team-social">
+                                    @if($member->email)
+                                    <a href="mailto:{{ $member->email }}" class="team-social-link" title="Email">
+                                        <i class="fa fa-envelope"></i>
+                                    </a>
+                                    @endif
+                                    @if($member->linkedin)
+                                    <a href="{{ $member->linkedin }}" target="_blank" class="team-social-link" title="LinkedIn">
+                                        <i class="fa fa-linkedin"></i>
+                                    </a>
+                                    @endif
+                                    @if($member->github)
+                                    <a href="{{ $member->github }}" target="_blank" class="team-social-link" title="GitHub">
+                                        <i class="fa fa-github"></i>
+                                    </a>
+                                    @endif
+                                    @if($member->twitter)
+                                    <a href="{{ $member->twitter }}" target="_blank" class="team-social-link" title="Twitter">
+                                        <i class="fa fa-twitter"></i>
+                                    </a>
+                                    @endif
+                                    @if($member->facebook)
+                                    <a href="{{ $member->facebook }}" target="_blank" class="team-social-link" title="Facebook">
+                                        <i class="fa fa-facebook"></i>
+                                    </a>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                <button class="carousel-btn prev" onclick="moveCarousel('teamCarousel', -1)">‹</button>
+                <button class="carousel-btn next" onclick="moveCarousel('teamCarousel', 1)">›</button>
+                <div class="carousel-dots" id="teamDots"></div>
+            </div>
+        @endif
     </div>
 </section>
 @endif
@@ -394,6 +554,12 @@
     --border-light: #e2e8f0;
     --bg-light: #f8fafc;
     --bg-white: #ffffff;
+    --success: #10b981;
+    --linkedin: #0077b5;
+    --github: #333333;
+    --twitter: #1da1f2;
+    --facebook: #1877f2;
+    --email: #ea4335;
 }
 
 /* ========== ABOUT HERO ========== */
@@ -778,6 +944,229 @@ h2 {
     line-height: 1.6;
 }
 
+/* ========== PORTFOLIO EXPERT (1 SEULE PERSONNE) ========== */
+.portfolio-expert {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border-radius: 32px;
+    padding: 50px;
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
+    max-width: 1100px;
+}
+
+.portfolio-expert-container {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 50px;
+    align-items: start;
+}
+
+.portfolio-expert-image {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
+}
+
+.portfolio-expert-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.portfolio-expert-placeholder {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    padding: 60px;
+    text-align: center;
+}
+
+.portfolio-expert-placeholder i {
+    font-size: 150px;
+    color: white;
+    opacity: 0.5;
+}
+
+.portfolio-expert-status {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 8px 16px;
+    border-radius: 50px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.portfolio-expert-status i {
+    color: var(--success);
+    margin-right: 8px;
+}
+
+.portfolio-expert-info h3 {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.position-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 24px;
+}
+
+.portfolio-expert-quote {
+    background: rgba(99, 102, 241, 0.05);
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    border-left: 4px solid var(--primary);
+}
+
+.portfolio-expert-quote i {
+    color: var(--primary);
+    font-size: 20px;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+.portfolio-expert-quote p {
+    font-size: 16px;
+    font-style: italic;
+    color: var(--text-gray);
+    margin: 0;
+    line-height: 1.6;
+}
+
+.portfolio-expert-bio p {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--text-gray);
+    margin-bottom: 30px;
+}
+
+.portfolio-expert-skills h4,
+.portfolio-contact-section h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.portfolio-expert-skills h4::before,
+.portfolio-contact-section h4::before {
+    content: '';
+    width: 30px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 3px;
+}
+
+.skills-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.skill-tag {
+    background: var(--bg-light);
+    border: 1px solid var(--border-light);
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-size: 13px;
+    color: var(--primary);
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.skill-tag:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+    border-color: var(--primary);
+}
+
+/* ========== CONTACT GRID POUR PORTFOLIO ========== */
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.contact-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    background: var(--bg-light);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.contact-card:hover {
+    transform: translateX(5px);
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.contact-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    transition: all 0.3s;
+}
+
+.contact-icon.linkedin { background: var(--linkedin); }
+.contact-icon.github { background: var(--github); }
+.contact-icon.twitter { background: var(--twitter); }
+.contact-icon.facebook { background: var(--facebook); }
+.contact-icon:not(.linkedin):not(.github):not(.twitter):not(.facebook) {
+    background: var(--email);
+}
+
+.contact-info {
+    flex: 1;
+}
+
+.contact-label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.contact-value {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.contact-card:hover .contact-value {
+    color: var(--primary);
+}
+
 /* ========== CARROUSEL ========== */
 .carousel-container {
     position: relative;
@@ -850,7 +1239,7 @@ h2 {
     border-radius: 5px;
 }
 
-/* ========== TEAM CARD ========== */
+/* ========== TEAM CARD POUR CARROUSEL (2+ PERSONNES) ========== */
 .team-section {
     background: var(--bg-light);
 }
@@ -862,6 +1251,7 @@ h2 {
     transition: all 0.3s ease;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     height: 100%;
+    position: relative;
 }
 
 .team-card:hover {
@@ -872,12 +1262,32 @@ h2 {
 .team-image {
     height: 250px;
     overflow: hidden;
+    position: relative;
 }
 
 .team-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.team-expert-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.team-expert-badge i {
+    font-size: 10px;
 }
 
 .team-image-placeholder {
@@ -917,35 +1327,79 @@ h2 {
     margin-bottom: 12px;
 }
 
+.team-quote {
+    background: rgba(99, 102, 241, 0.05);
+    padding: 10px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    font-style: italic;
+    color: var(--text-gray);
+}
+
+.team-quote i {
+    color: var(--primary);
+    font-size: 10px;
+    margin-right: 5px;
+}
+
+.team-quote p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
 .team-bio {
     font-size: 13px;
     color: var(--text-gray);
     line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.team-skills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
     margin-bottom: 15px;
+}
+
+.team-skill-tag {
+    background: var(--bg-light);
+    border: 1px solid var(--border-light);
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    color: var(--primary);
+    font-weight: 500;
 }
 
 .team-social {
     display: flex;
     justify-content: center;
     gap: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-light);
 }
 
 .team-social-link {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     background: var(--bg-light);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--primary);
+    color: var(--text-gray);
+    font-size: 16px;
     transition: all 0.3s;
+    text-decoration: none;
 }
 
 .team-social-link:hover {
     background: var(--primary);
     color: white;
-    transform: translateY(-2px);
+    transform: translateY(-3px);
 }
 
 /* ========== TOOL CARD ========== */
@@ -1189,6 +1643,19 @@ h2 {
     .faq-grid {
         grid-template-columns: 1fr;
     }
+
+    .portfolio-expert-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .portfolio-expert {
+        padding: 30px;
+    }
+
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1238,6 +1705,10 @@ h2 {
     .cta-buttons .btn {
         width: 100%;
         max-width: 280px;
+    }
+
+    .portfolio-expert-info h3 {
+        font-size: 28px;
     }
 }
 
@@ -1367,7 +1838,7 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-document.querySelectorAll('.value-card, .team-card, .tool-card, .testimonial-card, .faq-item, .why-item').forEach(el => {
+document.querySelectorAll('.value-card, .team-card, .portfolio-expert, .tool-card, .testimonial-card, .faq-item, .why-item, .contact-card').forEach(el => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(20px)';
     el.style.transition = 'all 0.5s ease';

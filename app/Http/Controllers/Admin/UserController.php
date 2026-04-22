@@ -4,10 +4,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\UserInvitationMail;
+use App\Mail\UserPasswordResetInvitation;
 use App\Models\User;
+use App\Models\UserInvitation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;  // CORRIGÉ : ajout du backslash manquant
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -39,7 +42,7 @@ class UserController extends Controller
     }
 
     /**
-     * Enregistrer un nouvel utilisateur
+     * Enregistrer un nouvel utilisateur avec système d'invitation
      */
     public function store(Request $request)
     {
@@ -50,13 +53,11 @@ class UserController extends Controller
             'permissions' => 'nullable|array',
         ]);
 
-        // Générer un mot de passe aléatoire
-        $plainPassword = Str::random(10);
-
+        // Créer l'utilisateur avec un mot de passe temporaire inutilisable
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => Hash::make($plainPassword),
+            'password' => Hash::make(Str::random(32)), // mot de passe aléatoire que l'utilisateur ne connaît pas
         ]);
 
         // Assigner les rôles
@@ -69,11 +70,12 @@ class UserController extends Controller
             $user->givePermissionTo($validated['permissions']);
         }
 
-        // Envoyer l'email avec le mot de passe généré
-        $this->sendWelcomeEmail($user, $plainPassword);
+        // Générer l'invitation et envoyer l'email
+        $invitation = UserInvitation::generateFor($user);
+        $this->sendInvitationEmail($user, $invitation);
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'Utilisateur créé avec succès. Un email avec ses identifiants lui a été envoyé.');
+            ->with('success', 'Utilisateur créé avec succès. Un email d\'invitation lui a été envoyé pour définir son mot de passe.');
     }
 
     /**
@@ -86,7 +88,12 @@ class UserController extends Controller
         $userRoles = $user->roles->pluck('name')->toArray();
         $userPermissions = $user->permissions->pluck('name')->toArray();
 
-        return view('admin.users.edit', compact('user', 'roles', 'permissions', 'userRoles', 'userPermissions'));
+        // Vérifier si l'utilisateur a une invitation en attente
+        $hasPendingInvitation = UserInvitation::where('user_id', $user->id)
+            ->whereNull('accepted_at')
+            ->exists();
+
+        return view('admin.users.edit', compact('user', 'roles', 'permissions', 'userRoles', 'userPermissions', 'hasPendingInvitation'));
     }
 
     /**
@@ -120,6 +127,72 @@ class UserController extends Controller
     }
 
     /**
+ * Renvoyer une invitation à un utilisateur (première invitation)
+ */
+public function resendInvitation(Request $request, User $user)
+{
+    try {
+        // Vérifier si l'utilisateur a déjà accepté son invitation
+        $existingInvitation = UserInvitation::where('user_id', $user->id)
+            ->whereNotNull('accepted_at')
+            ->first();
+
+        if ($existingInvitation) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cet utilisateur a déjà accepté son invitation et activé son compte.'
+            ], 400);
+        }
+
+        // Vérifier si l'utilisateur a déjà un compte actif (email vérifié)
+        if ($user->email_verified_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cet utilisateur a déjà activé son compte. Utilisez "Réinitialiser le mot de passe" à la place.'
+            ], 400);
+        }
+
+        // Générer une nouvelle invitation
+        $invitation = UserInvitation::generateFor($user);
+        $this->sendInvitationEmail($user, $invitation);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Invitation renvoyée avec succès à ' . $user->email
+            ]);
+        }
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Invitation renvoyée à ' . $user->email);
+
+    } catch (\Exception $e) {
+        Log::error('Erreur renvoi invitation: ' . $e->getMessage());
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage()
+            ], 500);
+        }
+
+        return redirect()->route('admin.users.index')
+            ->with('error', 'Erreur lors de l\'envoi de l\'invitation: ' . $e->getMessage());
+    }
+}
+    /**
+     * Envoyer l'email d'invitation
+     */
+    protected function sendInvitationEmail(User $user, UserInvitation $invitation): void
+    {
+        try {
+            Mail::to($user->email)->send(new UserInvitationMail($user, $invitation));
+        } catch (\Exception $e) {
+            Log::error('Erreur envoi email invitation: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Assigner les rôles et permissions à un utilisateur
      */
     public function assignRoles(Request $request, User $user)
@@ -149,89 +222,54 @@ class UserController extends Controller
     }
 
     /**
-     * Réinitialiser le mot de passe d'un utilisateur
-     */
-    public function resetPassword(Request $request, User $user)
-    {
-        try {
-            // Vérifier si l'utilisateur peut être réinitialisé
-            if ($user->id === auth()->id()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Vous ne pouvez pas réinitialiser votre propre mot de passe.'
-                ], 403);
-            }
-
-            // Générer un nouveau mot de passe aléatoire
-            $newPassword = Str::random(10);
-
-            // Mettre à jour le mot de passe
-            $user->password = Hash::make($newPassword);
-            $user->save();
-
-            // Envoyer l'email avec le nouveau mot de passe
-            Mail::send('emails.password-reset', [
-                'user' => $user,
-                'password' => $newPassword,
-                'loginUrl' => route('login')
-            ], function ($message) use ($user) {
-                $message->to($user->email)
-                        ->subject('Nouveau mot de passe - NovaTech')
-                        ->from(config('mail.from.address'), config('mail.from.name'));
-            });
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Un nouveau mot de passe a été envoyé à ' . $user->email
-            ]);
-
-        } catch (\Exception $e) {
+ * Réinitialiser le mot de passe d'un utilisateur (envoie une invitation)
+ */
+public function resetPassword(Request $request, User $user)
+{
+    try {
+        // Vérifier si l'utilisateur peut être réinitialisé
+        if ($user->id === auth()->id()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
-            ], 500);
+                'message' => 'Vous ne pouvez pas réinitialiser votre propre mot de passe. Utilisez la fonction "Mot de passe oublié".'
+            ], 403);
         }
-    }
 
-    /**
-     * Envoyer l'email de bienvenue avec le mot de passe généré
-     */
-    protected function sendWelcomeEmail(User $user, string $plainPassword)
-    {
-        try {
-            Mail::send('emails.welcome', [
-                'user' => $user,
-                'password' => $plainPassword,
-                'loginUrl' => route('login')
-            ], function ($message) use ($user) {
-                $message->to($user->email)
-                        ->subject('Bienvenue sur NovaTech - Vos identifiants de connexion')
-                        ->from(config('mail.from.address'), config('mail.from.name'));
-            });
-        } catch (\Exception $e) {
-            Log::error('Erreur envoi email bienvenue: ' . $e->getMessage());
-        }
-    }
+        // Supprimer les anciennes invitations non acceptées
+        UserInvitation::where('user_id', $user->id)
+            ->whereNull('accepted_at')
+            ->delete();
 
-    /**
-     * Envoyer l'email de réinitialisation de mot de passe
-     */
-    protected function sendPasswordResetEmail(User $user, string $newPassword)
-    {
-        try {
-            Mail::send('emails.password-reset', [
-                'user' => $user,
-                'password' => $newPassword,
-                'loginUrl' => route('login')
-            ], function ($message) use ($user) {
-                $message->to($user->email)
-                        ->subject('Réinitialisation de votre mot de passe - NovaTech')
-                        ->from(config('mail.from.address'), config('mail.from.name'));
-            });
-        } catch (\Exception $e) {
-            Log::error('Erreur envoi email réinitialisation: ' . $e->getMessage());
-        }
+        // Générer une nouvelle invitation
+        $invitation = UserInvitation::generateFor($user);
+        $this->sendPasswordResetInvitation($user, $invitation);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Une invitation pour réinitialiser son mot de passe a été envoyée à ' . $user->email
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Erreur réinitialisation mot de passe: ' . $e->getMessage());
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur: ' . $e->getMessage()
+        ], 500);
     }
+}
+
+/**
+ * Envoyer l'email d'invitation pour réinitialisation
+ */
+protected function sendPasswordResetInvitation(User $user, UserInvitation $invitation): void
+{
+    try {
+        Mail::to($user->email)->send(new UserPasswordResetInvitation($user, $invitation));
+    } catch (\Exception $e) {
+        Log::error('Erreur envoi email réinitialisation: ' . $e->getMessage());
+    }
+}
 
     /**
      * Supprimer un utilisateur
@@ -250,6 +288,9 @@ class UserController extends Controller
             return redirect()->route('admin.users.index')
                 ->with('error', 'Vous ne pouvez pas supprimer votre propre compte.');
         }
+
+        // Supprimer les invitations associées
+        UserInvitation::where('user_id', $user->id)->delete();
 
         $user->delete();
 
@@ -313,6 +354,22 @@ class UserController extends Controller
 
         return response()->json([
             'available' => !$exists
+        ]);
+    }
+
+    /**
+     * Vérifier le statut d'invitation d'un utilisateur
+     */
+    public function checkInvitationStatus(User $user)
+    {
+        $invitation = UserInvitation::where('user_id', $user->id)
+            ->whereNull('accepted_at')
+            ->first();
+
+        return response()->json([
+            'has_pending_invitation' => !is_null($invitation),
+            'invitation_expires_at' => $invitation?->expires_at?->format('d/m/Y H:i'),
+            'is_expired' => $invitation?->isExpired() ?? false
         ]);
     }
 }
