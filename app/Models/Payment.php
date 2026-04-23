@@ -36,19 +36,8 @@ class Payment extends Model
         'email_sent_at' => 'datetime'
     ];
 
-    // Génération automatique du numéro de paiement
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($payment) {
-            if (!$payment->payment_number) {
-                $year = date('Y');
-                $lastPayment = static::whereYear('created_at', $year)->count();
-                $payment->payment_number = 'PAY-' . $year . '-' . str_pad($lastPayment + 1, 6, '0', STR_PAD_LEFT);
-            }
-        });
-    }
+    // ⚠️ SUPPRIMEZ cette méthode boot() :
+    // protected static function boot() { ... }
 
     // Relations
     public function client()

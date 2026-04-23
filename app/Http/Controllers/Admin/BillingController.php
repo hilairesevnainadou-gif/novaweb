@@ -1,7 +1,5 @@
 <?php
-// ╔══════════════════════════════════════════════════════════════════╗
-// ║  app/Http/Controllers/Admin/BillingController.php               ║
-// ╚══════════════════════════════════════════════════════════════════╝
+// app/Http/Controllers/Admin/BillingController.php
 
 namespace App\Http\Controllers\Admin;
 
@@ -16,16 +14,17 @@ use App\Models\Payment;
 use App\Models\Notification;
 use App\Models\Service;
 use App\Models\User;
-use App\Traits\GeneratesQrCode;          // ← Trait QR Code
+use App\Traits\GeneratesQrCode;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class BillingController extends Controller
 {
-    use GeneratesQrCode;                 // ← Activer le trait
+    use GeneratesQrCode;
 
     // ══════════════════════════════════════════════════════════════
     //  HELPERS INTERNES
@@ -88,35 +87,32 @@ class BillingController extends Controller
     /**
      * Génère le PDF d'une facture avec QR code intégré.
      */
-  private function buildInvoicePdf(Invoice $invoice): \Barryvdh\DomPDF\PDF
-{
-    $company = \App\Models\CompanyInfo::first();
+    private function buildInvoicePdf(Invoice $invoice): \Barryvdh\DomPDF\PDF
+    {
+        $company = \App\Models\CompanyInfo::first();
 
-    // Générer le QR code
-    $qrSvg = $this->generateQrCode(
-        route('admin.billing.invoices.show', $invoice),
-        80
-    );
+        $qrSvg = $this->generateQrCode(
+            route('admin.billing.invoices.show', $invoice)
+        );
 
-    return Pdf::loadView('pdf.invoice', compact('invoice', 'company', 'qrSvg'))
-              ->setPaper('a4', 'portrait');
-}
+        return Pdf::loadView('pdf.invoice', compact('invoice', 'company', 'qrSvg'))
+                  ->setPaper('a4', 'portrait');
+    }
 
-private function buildReceiptPdf(Payment $payment): \Barryvdh\DomPDF\PDF
-{
-    $company = \App\Models\CompanyInfo::first();
+    /**
+     * Génère le PDF d'un reçu de paiement avec QR code intégré.
+     */
+    private function buildReceiptPdf(Payment $payment): \Barryvdh\DomPDF\PDF
+    {
+        $company = \App\Models\CompanyInfo::first();
 
-    // Générer le QR code
-    $qrSvg = $this->generateQrCode(
-        route('admin.billing.payments.show', $payment),
-        80
-    );
+        $qrSvg = $this->generateQrCode(
+            route('admin.billing.payments.show', $payment)
+        );
 
-    return Pdf::loadView('pdf.payment_receipt', compact('payment', 'company', 'qrSvg'))
-              ->setPaper('a4', 'portrait');
-}
-
-
+        return Pdf::loadView('pdf.payment_receipt', compact('payment', 'company', 'qrSvg'))
+                  ->setPaper('a4', 'portrait');
+    }
 
     /**
      * Génère un numéro de paiement unique.
@@ -144,6 +140,13 @@ private function buildReceiptPdf(Payment $payment): \Barryvdh\DomPDF\PDF
         }
         if ($request->filled('client_id')) {
             $query->where('client_id', $request->client_id);
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                  ->orWhereHas('client', fn($q2) => $q2->where('name', 'like', "%{$search}%"));
+            });
         }
 
         $invoices = $query->orderBy('created_at', 'desc')->paginate(20);
@@ -246,12 +249,117 @@ private function buildReceiptPdf(Payment $payment): \Barryvdh\DomPDF\PDF
     public function showInvoice(Invoice $invoice)
     {
         $invoice->load(['client', 'service', 'payments']);
+        $company = \App\Models\CompanyInfo::first();
         $clients  = Client::active()->ordered()->get();
         $services = Service::active()->ordered()->get();
 
         Log::info('Facture consultée : ' . $invoice->invoice_number . ' par ' . auth()->user()->email);
 
-        return view('admin.billing.show-invoice', compact('invoice', 'clients', 'services'));
+        return view('admin.billing.show-invoice', compact('invoice', 'clients', 'services', 'company'));
+    }
+
+    /**
+     * Formulaire d'édition d'une facture.
+     */
+    public function editInvoice(Invoice $invoice)
+    {
+        if (in_array($invoice->status, ['paid', 'partially_paid'])) {
+            return redirect()
+                ->route('admin.billing.invoices.show', $invoice)
+                ->with('error', 'Une facture payée ou partiellement payée ne peut pas être modifiée.');
+        }
+
+        $clients = Client::orderBy('name')->get();
+        $services = Service::orderBy('title')->get();
+
+        return view('admin.billing.edit-invoice', compact('invoice', 'clients', 'services'));
+    }
+
+    /**
+     * Mettre à jour une facture.
+     */
+    public function updateInvoice(Request $request, Invoice $invoice)
+    {
+        if (in_array($invoice->status, ['paid', 'partially_paid'])) {
+            return redirect()
+                ->route('admin.billing.invoices.show', $invoice)
+                ->with('error', 'Une facture payée ou partiellement payée ne peut pas être modifiée.');
+        }
+
+        $request->validate([
+            'client_id'    => 'required|exists:clients,id',
+            'service_id'   => 'nullable|exists:services,id',
+            'service_name' => 'nullable|string|max:255',
+            'total'        => 'required|numeric|min:0',
+            'description'  => 'nullable|string',
+            'issue_date'   => 'required|date',
+            'due_date'     => 'required|date|after_or_equal:issue_date',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $oldTotal = $invoice->total;
+            $newTotal = (float) $request->total;
+            $paidAmount = $invoice->paid_amount;
+
+            $remainingAmount = $newTotal - $paidAmount;
+
+            if ($remainingAmount <= 0) {
+                $status = 'paid';
+            } elseif ($paidAmount > 0) {
+                $status = 'partially_paid';
+            } else {
+                $status = 'draft';
+            }
+
+            $invoice->update([
+                'client_id'        => $request->client_id,
+                'service_id'       => $request->service_id,
+                'total'            => $newTotal,
+                'remaining_amount' => max(0, $remainingAmount),
+                'status'           => $status,
+                'issue_date'       => $request->issue_date,
+                'due_date'         => $request->due_date,
+                'description'      => $request->description
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('admin.billing.invoices.show', $invoice)
+                ->with('success', 'Facture mise à jour avec succès.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()
+                ->back()
+                ->with('error', 'Erreur lors de la mise à jour : ' . $e->getMessage())
+                ->withInput();
+        }
+    }
+
+    /**
+     * Supprimer une facture.
+     */
+    public function deleteInvoice(Invoice $invoice)
+    {
+        if ($invoice->status !== 'draft') {
+            return redirect()
+                ->route('admin.billing.invoices.index')
+                ->with('error', 'Seules les factures en brouillon peuvent être supprimées.');
+        }
+
+        try {
+            $invoice->delete();
+            return redirect()
+                ->route('admin.billing.invoices.index')
+                ->with('success', 'Facture supprimée avec succès.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Erreur lors de la suppression.');
+        }
     }
 
     /**
@@ -343,9 +451,11 @@ private function buildReceiptPdf(Payment $payment): \Barryvdh\DomPDF\PDF
     public function showPayment(Payment $payment)
     {
         $payment->load(['client', 'invoice']);
+        $company = \App\Models\CompanyInfo::first();
+
         Log::info('Paiement consulté : ' . $payment->payment_number . ' par ' . auth()->user()->email);
 
-        return view('admin.billing.show-payment', compact('payment'));
+        return view('admin.billing.show-payment', compact('payment', 'company'));
     }
 
     /**
@@ -362,73 +472,92 @@ private function buildReceiptPdf(Payment $payment): \Barryvdh\DomPDF\PDF
             'notes'          => 'nullable|string',
         ]);
 
-        $amount        = (float) $request->amount;
-        $newPaidAmount = $invoice->paid_amount + $amount;
-        $newRemaining  = $invoice->remaining_amount - $amount;
+        try {
+            DB::beginTransaction();
 
-        $invoiceStatus = $newRemaining <= 0 ? 'paid'
-                       : ($newPaidAmount > 0  ? 'partially_paid' : $invoice->status);
-        $paidDate      = $newRemaining <= 0 ? Carbon::now() : null;
+            $amount        = (float) $request->amount;
+            $newPaidAmount = $invoice->paid_amount + $amount;
+            $newRemaining  = $invoice->remaining_amount - $amount;
 
-        $payment = Payment::create([
-            'payment_number'    => $this->generatePaymentNumber(),
-            'client_id'         => $invoice->client_id,
-            'invoice_id'        => $invoice->id,
-            'client_service_id' => $invoice->client_service_id,
-            'amount'            => $amount,
-            'remaining_balance' => $newRemaining,
-            'payment_type'      => $request->payment_type,
-            'payment_method'    => $request->payment_method,
-            'reference'         => $request->reference,
-            'payment_date'      => Carbon::parse($request->payment_date),
-            'status'            => 'completed',
-            'notes'             => $request->notes,
-        ]);
+            $invoiceStatus = $newRemaining <= 0 ? 'paid'
+                           : ($newPaidAmount > 0  ? 'partially_paid' : $invoice->status);
+            $paidDate      = $newRemaining <= 0 ? Carbon::now() : null;
 
-        $invoice->update([
-            'paid_amount'      => $newPaidAmount,
-            'remaining_amount' => $newRemaining,
-            'status'           => $invoiceStatus,
-            'paid_date'        => $paidDate,
-        ]);
+            $payment = Payment::create([
+                'payment_number'    => $this->generatePaymentNumber(),
+                'client_id'         => $invoice->client_id,
+                'invoice_id'        => $invoice->id,
+                'client_service_id' => $invoice->client_service_id ?? null,
+                'amount'            => $amount,
+                'remaining_balance' => $newRemaining,
+                'payment_type'      => $request->payment_type,
+                'payment_method'    => $request->payment_method,
+                'reference'         => $request->reference,
+                'payment_date'      => Carbon::parse($request->payment_date),
+                'status'            => 'completed',
+                'notes'             => $request->notes,
+            ]);
 
-        // Envoyer le reçu automatiquement si le client l'a activé
-        if ($invoice->client->invoice_by_email && $invoice->client->email) {
-            $this->sendPaymentReceipt($payment);
-        }
+            $invoice->update([
+                'paid_amount'      => $newPaidAmount,
+                'remaining_amount' => $newRemaining,
+                'status'           => $invoiceStatus,
+                'paid_date'        => $paidDate,
+            ]);
 
-        // Notifications
-        $this->notifyAdmins(
-            'billing_payment',
-            'Nouveau paiement enregistré',
-            "Paiement de " . number_format($amount, 0, ',', ' ') . " FCFA sur la facture #{$invoice->invoice_number}",
-            route('admin.billing.payments.show', $payment)
-        );
+            DB::commit();
 
-        if ($invoiceStatus === 'paid') {
+            // Envoyer le reçu automatiquement
+            if ($invoice->client->email) {
+                $this->sendPaymentReceipt($payment);
+            }
+
+            // Notifications
             $this->notifyAdmins(
-                'billing_paid',
-                'Facture entièrement payée',
-                "Facture #{$invoice->invoice_number} — {$invoice->client->name} — " . number_format($invoice->total, 0, ',', ' ') . ' FCFA',
-                route('admin.billing.invoices.show', $invoice)
+                'billing_payment',
+                'Nouveau paiement enregistré',
+                "Paiement de " . number_format($amount, 0, ',', ' ') . " FCFA sur la facture #{$invoice->invoice_number}",
+                route('admin.billing.payments.show', $payment)
             );
+
+            if ($invoiceStatus === 'paid') {
+                $this->notifyAdmins(
+                    'billing_paid',
+                    'Facture entièrement payée',
+                    "Facture #{$invoice->invoice_number} — {$invoice->client->name} — " . number_format($invoice->total, 0, ',', ' ') . ' FCFA',
+                    route('admin.billing.invoices.show', $invoice)
+                );
+            }
+
+            if ($request->payment_type === 'deposit') {
+                $this->notifyAdmins(
+                    'billing_deposit',
+                    'Acompte enregistré',
+                    "Acompte de " . number_format($amount, 0, ',', ' ') . " FCFA sur #{$invoice->invoice_number}. Solde : " . number_format($newRemaining, 0, ',', ' ') . ' FCFA',
+                    route('admin.billing.invoices.show', $invoice)
+                );
+            }
+
+            $msg = $request->payment_type === 'deposit'
+                 ? 'Acompte enregistré avec succès.'
+                 : 'Paiement enregistré avec succès.';
+
+            return redirect()->route('admin.billing.invoices.show', $invoice)
+                             ->with('success', $msg);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur paiement: ' . $e->getMessage(), [
+                'invoice_id' => $invoice->id,
+                'amount' => $amount ?? null,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Erreur lors de l\'enregistrement du paiement: ' . $e->getMessage())
+                ->withInput();
         }
-
-        if ($request->payment_type === 'deposit') {
-            $this->notifyAdmins(
-                'billing_deposit',
-                'Acompte enregistré',
-                "Acompte de " . number_format($amount, 0, ',', ' ') . " FCFA sur #{$invoice->invoice_number}. Solde : " . number_format($newRemaining, 0, ',', ' ') . ' FCFA',
-                route('admin.billing.invoices.show', $invoice)
-            );
-        }
-
-        $msg = $request->payment_type === 'deposit'
-             ? 'Acompte enregistré avec succès.'
-             : 'Paiement enregistré avec succès.';
-
-        return redirect()->route('admin.billing.invoices.show', $invoice)
-                         ->with('success', $msg);
     }
 
     /**

@@ -178,6 +178,12 @@
         display: inline-block;
     }
 
+    .amount-warning {
+        font-size: 0.7rem;
+        color: #f59e0b;
+        margin-top: 0.25rem;
+    }
+
     @media (max-width: 768px) {
         .invoice-info, .form-grid {
             grid-template-columns: 1fr;
@@ -275,23 +281,23 @@
     <tbody>
         <tr>
             <td>{{ $invoice->description }}</td>
-            <td>{{ number_format($invoice->subtotal, 0, ',', ' ') }} FCFA</td>
-            <td>{{ $invoice->tax_rate }}% ({{ number_format($invoice->tax_amount, 0, ',', ' ') }} FCFA)</td>
-            <td><strong>{{ number_format($invoice->total, 0, ',', ' ') }} FCFA</strong></td>
+            <td>{{ number_format($invoice->subtotal, 2, ',', ' ') }} FCFA</td>
+            <td>{{ $invoice->tax_rate }}% ({{ number_format($invoice->tax_amount, 2, ',', ' ') }} FCFA)</td>
+            <td><strong>{{ number_format($invoice->total, 2, ',', ' ') }} FCFA</strong></td>
         </tr>
     </tbody>
 </table>
 
 <!-- Totaux -->
 <table class="totals">
-    <tr><td>Sous-total HT :</td><td style="text-align: right;">{{ number_format($invoice->subtotal, 0, ',', ' ') }} FCFA</td></tr>
-    <tr><td>TVA ({{ $invoice->tax_rate }}%) :</td><td style="text-align: right;">{{ number_format($invoice->tax_amount, 0, ',', ' ') }} FCFA</td></tr>
-    <tr style="border-top: 1px solid var(--border-light);"><td><strong>Total TTC :</strong></td><td style="text-align: right;"><strong>{{ number_format($invoice->total, 0, ',', ' ') }} FCFA</strong></td></tr>
+    <tr><td>Sous-total HT :</td><td style="text-align: right;">{{ number_format($invoice->subtotal, 2, ',', ' ') }} FCFA</td></tr>
+    <tr><td>TVA ({{ $invoice->tax_rate }}%) :</td><td style="text-align: right;">{{ number_format($invoice->tax_amount, 2, ',', ' ') }} FCFA</td></tr>
+    <tr style="border-top: 1px solid var(--border-light);"><td><strong>Total TTC :</strong></td><td style="text-align: right;"><strong>{{ number_format($invoice->total, 2, ',', ' ') }} FCFA</strong></td></tr>
     @if($invoice->paid_amount > 0)
-    <tr><td>Montant déjà payé :</td><td style="text-align: right; color: #10b981;">{{ number_format($invoice->paid_amount, 0, ',', ' ') }} FCFA</td></tr>
+    <tr><td>Montant déjà payé :</td><td style="text-align: right; color: #10b981;">{{ number_format($invoice->paid_amount, 2, ',', ' ') }} FCFA</td></tr>
     @endif
     @if($invoice->remaining_amount > 0)
-    <tr style="border-top: 2px solid var(--border-light);"><td><strong>Reste à payer :</strong></td><td style="text-align: right;"><strong style="color: #f59e0b;">{{ number_format($invoice->remaining_amount, 0, ',', ' ') }} FCFA</strong></td></tr>
+    <tr style="border-top: 2px solid var(--border-light);"><td><strong>Reste à payer :</strong></td><td style="text-align: right;"><strong style="color: #f59e0b;">{{ number_format($invoice->remaining_amount, 2, ',', ' ') }} FCFA</strong></td></tr>
     @endif
 </table>
 
@@ -300,12 +306,13 @@
 @can('billing.payments.create')
 <div class="payment-form">
     <h3 class="section-title">Enregistrer un paiement</h3>
-    <form action="{{ route('admin.billing.invoices.payment', $invoice) }}" method="POST">
+    <form action="{{ route('admin.billing.invoices.payment', $invoice) }}" method="POST" id="paymentForm">
         @csrf
         <div class="form-grid">
             <div class="form-group">
-                <label>Montant (max: {{ number_format($invoice->remaining_amount, 0, ',', ' ') }} FCFA)</label>
-                <input type="number" name="amount" class="form-control" step="1" max="{{ $invoice->remaining_amount }}" required>
+                <label>Montant (max: {{ number_format($invoice->remaining_amount, 2, ',', ' ') }} FCFA)</label>
+                <input type="number" name="amount" id="amountInput" class="form-control" step="0.01" min="0.01" max="{{ $invoice->remaining_amount }}" required>
+                <div class="amount-warning" id="amountWarning"></div>
             </div>
             <div class="form-group">
                 <label>Type de paiement</label>
@@ -339,7 +346,7 @@
             </div>
         </div>
         <div style="margin-top: 1rem;">
-            <button type="submit" class="btn btn-success">
+            <button type="submit" class="btn btn-success" id="submitBtn">
                 <i class="fas fa-save"></i> Enregistrer le paiement
             </button>
         </div>
@@ -368,7 +375,7 @@
             <tr>
                 <td>{{ $payment->payment_number }}</td>
                 <td>{{ $payment->payment_date->format('d/m/Y') }}</td>
-                <td>{{ number_format($payment->amount, 0, ',', ' ') }} FCFA</td>
+                <td>{{ number_format($payment->amount, 2, ',', ' ') }} FCFA</td>
                 <td>
                     @if($payment->payment_type == 'deposit') Acompte
                     @elseif($payment->payment_type == 'partial') Partiel
@@ -390,3 +397,59 @@
 </div>
 @endif
 @endsection
+
+@push('scripts')
+<script>
+    const amountInput = document.getElementById('amountInput');
+    const amountWarning = document.getElementById('amountWarning');
+    const submitBtn = document.getElementById('submitBtn');
+    const remainingAmount = {{ $invoice->remaining_amount }};
+    const form = document.getElementById('paymentForm');
+
+    if (amountInput) {
+        amountInput.addEventListener('input', function() {
+            let value = parseFloat(this.value);
+
+            if (isNaN(value)) {
+                amountWarning.innerHTML = '';
+                submitBtn.disabled = false;
+                return;
+            }
+
+            if (value > remainingAmount) {
+                amountWarning.innerHTML = ' Le montant ne peut pas dépasser ' + remainingAmount.toFixed(2) + ' FCFA';
+                amountWarning.style.color = '#ef4444';
+                submitBtn.disabled = true;
+            } else if (value <= 0) {
+                amountWarning.innerHTML = ' Le montant doit être supérieur à 0';
+                amountWarning.style.color = '#ef4444';
+                submitBtn.disabled = true;
+            } else {
+                amountWarning.innerHTML = '';
+                submitBtn.disabled = false;
+            }
+        });
+
+        form.addEventListener('submit', function(e) {
+            let value = parseFloat(amountInput.value);
+
+            if (isNaN(value) || value <= 0) {
+                e.preventDefault();
+                amountWarning.innerHTML = ' Veuillez saisir un montant valide';
+                amountWarning.style.color = '#ef4444';
+                return false;
+            }
+
+            if (value > remainingAmount) {
+                e.preventDefault();
+                amountWarning.innerHTML = ' Le montant ne peut pas dépasser ' + remainingAmount.toFixed(2) + ' FCFA';
+                amountWarning.style.color = '#ef4444';
+                return false;
+            }
+
+            // Arrondir à 2 décimales avant l'envoi
+            amountInput.value = value.toFixed(2);
+        });
+    }
+</script>
+@endpush
