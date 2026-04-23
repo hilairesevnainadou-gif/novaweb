@@ -1888,7 +1888,7 @@ if (form) {
         for (const [field, messages] of Object.entries(errors)) {
             const errorDiv = document.getElementById(`error-${field}`);
             if (errorDiv) {
-                errorDiv.innerHTML = '⚠️ ' + messages.join(', ');
+                errorDiv.innerHTML = ' ' + messages.join(', ');
                 errorDiv.style.display = 'block';
             }
 
@@ -1900,7 +1900,7 @@ if (form) {
     }
 
     function showMessage(message, isSuccess = false) {
-        msg.innerHTML = isSuccess ? '✓ ' + message : '⚠️ ' + message;
+        msg.innerHTML = isSuccess ? '✓ ' + message : ' ' + message;
         msg.className = 'form-message ' + (isSuccess ? 'success' : 'error');
         msg.style.display = 'block';
         setTimeout(() => {

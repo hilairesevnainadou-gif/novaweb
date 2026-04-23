@@ -2,13 +2,13 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Réinitialisation de votre mot de passe - NovaTech</title>
+    <title>Reinitialisation de votre mot de passe - {{ config('app.name') }}</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            color: #1a1a1a;
-            background-color: #f5f5f5;
+            color: #1e293b;
+            background-color: #f1f5f9;
             margin: 0;
             padding: 0;
         }
@@ -16,100 +16,122 @@
             max-width: 600px;
             margin: 40px auto;
             padding: 20px;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .email-wrapper {
+            background: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         .header {
+            background: #1e293b;
+            color: white;
+            padding: 32px 24px;
             text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e5e7eb;
         }
-        .logo {
+        .header .logo {
             font-size: 24px;
             font-weight: bold;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            letter-spacing: 1px;
         }
         .content {
-            padding: 30px 0;
+            padding: 32px 24px;
         }
-        .new-password {
-            background: #f3f4f6;
-            border-radius: 8px;
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .greeting strong {
+            color: #1e293b;
+        }
+        .new-password-box {
+            background: #f8fafc;
+            border-radius: 12px;
             padding: 20px;
             margin: 20px 0;
             text-align: center;
             font-family: monospace;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             letter-spacing: 2px;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
         }
         .button {
             display: inline-block;
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: #2563eb;
             color: white;
             text-decoration: none;
+            padding: 12px 24px;
             border-radius: 8px;
             font-weight: 600;
             margin: 20px 0;
         }
-        .button:hover {
-            opacity: 0.9;
-        }
-        .warning {
-            background-color: #fef3c7;
-            padding: 12px;
+        .warning-box {
+            background: #fef3c7;
+            padding: 12px 16px;
             border-radius: 8px;
             font-size: 14px;
             color: #92400e;
             margin: 20px 0;
+            border-left: 4px solid #f59e0b;
+        }
+        .warning-box strong {
+            color: #92400e;
         }
         .footer {
+            background: #f8fafc;
+            padding: 20px 24px;
             text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
             font-size: 12px;
-            color: #6b7280;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+            margin: 4px 0;
+        }
+        .text-center {
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="logo">NovaTech</div>
-        </div>
-
-        <div class="content">
-            <h2>Bonjour {{ $user->name }},</h2>
-
-            <p>Une demande de réinitialisation de mot de passe a été effectuée pour votre compte.</p>
-
-            <p>Votre nouveau mot de passe temporaire est :</p>
-
-            <div class="new-password">
-                {{ $password }}
+        <div class="email-wrapper">
+            <div class="header">
+                <div class="logo">{{ config('app.name') }}</div>
             </div>
 
-            <div style="text-align: center;">
-                <a href="{{ $loginUrl }}" class="button">Se connecter avec ce nouveau mot de passe</a>
+            <div class="content">
+                <div class="greeting">
+                    Bonjour <strong>{{ $user->name }}</strong>,
+                </div>
+
+                <p>Une demande de reinitialisation de mot de passe a ete effectuee pour votre compte.</p>
+
+                <p>Votre nouveau mot de passe temporaire est :</p>
+
+                <div class="new-password-box">
+                    {{ $password }}
+                </div>
+
+                <div class="text-center">
+                    <a href="{{ $loginUrl }}" class="button">Se connecter avec ce nouveau mot de passe</a>
+                </div>
+
+                <div class="warning-box">
+                    <strong>Important :</strong> Ce mot de passe est temporaire. Nous vous recommandons de le modifier immediatement apres votre connexion.
+                </div>
+
+                <p>Si vous n'etes pas a l'origine de cette demande, veuillez contacter immediatement l'administrateur.</p>
+
+                <p>Cordialement,<br><strong>L'equipe {{ config('app.name') }}</strong></p>
             </div>
 
-            <div class="warning">
-                <strong>Important :</strong> Ce mot de passe est temporaire. Nous vous recommandons de le modifier immédiatement après votre connexion.
+            <div class="footer">
+                <p>&copy; {{ date('Y') }} {{ config('app.name') }}. Tous droits reserves.</p>
+                <p>Cet email a ete envoye automatiquement, merci de ne pas y repondre.</p>
             </div>
-
-            <p>Si vous n'êtes pas à l'origine de cette demande, veuillez contacter immédiatement l'administrateur.</p>
-
-            <p>Cordialement,<br><strong>L'équipe NovaTech</strong></p>
-        </div>
-
-        <div class="footer">
-            <p>&copy; {{ date('Y') }} NovaTech. Tous droits réservés.</p>
-            <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
         </div>
     </div>
 </body>

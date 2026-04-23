@@ -257,7 +257,7 @@
         <p>Date d'émission: {{ $invoice->issue_date->format('d/m/Y') }}</p>
         <p>Date d'échéance: {{ $invoice->due_date->format('d/m/Y') }}</p>
         @if($invoice->due_date < now() && $invoice->status != 'paid')
-        <p style="color: #ef4444;">⚠️ Facture en retard</p>
+        <p style="color: #ef4444;"> Facture en retard</p>
         @endif
     </div>
 </div>

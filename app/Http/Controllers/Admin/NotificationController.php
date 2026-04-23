@@ -39,4 +39,15 @@ class NotificationController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function destroy(Notification $notification)
+    {
+        if ($notification->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $notification->delete();
+
+        return response()->json(['success' => true]);
+    }
 }

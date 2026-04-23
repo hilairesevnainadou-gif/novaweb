@@ -31,11 +31,22 @@
             padding: 32px 24px;
             text-align: center;
         }
+        .header-logo {
+            max-width: 100px;
+            max-height: 80px;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
         .header h1 {
             margin: 0;
             font-size: 24px;
             font-weight: 700;
             letter-spacing: 1px;
+        }
+        .header .company-name {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-top: 8px;
         }
         .header .invoice-number {
             font-size: 14px;
@@ -62,7 +73,7 @@
         .info-row {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #e2e8f0;
         }
         .info-row:last-child {
@@ -71,27 +82,30 @@
         .info-label {
             font-weight: 600;
             color: #475569;
+            width: 40%;
         }
         .info-value {
             color: #1e293b;
+            width: 60%;
+            text-align: right;
         }
         .amount-box {
             text-align: center;
             padding: 24px;
-            background: #f8fafc;
+            background: #f0fdf4;
             border-radius: 12px;
             margin: 24px 0;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #bbf7d0;
         }
         .amount-label {
             font-size: 14px;
-            color: #64748b;
+            color: #166534;
             margin-bottom: 8px;
         }
         .amount-value {
             font-size: 32px;
             font-weight: 700;
-            color: #2563eb;
+            color: #16a34a;
         }
         .status-badge {
             display: inline-block;
@@ -113,8 +127,6 @@
             background: #fee2e2;
             color: #dc2626;
         }
-
-        /* Section paiement */
         .payment-section {
             margin: 24px 0;
         }
@@ -127,8 +139,6 @@
             border-bottom: 2px solid #2563eb;
             display: inline-block;
         }
-
-        /* Carte bancaire */
         .bank-card {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -155,20 +165,22 @@
         .bank-label {
             font-weight: 600;
             color: #475569;
+            width: 40%;
         }
         .bank-value {
             color: #1e293b;
             font-family: monospace;
             font-size: 14px;
+            width: 60%;
+            text-align: right;
         }
-
-        /* Mobile Money */
         .mobile-card {
             background: #fffbeb;
             border: 1px solid #fcd34d;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
+            text-align: center;
         }
         .mobile-card h4 {
             font-size: 14px;
@@ -177,8 +189,7 @@
             color: #92400e;
         }
         .mobile-number {
-            text-align: center;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
             color: #92400e;
             font-family: monospace;
@@ -186,12 +197,9 @@
             margin: 10px 0;
         }
         .mobile-operator {
-            text-align: center;
             font-size: 12px;
             color: #b45309;
         }
-
-        /* Instructions */
         .instructions {
             background: #eff6ff;
             border-left: 4px solid #2563eb;
@@ -204,7 +212,6 @@
         .instructions p {
             margin: 0;
         }
-
         .footer {
             background: #f8fafc;
             padding: 20px 24px;
@@ -218,12 +225,6 @@
         }
         .text-center {
             text-align: center;
-        }
-        .mt-4 {
-            margin-top: 24px;
-        }
-        .mb-4 {
-            margin-bottom: 24px;
         }
         .warning-note {
             background: #fef2f2;
@@ -249,17 +250,31 @@
             }
             .info-row {
                 flex-direction: column;
-                padding: 12px 0;
+            }
+            .info-label {
+                width: 100%;
+                margin-bottom: 4px;
             }
             .info-value {
-                margin-top: 4px;
+                width: 100%;
+                text-align: left;
             }
             .bank-detail {
                 flex-direction: column;
-                gap: 4px;
+            }
+            .bank-label {
+                width: 100%;
+                margin-bottom: 4px;
+            }
+            .bank-value {
+                width: 100%;
+                text-align: left;
             }
             .mobile-number {
-                font-size: 18px;
+                font-size: 22px;
+            }
+            .amount-value {
+                font-size: 24px;
             }
         }
     </style>
@@ -268,8 +283,12 @@
     <div class="container">
         <div class="email-wrapper">
             <div class="header">
+                @if(isset($company) && $company->logo_url)
+                    <img src="{{ $company->logo_url }}" alt="{{ $company->name }}" class="header-logo">
+                @endif
                 <h1>FACTURE</h1>
-                <div class="invoice-number">{{ $invoice->invoice_number }}</div>
+                <div class="company-name">{{ $company->name ?? config('app.name') }}</div>
+                <div class="invoice-number">N° {{ $invoice->invoice_number }}</div>
             </div>
 
             <div class="content">
@@ -277,7 +296,7 @@
                     Bonjour <strong>{{ $invoice->client->name }}</strong>,
                 </div>
 
-                <p>Veuillez trouver ci-joint votre facture <strong>{{ $invoice->invoice_number }}</strong> d'un montant de <strong>{{ number_format($invoice->total, 0, ',', ' ') }} FCFA</strong>.</p>
+                <p>Veuillez trouver ci-dessous le detail de votre facture <strong>{{ $invoice->invoice_number }}</strong>.</p>
 
                 <div class="info-box">
                     <div class="info-row">
@@ -285,7 +304,7 @@
                         <span class="info-value">{{ $invoice->issue_date->format('d/m/Y') }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Date d'echéance</span>
+                        <span class="info-label">Date d'echeance</span>
                         <span class="info-value">{{ $invoice->due_date->format('d/m/Y') }}</span>
                     </div>
                     <div class="info-row">
@@ -299,7 +318,7 @@
                     <div class="amount-value">{{ number_format($invoice->total, 0, ',', ' ') }} FCFA</div>
                 </div>
 
-                <div class="text-center mb-4">
+                <div class="text-center">
                     @if($invoice->status == 'paid')
                         <span class="status-badge status-paid">Payee</span>
                     @elseif($invoice->due_date < now())
@@ -311,49 +330,46 @@
 
                 <hr>
 
-                <!-- SECTION PAIEMENT -->
                 <div class="payment-section">
                     <div class="payment-title">Instructions de paiement</div>
 
-                    <!-- Paiement par virement bancaire -->
-                    @if($company->bank_name || $company->bank_account_number)
+                    @if(isset($company) && ($company->bank_name || $company->bank_account_number))
                     <div class="bank-card">
                         <h4>Virement bancaire</h4>
                         @if($company->bank_name)
                         <div class="bank-detail">
-                            <span class="bank-label">Banque :</span>
+                            <span class="bank-label">Banque</span>
                             <span class="bank-value">{{ $company->bank_name }}</span>
                         </div>
                         @endif
                         @if($company->bank_account_name)
                         <div class="bank-detail">
-                            <span class="bank-label">Titulaire du compte :</span>
+                            <span class="bank-label">Titulaire du compte</span>
                             <span class="bank-value">{{ $company->bank_account_name }}</span>
                         </div>
                         @endif
                         @if($company->bank_account_number)
                         <div class="bank-detail">
-                            <span class="bank-label">Numero de compte :</span>
+                            <span class="bank-label">Numero de compte</span>
                             <span class="bank-value">{{ $company->bank_account_number }}</span>
                         </div>
                         @endif
                         @if($company->bank_iban)
                         <div class="bank-detail">
-                            <span class="bank-label">IBAN :</span>
+                            <span class="bank-label">IBAN</span>
                             <span class="bank-value">{{ $company->bank_iban }}</span>
                         </div>
                         @endif
                         @if($company->bank_swift)
                         <div class="bank-detail">
-                            <span class="bank-label">SWIFT / BIC :</span>
+                            <span class="bank-label">SWIFT / BIC</span>
                             <span class="bank-value">{{ $company->bank_swift }}</span>
                         </div>
                         @endif
                     </div>
                     @endif
 
-                    <!-- Paiement par Mobile Money -->
-                    @if($company->mobile_money_number)
+                    @if(isset($company) && $company->mobile_money_number)
                     <div class="mobile-card">
                         <h4>Paiement Mobile Money</h4>
                         <div class="mobile-number">
@@ -370,22 +386,20 @@
                                 Operateur: {{ $company->mobile_money_operator }}
                             @endif
                         </div>
-                        <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #92400e;">
-                            Utilisez le numero ci-dessus pour effectuer votre paiement
+                        <div style="margin-top: 12px; font-size: 12px; color: #92400e;">
+                            Utilisez ce numero pour effectuer votre paiement
                         </div>
                     </div>
                     @endif
 
-                    <!-- Instructions supplementaires -->
-                    @if($company->payment_instructions)
+                    @if(isset($company) && $company->payment_instructions)
                     <div class="instructions">
                         <p><strong>Instructions :</strong></p>
                         <p>{{ $company->payment_instructions }}</p>
                     </div>
                     @endif
 
-                    <!-- Message par defaut si aucune info bancaire -->
-                    @if(!$company->bank_name && !$company->bank_account_number && !$company->mobile_money_number)
+                    @if(!isset($company) || (!$company->bank_name && !$company->bank_account_number && !$company->mobile_money_number))
                     <div class="bank-card">
                         <p style="text-align: center; color: #64748b;">
                             Veuillez nous contacter pour obtenir les informations de paiement.
@@ -394,7 +408,6 @@
                     @endif
                 </div>
 
-                <!-- Information importante -->
                 <div class="warning-note">
                     <strong>Important :</strong> Veuillez utiliser le numero de facture <strong>{{ $invoice->invoice_number }}</strong> comme reference de votre paiement.
                 </div>
@@ -402,8 +415,7 @@
                 <hr>
 
                 <p style="font-size: 13px; color: #64748b; margin-top: 24px; text-align: center;">
-                    Merci de votre confiance.<br>
-                    <strong>{{ $company->name ?? config('app.name') }}</strong>
+                    Merci de votre confiance.
                 </p>
             </div>
 

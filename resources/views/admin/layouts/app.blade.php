@@ -1227,49 +1227,83 @@
                             <span class="notification-badge">{{ $unreadNotifications > 9 ? '9+' : $unreadNotifications }}</span>
                             @endif
                         </button>
-                        <div class="dropdown-menu" id="notificationsMenu" style="min-width: 320px;">
-                            <div class="dropdown-header" style="display: flex; justify-content: space-between; align-items: center;">
-                                <strong>Notifications</strong>
+                        <div class="dropdown-menu" id="notificationsMenu" style="min-width: 340px; max-width: 360px;">
+                            {{-- Header --}}
+                            <div class="dropdown-header" style="display:flex; justify-content:space-between; align-items:center; padding: 14px 16px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <strong style="font-size:14px;">Notifications</strong>
+                                    @if($unreadNotifications > 0)
+                                    <span style="font-size:10px; font-weight:700; background:var(--brand-error); color:#fff; border-radius:999px; padding:1px 7px;">
+                                        {{ $unreadNotifications }}
+                                    </span>
+                                    @endif
+                                </div>
                                 @if($unreadNotifications > 0)
-                                <button onclick="markAllAsRead()" style="font-size: 11px; color: var(--brand-primary); background: none; border: none; cursor: pointer;">
-                                    Tout marquer comme lu
+                                <button onclick="markAllAsRead()" style="font-size:11px; font-weight:600; color:var(--brand-primary); background:none; border:none; cursor:pointer; padding:3px 8px; border-radius:4px; transition:background 0.15s;" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='none'">
+                                    <i class="fas fa-check-double" style="margin-right:4px;"></i>Tout lire
                                 </button>
                                 @endif
                             </div>
+
                             @php
                                 $recentNotifications = \App\Models\Notification::where('user_id', auth()->id())
                                     ->latest()
-                                    ->take(5)
+                                    ->take(7)
                                     ->get();
+                                $totalNotifications = \App\Models\Notification::where('user_id', auth()->id())->count();
                             @endphp
-                            @forelse($recentNotifications as $notification)
-                            <a href="{{ $notification->url ?: '#' }}" class="dropdown-item notification-item" data-id="{{ $notification->id }}" style="{{ !$notification->is_read ? 'background: var(--bg-selected);' : '' }}">
-                                <i class="fas {{ $notification->type === 'contact_message' ? 'fa-envelope' : ($notification->type === 'intervention' ? 'fa-tools' : 'fa-bell') }}"></i>
-                                <div style="flex: 1; min-width: 0;">
-                                    <div style="font-weight: 600; margin-bottom: 4px; font-size: 13px; color: var(--text-primary);">{{ $notification->title }}</div>
-                                    <div style="font-size: 12px; color: var(--text-secondary);">
-                                        {{ Str::limit($notification->message, 50) }}
+
+                            {{-- Liste scrollable : max 7 items visibles (~56px par item) --}}
+                            <div style="max-height: 392px; overflow-y: auto; overflow-x: hidden;">
+                                @forelse($recentNotifications as $notification)
+                                <a href="{{ $notification->url ?: '#' }}"
+                                   class="dropdown-item notification-item"
+                                   data-id="{{ $notification->id }}"
+                                   style="align-items:flex-start; padding:10px 16px; gap:10px; border-bottom:1px solid var(--border-light); {{ !$notification->is_read ? 'background:var(--bg-selected);' : '' }}">
+
+                                    {{-- Icône colorée --}}
+                                    <div style="width:32px; height:32px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px;
+                                        {{ $notification->type === 'contact_message' ? 'background:rgba(59,130,246,0.12); color:var(--brand-primary);' : ($notification->type === 'intervention' ? 'background:rgba(245,158,11,0.12); color:var(--brand-warning);' : 'background:rgba(139,92,246,0.12); color:var(--brand-secondary);') }}">
+                                        <i class="fas {{ $notification->type === 'contact_message' ? 'fa-envelope' : ($notification->type === 'intervention' ? 'fa-tools' : 'fa-bell') }}"></i>
                                     </div>
-                                    <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px;">
-                                        {{ $notification->created_at->diffForHumans() }}
+
+                                    {{-- Texte --}}
+                                    <div style="flex:1; min-width:0;">
+                                        <div style="font-weight:600; font-size:12px; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                            {{ $notification->title }}
+                                        </div>
+                                        <div style="font-size:11px; color:var(--text-secondary); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                            {{ Str::limit($notification->message, 45) }}
+                                        </div>
+                                        <div style="font-size:10px; color:var(--text-tertiary); margin-top:3px;">
+                                            <i class="fas fa-clock" style="margin-right:3px;"></i>{{ $notification->created_at->diffForHumans() }}
+                                        </div>
                                     </div>
+
+                                    {{-- Point non-lu --}}
+                                    @if(!$notification->is_read)
+                                    <div style="width:7px; height:7px; background:var(--brand-primary); border-radius:50%; flex-shrink:0; margin-top:4px;"></div>
+                                    @endif
+                                </a>
+                                @empty
+                                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; gap:10px; color:var(--text-tertiary);">
+                                    <i class="fas fa-bell-slash" style="font-size:28px; opacity:0.4;"></i>
+                                    <span style="font-size:13px;">Aucune notification</span>
                                 </div>
-                                @if(!$notification->is_read)
-                                <div style="width: 8px; height: 8px; background: var(--brand-primary); border-radius: 50%;"></div>
-                                @endif
-                            </a>
-                            @empty
-                            <div class="dropdown-item" style="justify-content: center; gap: 8px;">
-                                <i class="fas fa-bell-slash"></i>
-                                <span>Aucune notification</span>
+                                @endforelse
                             </div>
-                            @endforelse
-                            @if($recentNotifications->count() > 0)
-                            <div class="dropdown-divider"></div>
-                            <a href="{{ route('admin.notifications.index') }}" class="dropdown-item" style="justify-content: center;">
-                                <span>Voir toutes les notifications</span>
-                                <i class="fas fa-arrow-right"></i>
-                            </a>
+
+                            {{-- Footer --}}
+                            @if($totalNotifications > 0)
+                            <div style="border-top:1px solid var(--border-light); padding:10px 16px; display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-size:11px; color:var(--text-tertiary);">
+                                    {{ $totalNotifications }} notification{{ $totalNotifications > 1 ? 's' : '' }} au total
+                                </span>
+                                <a href="{{ route('admin.notifications.index') }}"
+                                   style="font-size:11px; font-weight:600; color:var(--brand-primary); display:flex; align-items:center; gap:5px;">
+                                    Voir tout <i class="fas fa-arrow-right" style="font-size:10px;"></i>
+                                </a>
+                            </div>
                             @endif
                         </div>
                     </div>

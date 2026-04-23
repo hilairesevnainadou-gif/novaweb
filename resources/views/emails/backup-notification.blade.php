@@ -9,8 +9,8 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background-color: #f4f4f4;
+            color: #1e293b;
+            background-color: #f1f5f9;
             margin: 0;
             padding: 0;
         }
@@ -18,110 +18,134 @@
             max-width: 600px;
             margin: 20px auto;
             padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .email-wrapper {
+            background: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         .header {
+            background: #1e293b;
+            color: white;
+            padding: 32px 24px;
             text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #3b82f6;
         }
         .header h1 {
-            color: #3b82f6;
             margin: 0;
             font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
         .header p {
-            color: #666;
-            margin: 5px 0 0;
+            margin: 8px 0 0;
+            opacity: 0.8;
+            font-size: 14px;
         }
         .content {
-            padding: 20px 0;
+            padding: 32px 24px;
+        }
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
         }
         .info-box {
-            background-color: #f0f4f8;
-            border-left: 4px solid #3b82f6;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 4px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0;
         }
         .info-row {
             display: flex;
+            justify-content: space-between;
             padding: 8px 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .info-row:last-child {
+            border-bottom: none;
         }
         .info-label {
-            font-weight: bold;
-            width: 120px;
-            color: #555;
+            font-weight: 600;
+            color: #475569;
         }
         .info-value {
-            flex: 1;
-            color: #333;
-        }
-        .success {
-            color: #10b981;
-        }
-        .warning {
-            color: #f59e0b;
+            color: #1e293b;
         }
         .button {
             display: inline-block;
-            background-color: #3b82f6;
+            background: #2563eb;
             color: white;
-            padding: 10px 20px;
             text-decoration: none;
-            border-radius: 5px;
-            margin-top: 15px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 16px 0;
+        }
+        .button:hover {
+            background: #1d4ed8;
         }
         .footer {
+            background: #f8fafc;
+            padding: 20px 24px;
             text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
             font-size: 12px;
-            color: #999;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+            margin: 4px 0;
+        }
+        .text-center {
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>{{ $company_name }}</h1>
-            <p>Sauvegarde {{ $backup_type }}</p>
-        </div>
+        <div class="email-wrapper">
+            <div class="header">
+                <h1>{{ $company_name }}</h1>
+                <p>Sauvegarde {{ $backup_type }}</p>
+            </div>
 
-        <div class="content">
-            <h2> Rapport de sauvegarde</h2>
-            <p>Une sauvegarde {{ strtolower($backup_type) }} a été effectuée avec succès.</p>
+            <div class="content">
+                <div class="greeting">
+                    Rapport de sauvegarde
+                </div>
 
-            <div class="info-box">
-                <div class="info-row">
-                    <div class="info-label">Date :</div>
-                    <div class="info-value">{{ $backup_date }}</div>
+                <p>Une sauvegarde {{ strtolower($backup_type) }} a ete effectuee avec succes.</p>
+
+                <div class="info-box">
+                    <div class="info-row">
+                        <span class="info-label">Date :</span>
+                        <span class="info-value">{{ $backup_date }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Type :</span>
+                        <span class="info-value">{{ $backup_type }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Fichier :</span>
+                        <span class="info-value">{{ $backup_filename }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Taille :</span>
+                        <span class="info-value">{{ $backup_size }}</span>
+                    </div>
                 </div>
-                <div class="info-row">
-                    <div class="info-label">Type :</div>
-                    <div class="info-value">{{ $backup_type }}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Fichier :</div>
-                    <div class="info-value">{{ $backup_filename }}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Taille :</div>
-                    <div class="info-value">{{ $backup_size }}</div>
+
+                <p>Le fichier de sauvegarde est joint a cet email.</p>
+
+                <div class="text-center">
+                    <a href="{{ $backup_path }}" class="button">Telecharger la sauvegarde</a>
                 </div>
             </div>
 
-            <p>Le fichier de sauvegarde est joint à cet email.</p>
-
-            <a href="{{ $backup_path }}" class="button">📥 Télécharger la sauvegarde</a>
-        </div>
-
-        <div class="footer">
-            <p>Cet email a été envoyé automatiquement par {{ $company_name }}.</p>
-            <p>&copy; {{ date('Y') }} {{ $company_name }}. Tous droits réservés.</p>
+            <div class="footer">
+                <p>Cet email a ete envoye automatiquement par {{ $company_name }}.</p>
+                <p>&copy; {{ date('Y') }} {{ $company_name }}. Tous droits reserves.</p>
+            </div>
         </div>
     </div>
 </body>

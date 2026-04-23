@@ -9,8 +9,8 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background-color: #f4f4f4;
+            color: #1e293b;
+            background-color: #f1f5f9;
             margin: 0;
             padding: 0;
         }
@@ -18,22 +18,32 @@
             max-width: 600px;
             margin: 20px auto;
             padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .email-wrapper {
+            background: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         .header {
+            background: #1e293b;
+            color: white;
+            padding: 32px 24px;
             text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #10b981;
         }
         .header h1 {
-            color: #10b981;
             margin: 0;
             font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .header p {
+            margin: 8px 0 0;
+            opacity: 0.8;
+            font-size: 14px;
         }
         .content {
-            padding: 20px 0;
+            padding: 32px 24px;
             text-align: center;
         }
         .success-icon {
@@ -42,48 +52,62 @@
             margin-bottom: 15px;
         }
         .info-box {
-            background-color: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0;
             text-align: left;
         }
         .info-row {
-            padding: 5px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .info-row:last-child {
+            border-bottom: none;
         }
         .footer {
+            background: #f8fafc;
+            padding: 20px 24px;
             text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
             font-size: 12px;
-            color: #999;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+            margin: 4px 0;
+        }
+        h2 {
+            color: #1e293b;
+            margin: 0 0 16px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>{{ $company_name ?? config('app.name') }}</h1>
-            <p>Test de configuration des sauvegardes</p>
-        </div>
-
-        <div class="content">
-            <div class="success-icon">✅</div>
-            <h2>Test réussi !</h2>
-            <p>Votre configuration des sauvegardes fonctionne correctement.</p>
-
-            <div class="info-box">
-                <div class="info-row"><strong>Date du test :</strong> {{ $test_date ?? date('d/m/Y H:i:s') }}</div>
-                <div class="info-row"><strong>Message :</strong> {{ $email_message ?? 'Email de test automatique' }}</div>
+        <div class="email-wrapper">
+            <div class="header">
+                <h1>{{ $company_name ?? config('app.name') }}</h1>
+                <p>Test de configuration des sauvegardes</p>
             </div>
 
-            <p>Ceci est un email de test automatique. Aucune action n'est requise.</p>
-        </div>
+            <div class="content">
+                <div class="success-icon">✓</div>
+                <h2>Test reussi !</h2>
+                <p>Votre configuration des sauvegardes fonctionne correctement.</p>
 
-        <div class="footer">
-            <p>Cet email a été envoyé automatiquement par {{ $company_name ?? config('app.name') }}.</p>
-            <p>&copy; {{ date('Y') }} {{ $company_name ?? config('app.name') }}. Tous droits réservés.</p>
+                <div class="info-box">
+                    <div class="info-row"><strong>Date du test :</strong> {{ $test_date ?? date('d/m/Y H:i:s') }}</div>
+                    <div class="info-row"><strong>Message :</strong> {{ $email_message ?? 'Email de test automatique' }}</div>
+                </div>
+
+                <p>Ceci est un email de test automatique. Aucune action n'est requise.</p>
+            </div>
+
+            <div class="footer">
+                <p>Cet email a ete envoye automatiquement par {{ $company_name ?? config('app.name') }}.</p>
+                <p>&copy; {{ date('Y') }} {{ $company_name ?? config('app.name') }}. Tous droits reserves.</p>
+            </div>
         </div>
     </div>
 </body>

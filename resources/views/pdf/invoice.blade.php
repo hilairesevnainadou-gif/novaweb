@@ -5,438 +5,647 @@
     <meta charset="UTF-8">
     <title>Facture {{ $invoice->invoice_number }}</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ════════════════════════════════════
+           RESET & BASE  –  A4 : 210 × 297 mm
+           DomPDF 96 dpi → 794 × 1123 px
+        ════════════════════════════════════ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'DejaVu Sans', 'Segoe UI', Arial, sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
-            color: #333;
-            padding: 20px;
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #1e293b;
+            background: #ffffff;
+            width: 794px;
         }
-        .invoice-box {
-            max-width: 800px;
-            margin: 0 auto;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #fff;
+
+        .page { width: 794px; min-height: 1123px; background: #ffffff; }
+
+        /* ════ HEADER ════ */
+        .header-band {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            width: 100%;
         }
-        .invoice-header {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        .invoice-header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-            letter-spacing: 2px;
-        }
-        .invoice-header p {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        .invoice-body {
-            padding: 30px;
-        }
-        .company-info, .client-info {
-            margin-bottom: 30px;
-        }
-        .company-info h3, .client-info h3 {
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: #4f46e5;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 5px;
-        }
-        .info-grid {
+        .header-inner {
             display: table;
             width: 100%;
+            padding: 22px 32px;
         }
-        .info-row {
-            display: table-row;
-        }
-        .info-label {
+
+        /* Logo */
+        .header-logo-cell {
             display: table-cell;
-            padding: 4px 0;
-            font-weight: 600;
-            color: #475569;
             width: 130px;
+            vertical-align: middle;
         }
-        .info-value {
-            display: table-cell;
-            padding: 4px 0;
-        }
-        .invoice-details {
-            margin: 30px 0;
-            background: #f8fafc;
-            padding: 15px;
+        .logo-box {
+            width: 110px; height: 70px;
+            background: #ffffff;
             border-radius: 8px;
+            display: table;
+            text-align: center;
+            overflow: hidden;
         }
-        .invoice-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
+        .logo-box-inner {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
         }
-        .invoice-table th {
-            background: #f8fafc;
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 1px solid #e2e8f0;
+        .logo-box img {
+            max-width: 100px; max-height: 60px;
+            display: block; margin: auto;
+            object-fit: contain;
         }
-        .invoice-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
+        .logo-text-fallback {
+            font-size: 13px; font-weight: bold; color: #4f46e5;
         }
-        .totals {
-            width: 100%;
-            max-width: 350px;
-            margin-left: auto;
-            margin-top: 20px;
+
+        /* Titre */
+        .header-title-cell {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
         }
-        .totals table {
-            width: 100%;
-            border-collapse: collapse;
+        .header-title-cell h1 {
+            font-size: 26px; font-weight: bold;
+            color: #fff; letter-spacing: 4px;
+            margin-bottom: 3px;
         }
-        .totals td {
-            padding: 8px 0;
+        .header-title-cell .invoice-num {
+            font-size: 12px;
+            color: rgba(255,255,255,.85);
+            letter-spacing: 1px;
         }
-        .totals .total-row {
-            border-top: 2px solid #e2e8f0;
-            padding-top: 10px;
-            margin-top: 10px;
-            font-weight: bold;
-            font-size: 14px;
+
+        /* Statut */
+        .header-status-cell {
+            display: table-cell;
+            width: 130px;
+            vertical-align: middle;
+            text-align: right;
         }
         .status-badge {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 50px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        .status-paid { background: #d1fae5; color: #059669; }
-        .status-pending { background: #fef3c7; color: #d97706; }
-        .status-overdue { background: #fee2e2; color: #dc2626; }
-        .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-            text-align: center;
+            padding: 5px 14px;
+            border-radius: 20px;
             font-size: 10px;
-            color: #94a3b8;
-        }
-        .payment-section {
-            margin-top: 25px;
-            page-break-inside: avoid;
-        }
-        .payment-title {
-            font-size: 14px;
             font-weight: bold;
-            color: #4f46e5;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 5px;
         }
-        .bank-info {
+        .status-paid    { background: #d1fae5; color: #065f46; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-overdue { background: #fee2e2; color: #991b1b; }
+        .status-partial { background: #dbeafe; color: #1e40af; }
+
+        /* ════ BODY ════ */
+        .body { padding: 24px 32px; }
+
+        /* ── Parties ── */
+        .parties-row { display: table; width: 100%; margin-bottom: 20px; }
+        .party-cell  { display: table-cell; width: 50%; vertical-align: top; padding-right: 16px; }
+        .party-cell:last-child { padding-right: 0; padding-left: 16px; }
+
+        .party-label {
+            font-size: 9px; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: #94a3b8; margin-bottom: 6px;
+        }
+        .party-box {
             background: #f8fafc;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px 14px;
         }
-        .bank-info p {
-            margin: 5px 0;
-            font-size: 11px;
+        .party-name {
+            font-size: 13px; font-weight: bold;
+            color: #1e293b; margin-bottom: 6px;
         }
-        .bank-info strong {
-            color: #475569;
-            display: inline-block;
-            width: 120px;
+
+        /* Info table */
+        .info-tbl { width: 100%; border-collapse: collapse; }
+        .info-tbl td { padding: 2px 0; vertical-align: top; font-size: 10px; }
+        .info-tbl .lbl { color: #64748b; width: 80px; font-weight: 600; white-space: nowrap; }
+        .info-tbl .val { color: #334155; }
+
+        /* ── Meta strip ── */
+        .meta-strip {
+            display: table; width: 100%;
+            margin-bottom: 20px;
+            border: 1px solid #e0e7ff;
+            border-radius: 6px;
+            background: #eef2ff;
+            overflow: hidden;
         }
-        .mobile-info {
-            background: #fffbeb;
-            border: 1px solid #fcd34d;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+        .meta-cell {
+            display: table-cell; width: 25%;
+            padding: 10px 14px; vertical-align: top;
+            border-right: 1px solid #c7d2fe;
         }
-        .mobile-info p {
-            margin: 5px 0;
-            font-size: 11px;
+        .meta-cell:last-child { border-right: none; }
+        .meta-lbl {
+            font-size: 8px; font-weight: bold;
+            text-transform: uppercase; letter-spacing: .8px;
+            color: #6366f1; margin-bottom: 3px;
         }
-        .mobile-number {
-            font-size: 18px;
-            font-weight: bold;
-            color: #92400e;
-            text-align: center;
-            margin: 10px 0;
-            letter-spacing: 1px;
+        .meta-val { font-size: 11px; font-weight: bold; color: #1e293b; }
+
+        /* ── Section title ── */
+        .section-title {
+            font-size: 10px; font-weight: bold;
+            text-transform: uppercase; letter-spacing: .8px;
+            color: #4f46e5;
+            border-bottom: 2px solid #4f46e5;
+            padding-bottom: 4px; margin-bottom: 10px;
         }
-        .instructions {
+
+        /* ── Items table ── */
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+        .items-table thead tr { background: #4f46e5; }
+        .items-table thead th {
+            padding: 9px 12px;
+            font-size: 9px; font-weight: bold;
+            text-transform: uppercase; letter-spacing: .5px;
+            color: #fff; text-align: left;
+        }
+        .items-table thead th.right  { text-align: right; }
+        .items-table thead th.center { text-align: center; }
+        .items-table tbody tr { background: #fff; }
+        .items-table tbody tr:nth-child(even) { background: #f8fafc; }
+        .items-table tbody td {
+            padding: 10px 12px;
+            font-size: 10px; color: #334155;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+        .items-table tbody td.right  { text-align: right; }
+        .items-table tbody td.center { text-align: center; }
+        .item-desc { font-weight: 600; color: #1e293b; }
+        .item-sub  { font-size: 9px; color: #64748b; margin-top: 2px; }
+
+        /* ── Totals ── */
+        .totals-wrap  { display: table; width: 100%; }
+        .totals-left  { display: table-cell; vertical-align: top; width: 55%; padding-right: 20px; }
+        .totals-right { display: table-cell; vertical-align: top; width: 45%; }
+
+        .totals-table { width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0; overflow: hidden; }
+        .totals-table td { padding: 8px 12px; font-size: 10px; border-bottom: 1px solid #e2e8f0; }
+        .totals-table tr:last-child td { border-bottom: none; }
+        .totals-table .lbl { color: #475569; }
+        .totals-table .amt { text-align: right; color: #1e293b; font-weight: 600; }
+        .total-final td {
+            padding: 10px 12px;
+            font-size: 12px; font-weight: bold;
+            color: #fff; background: #4f46e5;
+            border-bottom: none;
+        }
+        .total-final .lbl { color: #c7d2fe; font-size: 10px; }
+        .total-final .amt { text-align: right; font-size: 13px; }
+        .remaining-row td { color: #d97706 !important; }
+
+        .notes-box {
             background: #eff6ff;
-            border-left: 4px solid #4f46e5;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 10px;
-            margin-top: 15px;
+            border-left: 3px solid #4f46e5;
+            border-radius: 0 6px 6px 0;
+            padding: 10px 14px;
+            font-size: 10px; color: #334155;
         }
-        .warning-note {
+
+        /* ── Payment section ── */
+        .payment-cols { display: table; width: 100%; }
+        .payment-col  { display: table-cell; vertical-align: top; width: 50%; padding-right: 12px; }
+        .payment-col:last-child { padding-right: 0; padding-left: 12px; }
+
+        .payment-box { border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; }
+        .payment-box-header {
+            background: #f1f5f9; padding: 7px 12px;
+            font-size: 9px; font-weight: bold;
+            text-transform: uppercase; letter-spacing: .6px;
+            color: #475569; border-bottom: 1px solid #e2e8f0;
+        }
+        .payment-box-body { padding: 12px 14px; background: #ffffff; }
+
+        /* Pay table – bank info */
+        .pay-tbl { width: 100%; border-collapse: collapse; }
+        .pay-tbl tr + tr td { border-top: 1px solid #f1f5f9; }
+        .pay-tbl td { padding: 5px 6px; font-size: 10px; vertical-align: middle; }
+        .pay-tbl .plbl {
+            color: #64748b; font-weight: 700;
+            width: 100px; white-space: nowrap;
+            background: #f8fafc; border-radius: 3px; padding-left: 8px;
+        }
+        .pay-tbl .pval { color: #1e293b; font-weight: 600; }
+        .pay-tbl .pval-number {
+            color: #4f46e5; font-weight: 800;
+            font-size: 11px; letter-spacing: 1.5px;
+            font-family: 'DejaVu Sans Mono', monospace;
+        }
+
+        /* Mobile Money */
+        .mobile-hero { text-align: center; padding: 8px 0 6px; }
+        .operator-badge {
+            display: inline-block;
+            background: #fef3c7; color: #92400e;
+            padding: 3px 12px; border-radius: 12px;
+            font-size: 9px; font-weight: bold;
+        }
+        .mobile-number-big {
+            font-size: 20px; font-weight: bold; color: #d97706;
+            letter-spacing: 3px; margin: 6px 0 4px;
+            font-family: 'DejaVu Sans Mono', monospace;
+        }
+        .mobile-hint { font-size: 9px; color: #94a3b8; margin-top: 4px; }
+
+        /* Reference note */
+        .ref-note {
             background: #fef2f2;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 10px;
-            text-align: center;
-            margin-top: 20px;
-            color: #991b1b;
+            border: 1px solid #fca5a5;
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 10px; color: #991b1b;
+            text-align: center; margin-top: 14px;
         }
-        .text-right {
+
+        /* ════ FOOTER ════ */
+        .footer-band {
+            background: #f8fafc;
+            border-top: 2px solid #e2e8f0;
+            padding: 16px 32px;
+            display: table; width: 100%;
+        }
+        .footer-left {
+            display: table-cell;
+            vertical-align: middle;
+            font-size: 9px; color: #94a3b8;
+            width: 58%;
+        }
+        .footer-right {
+            display: table-cell;
+            vertical-align: middle;
             text-align: right;
+            width: 42%;
         }
-        .text-center {
-            text-align: center;
+
+        /* ── QR Code ── */
+        .qr-block { display: inline-block; text-align: center; }
+        .qr-frame {
+            display: inline-block;
+            background: #ffffff;
+            border: 2px solid #e0e7ff;
+            border-radius: 10px;
+            padding: 6px;
         }
-        .text-bold {
-            font-weight: bold;
+        .qr-frame svg { display: block; width: 80px; height: 80px; }
+        .qr-frame img { display: block; width: 80px; height: 80px; }
+        .qr-caption {
+            font-size: 8px; color: #6366f1;
+            font-weight: bold; margin-top: 5px;
+            letter-spacing: .4px;
         }
-        .mb-2 {
-            margin-bottom: 10px;
+        .qr-num {
+            font-size: 7px; color: #94a3b8; margin-top: 2px;
+            font-family: 'DejaVu Sans Mono', monospace;
         }
-        .mt-3 {
-            margin-top: 15px;
-        }
-        hr {
-            margin: 15px 0;
-            border: none;
-            border-top: 1px solid #e2e8f0;
-        }
+
+        .divider { border: none; border-top: 1px solid #e2e8f0; margin: 16px 0; }
+        .text-green { color: #059669; }
+        .fw-bold    { font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="invoice-box">
-        <div class="invoice-header">
-            <h1>FACTURE</h1>
-            <p>N° {{ $invoice->invoice_number }}</p>
+<div class="page">
+
+    {{-- ══════════════════════════════════════
+         HEADER : Logo | Titre | Statut
+    ══════════════════════════════════════ --}}
+    <div class="header-band">
+        <div class="header-inner">
+
+            {{-- Logo --}}
+            <div class="header-logo-cell">
+                <div class="logo-box">
+                    <div class="logo-box-inner">
+                        @if($company && $company->logo)
+                            <img src="{{ public_path('storage/' . $company->logo) }}" alt="{{ $company->name }}">
+                        @else
+                            <span class="logo-text-fallback">
+                                {{ strtoupper(substr($company->name ?? config('app.name'), 0, 3)) }}
+                            </span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- Titre --}}
+            <div class="header-title-cell">
+                <h1>FACTURE</h1>
+                <div class="invoice-num">N° {{ $invoice->invoice_number }}</div>
+            </div>
+
+            {{-- Statut --}}
+            <div class="header-status-cell">
+                @if($invoice->status == 'paid')
+                    <span class="status-badge status-paid">PAYÉE</span>
+                @elseif(isset($invoice->due_date) && $invoice->due_date < now())
+                    <span class="status-badge status-overdue">EN RETARD</span>
+                @elseif($invoice->status == 'partially_paid')
+                    <span class="status-badge status-partial">◑ PARTIELLE</span>
+                @else
+                    <span class="status-badge status-pending">● EN ATTENTE</span>
+                @endif
+            </div>
+
+        </div>
+    </div>
+
+    {{-- ══════════════════════════════════════
+         BODY
+    ══════════════════════════════════════ --}}
+    <div class="body">
+
+        {{-- ── Émetteur / Client ── --}}
+        <div class="parties-row">
+
+            <div class="party-cell">
+                <div class="party-label">Émetteur</div>
+                <div class="party-box">
+                    <div class="party-name">{{ $company->name ?? config('app.name') }}</div>
+                    <table class="info-tbl">
+                        <tr>
+                            <td class="lbl">Adresse</td>
+                            <td class="val">{{ $company->address ?? 'Abomey-Calavi, Bénin' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="lbl">Email</td>
+                            <td class="val">{{ $company->email ?? '—' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="lbl">Téléphone</td>
+                            <td class="val">{{ $company->phone ?? '—' }}</td>
+                        </tr>
+                        @if($company->ifu)
+                        <tr>
+                            <td class="lbl">IFU</td>
+                            <td class="val">{{ $company->ifu }}</td>
+                        </tr>
+                        @endif
+                        @if($company->rccm)
+                        <tr>
+                            <td class="lbl">RCCM</td>
+                            <td class="val">{{ $company->rccm }}</td>
+                        </tr>
+                        @endif
+                    </table>
+                </div>
+            </div>
+
+            <div class="party-cell">
+                <div class="party-label">Facturé à</div>
+                <div class="party-box">
+                    <div class="party-name">{{ $invoice->client->name }}</div>
+                    <table class="info-tbl">
+                        @if($invoice->client->address)
+                        <tr>
+                            <td class="lbl">Adresse</td>
+                            <td class="val">{{ $invoice->client->address }}</td>
+                        </tr>
+                        @endif
+                        <tr>
+                            <td class="lbl">Email</td>
+                            <td class="val">{{ $invoice->client->email ?? '—' }}</td>
+                        </tr>
+                        @if($invoice->client->phone)
+                        <tr>
+                            <td class="lbl">Téléphone</td>
+                            <td class="val">{{ $invoice->client->phone }}</td>
+                        </tr>
+                        @endif
+                        @if($invoice->client->tax_number)
+                        <tr>
+                            <td class="lbl">IFU</td>
+                            <td class="val">{{ $invoice->client->tax_number }}</td>
+                        </tr>
+                        @endif
+                    </table>
+                </div>
+            </div>
+
         </div>
 
-        <div class="invoice-body">
-            <!-- Emetteur -->
-            <div class="company-info">
-                <h3>{{ $company->name ?? config('app.name') }}</h3>
-                <div class="info-grid">
-                    <div class="info-row">
-                        <div class="info-label">Adresse</div>
-                        <div class="info-value">{{ $company->address ?? 'Abomey-Calavi, Benin' }}</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Email</div>
-                        <div class="info-value">{{ $company->email ?? 'contact@example.bj' }}</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Telephone</div>
-                        <div class="info-value">{{ $company->phone ?? '+229 XX XX XX XX' }}</div>
-                    </div>
-                    @if($company->ifu)
-                    <div class="info-row">
-                        <div class="info-label">IFU</div>
-                        <div class="info-value">{{ $company->ifu }}</div>
-                    </div>
-                    @endif
-                    @if($company->rccm)
-                    <div class="info-row">
-                        <div class="info-label">RCCM</div>
-                        <div class="info-value">{{ $company->rccm }}</div>
-                    </div>
-                    @endif
-                </div>
+        {{-- ── Meta strip ── --}}
+        <div class="meta-strip">
+            <div class="meta-cell">
+                <div class="meta-lbl">N° Facture</div>
+                <div class="meta-val">{{ $invoice->invoice_number }}</div>
             </div>
-
-            <!-- Client -->
-            <div class="client-info">
-                <h3>Facture a</h3>
-                <div class="info-grid">
-                    <div class="info-row">
-                        <div class="info-label">Nom</div>
-                        <div class="info-value">{{ $invoice->client->name }}</div>
-                    </div>
-                    @if($invoice->client->address)
-                    <div class="info-row">
-                        <div class="info-label">Adresse</div>
-                        <div class="info-value">{{ $invoice->client->address }}</div>
-                    </div>
-                    @endif
-                    <div class="info-row">
-                        <div class="info-label">Email</div>
-                        <div class="info-value">{{ $invoice->client->email }}</div>
-                    </div>
-                    @if($invoice->client->phone)
-                    <div class="info-row">
-                        <div class="info-label">Telephone</div>
-                        <div class="info-value">{{ $invoice->client->phone }}</div>
-                    </div>
-                    @endif
-                    @if($invoice->client->tax_number)
-                    <div class="info-row">
-                        <div class="info-label">IFU</div>
-                        <div class="info-value">{{ $invoice->client->tax_number }}</div>
-                    </div>
-                    @endif
-                </div>
+            <div class="meta-cell">
+                <div class="meta-lbl">Date d'émission</div>
+                <div class="meta-val">{{ $invoice->issue_date->format('d/m/Y') }}</div>
             </div>
+            <div class="meta-cell">
+                <div class="meta-lbl">Date d'échéance</div>
+                <div class="meta-val">{{ $invoice->due_date->format('d/m/Y') }}</div>
+            </div>
+            <div class="meta-cell">
+                <div class="meta-lbl">Devise</div>
+                <div class="meta-val">FCFA (XOF)</div>
+            </div>
+        </div>
 
-            <!-- Details facture -->
-            <div class="invoice-details">
-                <div class="info-grid">
-                    <div class="info-row">
-                        <div class="info-label">Date d'emission</div>
-                        <div class="info-value">{{ $invoice->issue_date->format('d/m/Y') }}</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Date d'echéance</div>
-                        <div class="info-value">{{ $invoice->due_date->format('d/m/Y') }}</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Statut</div>
-                        <div class="info-value">
-                            @if($invoice->status == 'paid')
-                                <span class="status-badge status-paid">Payee</span>
-                            @elseif($invoice->due_date < now())
-                                <span class="status-badge status-overdue">En retard</span>
-                            @else
-                                <span class="status-badge status-pending">En attente de paiement</span>
-                            @endif
+        {{-- ── Lignes de prestation ── --}}
+        <div class="section-title">Détail des prestations</div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:50%;">Description</th>
+                    <th class="right"  style="width:18%;">Montant HT</th>
+                    <th class="center" style="width:14%;">TVA</th>
+                    <th class="right"  style="width:18%;">Montant TTC</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="item-desc">
+                            {{ $invoice->description ?? ($invoice->service->name ?? 'Prestation de services') }}
                         </div>
-                    </div>
-                </div>
+                        @if($invoice->notes ?? false)
+                            <div class="item-sub">{{ $invoice->notes }}</div>
+                        @endif
+                    </td>
+                    <td class="right">{{ number_format($invoice->subtotal, 0, ',', ' ') }} FCFA</td>
+                    <td class="center">{{ $invoice->tax_rate }}%</td>
+                    <td class="right fw-bold">{{ number_format($invoice->total, 0, ',', ' ') }} FCFA</td>
+                </tr>
+            </tbody>
+        </table>
+
+        {{-- ── Totaux ── --}}
+        <div class="totals-wrap">
+
+            <div class="totals-left">
+                @if($invoice->payment_terms ?? false)
+                    <div class="party-label" style="margin-bottom:4px;">Conditions de paiement</div>
+                    <div class="notes-box">{{ $invoice->payment_terms }}</div>
+                @endif
             </div>
 
-            <!-- Lignes de facture -->
-            <table class="invoice-table">
-                <thead>
+            <div class="totals-right">
+                <table class="totals-table">
                     <tr>
-                        <th>Description</th>
-                        <th class="text-right">Montant HT</th>
-                        <th class="text-right">TVA</th>
-                        <th class="text-right">Montant TTC</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{ $invoice->description ?? ($invoice->service->name ?? 'Prestation de services') }}</td>
-                        <td class="text-right">{{ number_format($invoice->subtotal, 0, ',', ' ') }} FCFA</td>
-                        <td class="text-right">{{ $invoice->tax_rate }}%</td>
-                        <td class="text-right">{{ number_format($invoice->total, 0, ',', ' ') }} FCFA</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <!-- Totaux -->
-            <div class="totals">
-                <table>
-                    <tr>
-                        <td>Sous-total HT</td>
-                        <td class="text-right">{{ number_format($invoice->subtotal, 0, ',', ' ') }} FCFA</td>
+                        <td class="lbl">Sous-total HT</td>
+                        <td class="amt">{{ number_format($invoice->subtotal, 0, ',', ' ') }} FCFA</td>
                     </tr>
                     <tr>
-                        <td>TVA ({{ $invoice->tax_rate }}%)</td>
-                        <td class="text-right">{{ number_format($invoice->tax_amount, 0, ',', ' ') }} FCFA</td>
+                        <td class="lbl">TVA ({{ $invoice->tax_rate }}%)</td>
+                        <td class="amt">{{ number_format($invoice->tax_amount, 0, ',', ' ') }} FCFA</td>
                     </tr>
-                    <tr class="total-row">
-                        <td><strong>TOTAL TTC</strong></td>
-                        <td class="text-right"><strong>{{ number_format($invoice->total, 0, ',', ' ') }} FCFA</strong></td>
+                    <tr class="total-final">
+                        <td class="lbl">Total TTC</td>
+                        <td class="amt">{{ number_format($invoice->total, 0, ',', ' ') }} FCFA</td>
                     </tr>
-                    @if($invoice->paid_amount > 0)
+                    @if(($invoice->paid_amount ?? 0) > 0)
                     <tr>
-                        <td>Montant deja paye</td>
-                        <td class="text-right" style="color: #10b981;">- {{ number_format($invoice->paid_amount, 0, ',', ' ') }} FCFA</td>
+                        <td class="lbl text-green">Déjà payé</td>
+                        <td class="amt text-green">− {{ number_format($invoice->paid_amount, 0, ',', ' ') }} FCFA</td>
                     </tr>
-                    <tr>
-                        <td><strong>Reste a payer</strong></td>
-                        <td class="text-right"><strong style="color: #f59e0b;">{{ number_format($invoice->remaining_amount, 0, ',', ' ') }} FCFA</strong></td>
+                    <tr class="remaining-row">
+                        <td class="lbl"><strong>Reste à payer</strong></td>
+                        <td class="amt"><strong>{{ number_format($invoice->remaining_amount, 0, ',', ' ') }} FCFA</strong></td>
                     </tr>
                     @endif
                 </table>
             </div>
 
-            <!-- Section Paiement -->
-            <div class="payment-section">
-                <div class="payment-title">Instructions de paiement</div>
-
-                <!-- Virement bancaire -->
-                @if($company->bank_name || $company->bank_account_number)
-                <div class="bank-info">
-                    <p><strong>Virement bancaire</strong></p>
-                    @if($company->bank_name)
-                    <p><strong>Banque :</strong> {{ $company->bank_name }}</p>
-                    @endif
-                    @if($company->bank_account_name)
-                    <p><strong>Titulaire :</strong> {{ $company->bank_account_name }}</p>
-                    @endif
-                    @if($company->bank_account_number)
-                    <p><strong>Compte :</strong> {{ $company->bank_account_number }}</p>
-                    @endif
-                    @if($company->bank_iban)
-                    <p><strong>IBAN :</strong> {{ $company->bank_iban }}</p>
-                    @endif
-                    @if($company->bank_swift)
-                    <p><strong>SWIFT/BIC :</strong> {{ $company->bank_swift }}</p>
-                    @endif
-                </div>
-                @endif
-
-                <!-- Mobile Money -->
-                @if($company->mobile_money_number)
-                <div class="mobile-info">
-                    <p class="text-center"><strong>Paiement Mobile Money</strong></p>
-                    <div class="mobile-number">{{ $company->mobile_money_number }}</div>
-                    <p class="text-center">
-                        @if($company->mobile_money_operator == 'mtn')
-                            Operateur: MTN
-                        @elseif($company->mobile_money_operator == 'moov')
-                            Operateur: MOOV
-                        @elseif($company->mobile_money_operator == 'celcom')
-                            Operateur: Celcom
-                        @else
-                            Operateur: {{ $company->mobile_money_operator }}
-                        @endif
-                    </p>
-                    <p class="text-center" style="font-size: 10px; margin-top: 8px;">
-                        Utilisez le numero ci-dessus pour effectuer votre paiement
-                    </p>
-                </div>
-                @endif
-
-                <!-- Instructions supplementaires -->
-                @if($company->payment_instructions)
-                <div class="instructions">
-                    <p>{{ $company->payment_instructions }}</p>
-                </div>
-                @endif
-
-                <!-- Message par defaut -->
-                @if(!$company->bank_name && !$company->bank_account_number && !$company->mobile_money_number)
-                <div class="bank-info">
-                    <p class="text-center">Veuillez nous contacter pour obtenir les informations de paiement.</p>
-                </div>
-                @endif
-            </div>
-
-            <!-- Information importante -->
-            <div class="warning-note">
-                <strong>Important :</strong> Veuillez utiliser le numero de facture <strong>{{ $invoice->invoice_number }}</strong> comme reference de votre paiement.
-            </div>
-
-            <!-- Footer -->
-            <div class="footer">
-                <p>Merci de votre confiance. En cas de question, contactez-nous a {{ $company->email ?? 'contact@example.bj' }}</p>
-                <p>{{ $company->name ?? config('app.name') }} - {{ $company->address ?? 'Abomey-Calavi, Benin' }}</p>
-                <p>© {{ date('Y') }} {{ $company->name ?? config('app.name') }}. Tous droits reserves.</p>
-            </div>
         </div>
+
+        {{-- ── Instructions de paiement ── --}}
+        @if($company->bank_name || $company->bank_account_number || $company->mobile_money_number)
+        <hr class="divider">
+        <div class="section-title" style="margin-top:4px;">Instructions de paiement</div>
+
+        <div class="payment-cols">
+
+            @if($company->bank_name || $company->bank_account_number)
+            <div class="payment-col">
+                <div class="payment-box">
+                    <div class="payment-box-header"> Virement bancaire</div>
+                    <div class="payment-box-body">
+                        <table class="pay-tbl">
+                            @if($company->bank_name)
+                            <tr>
+                                <td class="plbl">Banque</td>
+                                <td class="pval">{{ $company->bank_name }}</td>
+                            </tr>
+                            @endif
+                            @if($company->bank_account_name)
+                            <tr>
+                                <td class="plbl">Titulaire</td>
+                                <td class="pval">{{ $company->bank_account_name }}</td>
+                            </tr>
+                            @endif
+                            @if($company->bank_account_number)
+                            <tr>
+                                <td class="plbl">N° Compte</td>
+                                <td class="pval pval-number">{{ $company->bank_account_number }}</td>
+                            </tr>
+                            @endif
+                            @if($company->bank_iban)
+                            <tr>
+                                <td class="plbl">IBAN</td>
+                                <td class="pval pval-number">{{ $company->bank_iban }}</td>
+                            </tr>
+                            @endif
+                            @if($company->bank_swift)
+                            <tr>
+                                <td class="plbl">SWIFT / BIC</td>
+                                <td class="pval pval-number">{{ $company->bank_swift }}</td>
+                            </tr>
+                            @endif
+                        </table>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if($company->mobile_money_number)
+            <div class="payment-col">
+                <div class="payment-box">
+                    <div class="payment-box-header"> Mobile Money</div>
+                    <div class="payment-box-body">
+                        <div class="mobile-hero">
+                            <div style="margin-bottom:6px;">
+                                <span class="operator-badge">
+                                    @if($company->mobile_money_operator == 'mtn') MTN Mobile Money
+                                    @elseif($company->mobile_money_operator == 'moov') MOOV Money
+                                    @elseif($company->mobile_money_operator == 'celcom') Celcom
+                                    @else {{ $company->mobile_money_operator }}
+                                    @endif
+                                </span>
+                            </div>
+                            <div class="mobile-number-big">{{ $company->mobile_money_number }}</div>
+                            <div class="mobile-hint">Composez ce numéro pour effectuer votre paiement</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+        </div>
+
+        @if($company->payment_instructions)
+            <div class="notes-box" style="margin-top:8px;">{{ $company->payment_instructions }}</div>
+        @endif
+        @endif
+
+        {{-- ── Référence obligatoire ── --}}
+        <div class="ref-note">
+            <strong>Important :</strong> Veuillez mentionner
+            <strong>{{ $invoice->invoice_number }}</strong> comme référence de paiement.
+        </div>
+
+    </div>{{-- /body --}}
+
+    {{-- ══════════════════════════════════════
+         FOOTER : Infos légales | QR Code
+    ══════════════════════════════════════ --}}
+    <div class="footer-band">
+
+        <div class="footer-left">
+            <p>Merci de votre confiance. Contact : {{ $company->email ?? 'contact@example.bj' }}</p>
+            <p style="margin-top:3px;">
+                {{ $company->name ?? config('app.name') }} –
+                {{ $company->address ?? 'Abomey-Calavi, Bénin' }}
+                @if($company->ifu) | IFU : {{ $company->ifu }}@endif
+            </p>
+            <p style="margin-top:3px;">
+                © {{ date('Y') }} {{ $company->name ?? config('app.name') }}. Tous droits réservés.
+            </p>
+            <p style="margin-top:5px; font-size:8px; color:#cbd5e1;">
+                Généré le {{ now()->format('d/m/Y à H:i') }} · Document officiel
+            </p>
+        </div>
+
+        {{-- QR Code (généré par BillingController::buildInvoicePdf) --}}
+        {{-- QR Code --}}
+<div class="footer-right">
+    <div class="qr-block">
+        <div class="qr-frame">
+            @if(isset($qrSvg) && $qrSvg)
+                {!! $qrSvg !!}
+            @else
+                <div style="width:80px;height:80px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:10px;">
+                    QR Code
+                </div>
+            @endif
+        </div>
+        <div class="qr-caption">Vérifier {{ $invoice->invoice_number ?? $payment->payment_number ?? '' }}</div>
+        <div class="qr-num">{{ $invoice->invoice_number ?? $payment->payment_number ?? '' }}</div>
     </div>
+</div>
+
+    </div>
+
+</div>
 </body>
 </html>

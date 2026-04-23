@@ -1,6 +1,8 @@
 <?php
+
 // routes/admin.php
 
+use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\BillingController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ClientController;
@@ -20,7 +22,6 @@ use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\ToolController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\BackupController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -510,7 +511,9 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     ─────────────────────────────────────────*/
     Route::prefix('billing')->name('billing.')->middleware('permission:billing.view')->group(function () {
 
+        // ── FACTURES ──────────────────────────────────────────────
         Route::prefix('invoices')->name('invoices.')->group(function () {
+
             Route::get('/', [BillingController::class, 'invoices'])
                 ->middleware('permission:billing.invoices.view')
                 ->name('index');
@@ -527,16 +530,42 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
                 ->middleware('permission:billing.invoices.view')
                 ->name('show');
 
+            //  CORRECTION : route edit + update ajoutées
+            Route::get('/{invoice}/edit', [BillingController::class, 'editInvoice'])
+                ->middleware('permission:billing.invoices.edit')
+                ->name('edit');
+
+            Route::put('/{invoice}', [BillingController::class, 'updateInvoice'])
+                ->middleware('permission:billing.invoices.edit')
+                ->name('update');
+
+            //  CORRECTION : route delete ajoutée
+            Route::delete('/{invoice}', [BillingController::class, 'deleteInvoice'])
+                ->middleware('permission:billing.invoices.delete')
+                ->name('destroy');
+
             Route::post('/{invoice}/send', [BillingController::class, 'sendInvoice'])
                 ->middleware('permission:billing.invoices.send')
                 ->name('send');
 
+            //  CORRECTION : rappel manuel ajouté
+            Route::post('/{invoice}/reminder', [BillingController::class, 'sendReminder'])
+                ->middleware('permission:billing.invoices.send')
+                ->name('reminder');
+
             Route::post('/{invoice}/payment', [BillingController::class, 'recordPayment'])
                 ->middleware('permission:billing.payments.create')
                 ->name('payment');
+
+            //  CORRECTION : route PDF sortie du groupe imbriqué et avec permission
+            Route::get('/{invoice}/pdf', [BillingController::class, 'downloadInvoicePdf'])
+                ->middleware('permission:billing.invoices.view')
+                ->name('pdf');
         });
 
+        // ── PAIEMENTS ─────────────────────────────────────────────
         Route::prefix('payments')->name('payments.')->group(function () {
+
             Route::get('/', [BillingController::class, 'payments'])
                 ->middleware('permission:billing.payments.view')
                 ->name('index');
@@ -545,6 +574,11 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
                 ->middleware('permission:billing.payments.view')
                 ->name('show');
 
+            //  CORRECTION : route PDF paiement correctement placée ici avec permission
+            Route::get('/{payment}/pdf', [BillingController::class, 'downloadReceiptPdf'])
+                ->middleware('permission:billing.payments.view')
+                ->name('pdf');
+
             Route::post('/{payment}/resend', [BillingController::class, 'resendReceipt'])
                 ->middleware('permission:billing.payments.resend')
                 ->name('resend');
@@ -552,6 +586,9 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
 
         Route::post('/update-overdue', [BillingController::class, 'updateOverdueStatus'])
             ->name('update-overdue');
+
+        Route::get('/reminders/check', [BillingController::class, 'checkAndSendReminders'])
+            ->name('reminders.check');
     });
 
     /*─────────────────────────────────────────
@@ -692,6 +729,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::post('/{notification}/read', [NotificationController::class, 'markAsRead'])->name('mark-read');
         Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
     });
 
     /*─────────────────────────────────────────

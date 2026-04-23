@@ -6,49 +6,66 @@
     <title>{{ $isCopy ? 'Copie de votre message' : 'Nouveau message de contact' }}</title>
     <style>
         body {
-            font-family: 'Poppins', Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background-color: #f8f9fa;
+            color: #1e293b;
+            background-color: #f1f5f9;
             margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
             padding: 20px;
         }
-        .email-container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
+        .email-wrapper {
+            background: #ffffff;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        .email-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 30px;
-            text-align: center;
+        .header {
+            background: #1e293b;
             color: white;
+            padding: 32px 24px;
+            text-align: center;
         }
-        .email-header h1 {
+        .header h1 {
             margin: 0;
             font-size: 24px;
             font-weight: 700;
+            letter-spacing: 1px;
         }
-        .email-header p {
-            margin: 10px 0 0;
-            opacity: 0.9;
+        .header p {
+            margin: 8px 0 0;
+            opacity: 0.8;
+            font-size: 14px;
         }
-        .email-body {
-            padding: 30px;
+        .content {
+            padding: 32px 24px;
+        }
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .greeting strong {
+            color: #1e293b;
+        }
+        .highlight {
+            color: #2563eb;
+            font-weight: 600;
         }
         .info-section {
-            background: #f8f9fa;
-            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
             padding: 20px;
-            margin-bottom: 25px;
+            margin: 24px 0;
         }
         .info-item {
             margin-bottom: 15px;
             padding-bottom: 15px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e2e8f0;
         }
         .info-item:last-child {
             border-bottom: none;
@@ -57,118 +74,132 @@
         }
         .label {
             font-weight: 600;
-            color: #667eea;
+            color: #475569;
             display: block;
             margin-bottom: 5px;
         }
         .value {
-            color: #555;
+            color: #1e293b;
         }
         .message-content {
-            background: #f0f7ff;
-            border-left: 4px solid #667eea;
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
             padding: 20px;
             border-radius: 0 8px 8px 0;
             margin-top: 20px;
         }
-        .email-footer {
-            background: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-            border-top: 1px solid #e0e0e0;
+        .tech-info {
+            margin-top: 25px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
         }
-        .highlight {
-            color: #667eea;
-            font-weight: 600;
+        .footer {
+            background: #f8fafc;
+            padding: 20px 24px;
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+            margin: 4px 0;
         }
         @media (max-width: 600px) {
-            .email-body {
+            .content {
                 padding: 20px;
             }
-            .email-header {
-                padding: 20px;
+            .info-item {
+                margin-bottom: 12px;
+                padding-bottom: 12px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="email-container">
-        <div class="email-header">
-            @if($isCopy)
-                <h1>📋 Copie de votre message</h1>
-                <p>Nova Tech Bénin - Solutions Informatiques & Web</p>
-            @else
-                <h1>📨 Nouveau message de contact</h1>
-                <p>Formulaire de contact - Nova Tech Bénin</p>
-            @endif
-        </div>
+    <div class="container">
+        <div class="email-wrapper">
+            <div class="header">
+                @if($isCopy)
+                    <h1>Copie de votre message</h1>
+                    <p>Nova Tech Benin - Solutions Informatiques & Web</p>
+                @else
+                    <h1>Nouveau message de contact</h1>
+                    <p>Formulaire de contact - Nova Tech Benin</p>
+                @endif
+            </div>
 
-        <div class="email-body">
-            @if($isCopy)
-                <p>Bonjour <span class="highlight">{{ $data['name'] }}</span>,</p>
-                <p>Nous accusons réception de votre message. Voici un récapitulatif :</p>
-            @else
-                <p>Vous avez reçu un nouveau message de contact :</p>
-            @endif
-
-            <div class="info-section">
-                <div class="info-item">
-                    <span class="label">👤 Nom complet :</span>
-                    <span class="value">{{ $data['name'] }}</span>
-                </div>
-
-                <div class="info-item">
-                    <span class="label">📧 Email :</span>
-                    <span class="value">{{ $data['email'] }}</span>
-                </div>
-
-                @if($data['phone'])
-                <div class="info-item">
-                    <span class="label">📞 Téléphone :</span>
-                    <span class="value">{{ $data['phone'] }}</span>
-                </div>
+            <div class="content">
+                @if($isCopy)
+                    <div class="greeting">
+                        Bonjour <span class="highlight">{{ $data['name'] }}</span>,
+                    </div>
+                    <p>Nous accusons reception de votre message. Voici un recapitulatif :</p>
+                @else
+                    <div class="greeting">
+                        Vous avez recu un nouveau message de contact :
+                    </div>
                 @endif
 
-                <div class="info-item">
-                    <span class="label">🛠️ Service souhaité :</span>
-                    <span class="value">{{ $data['service_label'] }}</span>
+                <div class="info-section">
+                    <div class="info-item">
+                        <span class="label">Nom complet :</span>
+                        <span class="value">{{ $data['name'] }}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="label">Email :</span>
+                        <span class="value">{{ $data['email'] }}</span>
+                    </div>
+
+                    @if($data['phone'])
+                    <div class="info-item">
+                        <span class="label">Telephone :</span>
+                        <span class="value">{{ $data['phone'] }}</span>
+                    </div>
+                    @endif
+
+                    <div class="info-item">
+                        <span class="label">Service souhaite :</span>
+                        <span class="value">{{ $data['service_label'] }}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="label">Recu le :</span>
+                        <span class="value">{{ $data['received_at'] }}</span>
+                    </div>
                 </div>
 
-                <div class="info-item">
-                    <span class="label">📅 Reçu le :</span>
-                    <span class="value">{{ $data['received_at'] }}</span>
+                <div class="message-content">
+                    <span class="label">Message :</span>
+                    <p class="value">{{ $data['message'] }}</p>
                 </div>
+
+                @if(!$isCopy)
+                    <div class="tech-info">
+                        <p style="margin: 0; color: #475569;">
+                            <strong>Informations techniques :</strong><br>
+                            IP : {{ $data['ip_address'] }}<br>
+                            Navigateur : {{ Str::limit($data['user_agent'], 100) }}
+                        </p>
+                    </div>
+                @endif
             </div>
 
-            <div class="message-content">
-                <span class="label">💬 Message :</span>
-                <p class="value">{{ $data['message'] }}</p>
+            <div class="footer">
+                @if($isCopy)
+                    <p>Nous traiterons votre demande dans les plus brefs delais.</p>
+                    <p>Vous recevrez une reponse dans les 24h ouvertes.</p>
+                @endif
+                <p style="margin-top: 15px;">
+                    <strong>Nova Tech Benin</strong><br>
+                    {{ config('app.company_address', 'Abomey-Calavi, Benin') }}<br>
+                    {{ config('app.company_phone', '+229 66185595') }}<br>
+                    {{ config('app.url', 'https://novatech.bj') }}
+                </p>
+                <p>&copy; {{ date('Y') }} Nova Tech Benin. Tous droits reserves.</p>
             </div>
-
-            @if(!$isCopy)
-                <div style="margin-top: 25px; padding: 15px; background: #f0f7ff; border-radius: 8px;">
-                    <p style="margin: 0; color: #555;">
-                        <strong>Informations techniques :</strong><br>
-                        📱 IP : {{ $data['ip_address'] }}<br>
-                        🌐 Navigateur : {{ Str::limit($data['user_agent'], 100) }}
-                    </p>
-                </div>
-            @endif
-        </div>
-
-        <div class="email-footer">
-            @if($isCopy)
-                <p>Nous traiterons votre demande dans les plus brefs délais.</p>
-                <p>✅ Vous recevrez une réponse dans les 24h ouvrées.</p>
-            @endif
-            <p style="margin-top: 15px;">
-                <strong>Nova Tech Bénin</strong><br>
-                📍 {{ config('app.company_address', 'Abomey-Calavi, Bénin') }}<br>
-                📞 {{ config('app.company_phone', '+229 66185595') }}<br>
-                🌐 {{ config('app.url', 'https://novatech.bj') }}
-            </p>
         </div>
     </div>
 </body>

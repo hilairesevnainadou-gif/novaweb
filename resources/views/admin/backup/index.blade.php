@@ -1,129 +1,145 @@
 @extends('admin.layouts.app')
 
 @section('title', 'Sauvegardes - NovaTech Admin')
-@section('page-title', 'Gestion des sauvegardes')
+@section('page-title', 'Sauvegardes')
 
 @push('styles')
 <style>
-    /* Stats Grid */
+    /* ── Stats ── */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 1rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.75rem;
     }
 
     .stat-card {
         background: var(--bg-secondary);
-        border-radius: 0.75rem;
-        padding: 1rem;
+        border-radius: var(--radius-lg);
+        padding: 1.25rem 1.5rem;
         border: 1px solid var(--border-light);
-        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
     }
 
     .stat-card:hover {
-        transform: translateY(-2px);
+        border-color: var(--border-medium);
         box-shadow: var(--shadow-md);
     }
 
+    .stat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .stat-icon.blue   { background: rgba(59,130,246,.12); color: var(--brand-primary); }
+    .stat-icon.green  { background: rgba(16,185,129,.12); color: var(--brand-success); }
+    .stat-icon.red    { background: rgba(239,68,68,.12);  color: var(--brand-error); }
+    .stat-icon.purple { background: rgba(139,92,246,.12); color: var(--brand-secondary); }
+
+    .stat-body {}
     .stat-value {
         font-size: 1.5rem;
         font-weight: 700;
-        color: var(--brand-primary);
-        margin-bottom: 0.25rem;
+        color: var(--text-primary);
+        line-height: 1.1;
     }
-
     .stat-label {
-        font-size: 0.7rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
         text-transform: uppercase;
+        letter-spacing: .6px;
         color: var(--text-tertiary);
-        letter-spacing: 0.5px;
+        margin-top: 3px;
     }
 
-    /* Cards */
+    /* ── Card ── */
     .card {
         background: var(--bg-secondary);
-        border-radius: 0.75rem;
+        border-radius: var(--radius-lg);
         border: 1px solid var(--border-light);
         margin-bottom: 1.5rem;
         overflow: hidden;
     }
 
     .card-header {
-        padding: 1rem 1.5rem;
-        background: var(--bg-tertiary);
+        padding: .875rem 1.25rem;
         border-bottom: 1px solid var(--border-light);
         display: flex;
         align-items: center;
         justify-content: space-between;
         flex-wrap: wrap;
-        gap: 0.75rem;
+        gap: .75rem;
+        background: var(--bg-tertiary);
     }
 
     .card-title {
-        font-size: 0.9375rem;
+        font-size: .9375rem;
         font-weight: 600;
         color: var(--text-primary);
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: .5rem;
     }
 
-    .card-title i {
-        color: var(--brand-primary);
+    .card-title i { color: var(--brand-primary); font-size: 14px; }
+
+    .card-body { padding: 1.25rem 1.5rem; }
+
+    /* ── Backup type buttons ── */
+    .backup-actions {
+        display: flex;
+        gap: .75rem;
+        flex-wrap: wrap;
     }
 
-    .card-body {
-        padding: 1.5rem;
-    }
-
-    /* Form */
-    .form-group {
-        margin-bottom: 1rem;
-    }
-
-    .form-label {
-        display: block;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: var(--text-secondary);
-        margin-bottom: 0.5rem;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--border-medium);
-        background: var(--bg-primary);
-        color: var(--text-primary);
-        font-size: 0.875rem;
-        transition: all 0.2s;
-        outline: none;
-    }
-
-    .form-control:focus {
-        border-color: var(--brand-primary);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    .form-select {
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--border-medium);
-        background: var(--bg-primary);
-        color: var(--text-primary);
-        font-size: 0.875rem;
+    .backup-type-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .625rem 1.125rem;
+        border-radius: var(--radius-md);
+        font-size: .8125rem;
+        font-weight: 500;
         cursor: pointer;
+        transition: all var(--transition-fast);
+        border: 1px solid var(--border-medium);
+        background: var(--bg-primary);
+        color: var(--text-secondary);
+        text-decoration: none;
     }
 
-    /* Table */
-    .table-container {
-        overflow-x: auto;
+    .backup-type-btn:hover {
+        border-color: var(--brand-primary);
+        color: var(--brand-primary);
+        background: rgba(59,130,246,.06);
+        transform: translateY(-1px);
     }
+
+    .backup-type-btn.primary {
+        background: var(--brand-primary);
+        color: white;
+        border-color: var(--brand-primary);
+    }
+
+    .backup-type-btn.primary:hover {
+        background: var(--brand-primary-hover);
+        color: white;
+        border-color: var(--brand-primary-hover);
+    }
+
+    .backup-type-btn i { font-size: 13px; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
 
     .data-table {
         width: 100%;
@@ -131,138 +147,243 @@
     }
 
     .data-table th {
-        padding: 0.875rem 1rem;
+        padding: .75rem 1.25rem;
         text-align: left;
-        background: var(--bg-tertiary);
-        font-size: 0.6875rem;
+        font-size: .6875rem;
         font-weight: 600;
         text-transform: uppercase;
+        letter-spacing: .6px;
         color: var(--text-tertiary);
         border-bottom: 1px solid var(--border-light);
+        white-space: nowrap;
+        background: var(--bg-tertiary);
     }
 
     .data-table td {
-        padding: 0.875rem 1rem;
+        padding: .875rem 1.25rem;
         border-bottom: 1px solid var(--border-light);
         color: var(--text-primary);
-        font-size: 0.875rem;
+        font-size: .875rem;
         vertical-align: middle;
     }
 
-    .data-table tbody tr:hover {
-        background: var(--bg-hover);
+    .data-table tbody tr:last-child td { border-bottom: none; }
+
+    .data-table tbody tr {
+        transition: background var(--transition-fast);
     }
 
-    /* Badges */
+    .data-table tbody tr:hover { background: var(--bg-hover); }
+
+    .file-name {
+        display: flex;
+        align-items: center;
+        gap: .625rem;
+        font-weight: 500;
+    }
+
+    .file-name i {
+        color: var(--brand-primary);
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    .file-size-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-full);
+        font-size: .75rem;
+        color: var(--text-secondary);
+        border: 1px solid var(--border-light);
+    }
+
+    /* ── Action buttons ── */
+    .actions-cell {
+        display: flex;
+        gap: .25rem;
+        justify-content: flex-end;
+    }
+
+    .action-btn {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+        border: none;
+        background: none;
+        color: var(--text-tertiary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    .action-btn:hover         { background: var(--bg-hover); color: var(--brand-primary); }
+    .action-btn.btn-restore:hover { background: rgba(245,158,11,.1); color: #f59e0b; }
+    .action-btn.btn-del:hover     { background: rgba(239,68,68,.1);  color: var(--brand-error); }
+
+    /* ── Badges ── */
     .badge {
         display: inline-flex;
         align-items: center;
-        gap: 0.375rem;
-        padding: 0.25rem 0.75rem;
-        font-size: 0.75rem;
-        font-weight: 500;
-        border-radius: 9999px;
+        gap: .3rem;
+        padding: .2rem .65rem;
+        font-size: .7rem;
+        font-weight: 600;
+        border-radius: var(--radius-full);
         white-space: nowrap;
     }
+    .badge-success { background: rgba(16,185,129,.12); color: #10b981; }
+    .badge-danger  { background: rgba(239,68,68,.12);  color: #ef4444; }
+    .badge-warning { background: rgba(245,158,11,.12); color: #f59e0b; }
+    .badge-info    { background: rgba(59,130,246,.12); color: #3b82f6; }
 
-    .badge-success {
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
-    }
-
-    .badge-danger {
-        background: rgba(239, 68, 68, 0.1);
-        color: #ef4444;
-    }
-
-    .badge-warning {
-        background: rgba(245, 158, 11, 0.1);
-        color: #f59e0b;
-    }
-
-    /* Buttons */
+    /* ── Buttons ── */
     .btn {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        border-radius: 0.5rem;
-        font-size: 0.8125rem;
+        gap: .5rem;
+        padding: .5rem 1rem;
+        border-radius: var(--radius-md);
+        font-size: .8125rem;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all var(--transition-fast);
         border: none;
         text-decoration: none;
     }
 
-    .btn-primary {
-        background: var(--brand-primary);
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: var(--brand-primary-hover);
-        transform: translateY(-1px);
-    }
+    .btn-primary   { background: var(--brand-primary); color: white; }
+    .btn-primary:hover { background: var(--brand-primary-hover); transform: translateY(-1px); }
 
     .btn-secondary {
         background: var(--bg-tertiary);
         color: var(--text-secondary);
         border: 1px solid var(--border-light);
     }
-
-    .btn-secondary:hover {
-        background: var(--bg-hover);
-        color: var(--text-primary);
-    }
+    .btn-secondary:hover { background: var(--bg-hover); color: var(--text-primary); }
 
     .btn-danger {
-        background: rgba(239, 68, 68, 0.1);
+        background: rgba(239,68,68,.1);
         color: #ef4444;
-        border: 1px solid rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239,68,68,.2);
+    }
+    .btn-danger:hover { background: #ef4444; color: white; }
+
+    .btn-sm { padding: .35rem .75rem; font-size: .75rem; }
+
+    /* ── Form ── */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
     }
 
-    .btn-danger:hover {
-        background: #ef4444;
-        color: white;
+    .form-group { display: flex; flex-direction: column; gap: .35rem; }
+
+    .form-label {
+        font-size: .6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        color: var(--text-secondary);
     }
 
-    .btn-sm {
-        padding: 0.375rem 0.75rem;
-        font-size: 0.75rem;
+    .form-control, .form-select {
+        padding: .5rem .75rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-medium);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: .875rem;
+        transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        outline: none;
+        width: 100%;
+        font-family: inherit;
     }
 
-    .action-btn {
-        background: none;
-        border: none;
+    .form-control:focus, .form-select:focus {
+        border-color: var(--brand-primary);
+        box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+    }
+
+    .form-control:disabled {
+        opacity: .6;
+        cursor: not-allowed;
+    }
+
+    .form-hint {
+        font-size: .75rem;
         color: var(--text-tertiary);
-        cursor: pointer;
-        padding: 0.375rem;
-        border-radius: 0.375rem;
-        transition: all 0.2s;
     }
 
-    .action-btn:hover {
-        color: var(--brand-primary);
-        background: var(--bg-hover);
+    .form-actions {
+        display: flex;
+        gap: .75rem;
+        margin-top: 1.25rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--border-light);
     }
 
-    /* Modal */
+    /* ── Empty state ── */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1.5rem;
+    }
+
+    .empty-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--radius-lg);
+        background: var(--bg-tertiary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        color: var(--text-tertiary);
+        margin-bottom: 1rem;
+    }
+
+    .empty-title {
+        font-size: .9375rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: .375rem;
+    }
+
+    .empty-text {
+        font-size: .8125rem;
+        color: var(--text-tertiary);
+        margin-bottom: 1rem;
+    }
+
+    /* ── Log type pill ── */
+    .log-type {
+        font-size: .75rem;
+        color: var(--text-tertiary);
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+    }
+
+    .log-type i { font-size: 11px; }
+
+    /* ── Modal ── */
     .modal-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(4px);
+        inset: 0;
+        background: rgba(0,0,0,.6);
+        backdrop-filter: blur(3px);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 10000;
         opacity: 0;
         visibility: hidden;
-        transition: all 0.3s ease;
+        transition: opacity var(--transition-base), visibility var(--transition-base);
     }
 
     .modal-overlay.active {
@@ -272,98 +393,176 @@
 
     .modal {
         background: var(--bg-elevated);
-        border-radius: 0.75rem;
+        border-radius: var(--radius-xl);
         border: 1px solid var(--border-medium);
         width: 90%;
-        max-width: 500px;
-        transform: scale(0.95);
-        transition: transform 0.3s ease;
+        max-width: 460px;
+        transform: scale(.96) translateY(8px);
+        transition: transform var(--transition-base);
+        box-shadow: var(--shadow-2xl);
     }
 
-    .modal-overlay.active .modal {
-        transform: scale(1);
-    }
+    .modal-overlay.active .modal { transform: scale(1) translateY(0); }
 
     .modal-header {
-        padding: 1rem 1.5rem;
+        padding: 1rem 1.25rem;
         border-bottom: 1px solid var(--border-light);
         display: flex;
         align-items: center;
         justify-content: space-between;
     }
 
-    .modal-header h3 {
-        font-size: 1.125rem;
+    .modal-title {
+        font-size: 1rem;
         font-weight: 600;
-        margin: 0;
         color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: .5rem;
     }
+
+    .modal-title i { font-size: 15px; color: var(--brand-primary); }
 
     .modal-close {
-        background: none;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-sm);
         border: none;
+        background: none;
         color: var(--text-tertiary);
         cursor: pointer;
-        padding: 0.25rem;
-        font-size: 1.125rem;
+        font-size: 14px;
+        transition: all var(--transition-fast);
     }
+    .modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
 
-    .modal-close:hover {
-        color: var(--text-primary);
-    }
-
-    .modal-body {
-        padding: 1.5rem;
-    }
+    .modal-body { padding: 1.25rem; }
 
     .modal-footer {
-        padding: 1rem 1.5rem;
+        padding: .875rem 1.25rem;
         border-top: 1px solid var(--border-light);
         display: flex;
         justify-content: flex-end;
-        gap: 0.75rem;
+        gap: .625rem;
     }
 
-    /* Progress */
-    .progress-bar {
-        height: 0.5rem;
+    /* Warning box inside modal */
+    .warn-box {
+        display: flex;
+        gap: .75rem;
+        padding: .875rem 1rem;
+        background: rgba(245,158,11,.08);
+        border: 1px solid rgba(245,158,11,.2);
+        border-radius: var(--radius-md);
+        margin-top: .875rem;
+    }
+
+    .warn-box i { color: #f59e0b; font-size: 15px; margin-top: 2px; flex-shrink: 0; }
+    .warn-box p { font-size: .8125rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+
+    .danger-box {
+        display: flex;
+        gap: .75rem;
+        padding: .875rem 1rem;
+        background: rgba(239,68,68,.08);
+        border: 1px solid rgba(239,68,68,.2);
+        border-radius: var(--radius-md);
+        margin-top: .875rem;
+    }
+
+    .danger-box i { color: #ef4444; font-size: 15px; margin-top: 2px; flex-shrink: 0; }
+    .danger-box p { font-size: .8125rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+
+    .file-highlight {
+        font-family: 'Courier New', monospace;
+        font-size: .8rem;
         background: var(--bg-tertiary);
-        border-radius: 9999px;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-sm);
+        padding: .375rem .75rem;
+        color: var(--brand-primary);
+        display: block;
+        margin-top: .5rem;
+        word-break: break-all;
+    }
+
+    /* Progress bar */
+    .progress-bar {
+        height: 3px;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-full);
         overflow: hidden;
+        margin-top: 1rem;
     }
 
     .progress-fill {
         height: 100%;
         background: var(--brand-primary);
-        border-radius: 9999px;
-        transition: width 0.3s;
+        border-radius: var(--radius-full);
+        animation: progressAnim 1.5s ease-in-out infinite;
     }
 
-    /* Responsive */
+    @keyframes progressAnim {
+        0%   { transform: translateX(-100%); }
+        100% { transform: translateX(300%); }
+    }
+
+    /* Backup type selection in modal */
+    .backup-type-list { display: flex; flex-direction: column; gap: .5rem; margin-top: .75rem; }
+
+    .backup-type-item {
+        display: flex;
+        align-items: center;
+        gap: .875rem;
+        padding: .875rem 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-medium);
+        background: var(--bg-primary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        text-decoration: none;
+        color: var(--text-primary);
+    }
+
+    .backup-type-item:hover {
+        border-color: var(--brand-primary);
+        background: rgba(59,130,246,.05);
+    }
+
+    .backup-type-item .type-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    .backup-type-item .type-icon.full   { background: rgba(59,130,246,.12); color: #3b82f6; }
+    .backup-type-item .type-icon.db     { background: rgba(139,92,246,.12); color: #8b5cf6; }
+    .backup-type-item .type-icon.files  { background: rgba(16,185,129,.12); color: #10b981; }
+
+    .backup-type-item .type-info { flex: 1; min-width: 0; }
+    .backup-type-item .type-name { font-size: .875rem; font-weight: 600; }
+    .backup-type-item .type-desc { font-size: .75rem; color: var(--text-tertiary); margin-top: 1px; }
+    .backup-type-item i.arrow { font-size: 12px; color: var(--text-tertiary); }
+
+    .btn-warning { background: rgba(245,158,11,.12); color: #f59e0b; border: 1px solid rgba(245,158,11,.25); }
+    .btn-warning:hover { background: #f59e0b; color: white; border-color: #f59e0b; }
+
+    /* ── Responsive ── */
     @media (max-width: 768px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        .card-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .form-grid  { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 480px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    /* Animations */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .stat-card, .card {
-        animation: fadeIn 0.3s ease forwards;
+        .stats-grid { grid-template-columns: 1fr; }
     }
 </style>
 @endpush
@@ -372,101 +571,123 @@
 
 @php
     $user = auth()->user();
-    $canCreateBackup = $user->can('backups.create');
-    $canDeleteBackup = $user->can('backups.delete');
-    $canRestoreBackup = $user->can('backups.restore');
+    $canCreate  = $user->can('backups.create');
+    $canDelete  = $user->can('backups.delete');
+    $canRestore = $user->can('backups.restore');
 @endphp
 
+{{-- ─── Stats ──────────────────────────────────────────── --}}
 <div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-value">{{ $stats->total_backups ?? 0 }}</div>
-        <div class="stat-label">Total sauvegardes</div>
+        <div class="stat-icon blue"><i class="fas fa-database"></i></div>
+        <div class="stat-body">
+            <div class="stat-value">{{ $stats->total_backups ?? 0 }}</div>
+            <div class="stat-label">Total sauvegardes</div>
+        </div>
     </div>
     <div class="stat-card">
-        <div class="stat-value">{{ $stats->successful_backups ?? 0 }}</div>
-        <div class="stat-label">Sauvegardes réussies</div>
+        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-body">
+            <div class="stat-value">{{ $stats->successful_backups ?? 0 }}</div>
+            <div class="stat-label">Réussies</div>
+        </div>
     </div>
     <div class="stat-card">
-        <div class="stat-value">{{ $stats->failed_backups ?? 0 }}</div>
-        <div class="stat-label">Sauvegardes échouées</div>
+        <div class="stat-icon red"><i class="fas fa-times-circle"></i></div>
+        <div class="stat-body">
+            <div class="stat-value">{{ $stats->failed_backups ?? 0 }}</div>
+            <div class="stat-label">Échouées</div>
+        </div>
     </div>
     <div class="stat-card">
-        <div class="stat-value">{{ $stats->total_size ?? '0 B' }}</div>
-        <div class="stat-label">Espace utilisé</div>
+        <div class="stat-icon purple"><i class="fas fa-hdd"></i></div>
+        <div class="stat-body">
+            <div class="stat-value">{{ $stats->total_size ?? '0 B' }}</div>
+            <div class="stat-label">Espace utilisé</div>
+        </div>
     </div>
 </div>
 
+{{-- ─── Créer une sauvegarde ────────────────────────────── --}}
+@if($canCreate)
 <div class="card">
     <div class="card-header">
         <div class="card-title">
-            <i class="fas fa-database"></i> Créer une sauvegarde
+            <i class="fas fa-plus-circle"></i> Nouvelle sauvegarde
         </div>
     </div>
     <div class="card-body">
-        <div class="row" style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            @if($canCreateBackup)
-            <form method="POST" action="{{ route('admin.backup.create') }}" style="display: inline;">
+        <div class="backup-actions">
+            <form method="POST" action="{{ route('admin.backup.create') }}" class="backup-form">
                 @csrf
                 <input type="hidden" name="type" value="full">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Sauvegarde complète
+                <button type="submit" class="backup-type-btn primary">
+                    <i class="fas fa-database"></i> Complète
                 </button>
             </form>
-            <form method="POST" action="{{ route('admin.backup.create') }}" style="display: inline;">
+            <form method="POST" action="{{ route('admin.backup.create') }}" class="backup-form">
                 @csrf
                 <input type="hidden" name="type" value="database">
-                <button type="submit" class="btn btn-secondary">
-                    <i class="fas fa-database"></i> Base de données uniquement
+                <button type="submit" class="backup-type-btn">
+                    <i class="fas fa-table"></i> Base de données
                 </button>
             </form>
-            <form method="POST" action="{{ route('admin.backup.create') }}" style="display: inline;">
+            <form method="POST" action="{{ route('admin.backup.create') }}" class="backup-form">
                 @csrf
                 <input type="hidden" name="type" value="files">
-                <button type="submit" class="btn btn-secondary">
-                    <i class="fas fa-file"></i> Fichiers uniquement
+                <button type="submit" class="backup-type-btn">
+                    <i class="fas fa-folder"></i> Fichiers
                 </button>
             </form>
-            @endif
         </div>
     </div>
 </div>
+@endif
 
+{{-- ─── Liste des sauvegardes ───────────────────────────── --}}
 <div class="card">
     <div class="card-header">
         <div class="card-title">
-            <i class="fas fa-list"></i> Liste des sauvegardes
+            <i class="fas fa-archive"></i> Sauvegardes disponibles
         </div>
+        <span class="badge badge-info">{{ $backups->count() ?? 0 }} fichier(s)</span>
     </div>
-    <div class="table-container">
+    <div class="table-wrap">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Nom du fichier</th>
+                    <th>Fichier</th>
                     <th>Taille</th>
                     <th>Date de création</th>
-                    <th style="text-align: center;">Actions</th>
+                    <th style="text-align:right;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($backups as $backup)
                 <tr>
                     <td>
-                        <i class="fas fa-file-archive"></i> {{ $backup->name }}
+                        <div class="file-name">
+                            <i class="fas fa-file-archive"></i>
+                            {{ $backup->name }}
+                        </div>
                     </td>
-                    <td>{{ $backup->size }}</td>
-                    <td>{{ $backup->date }}</td>
-                    <td style="text-align: center;">
-                        <div style="display: flex; gap: 0.25rem; justify-content: center;">
-                            <a href="{{ route('admin.backup.download', $backup->name) }}" class="action-btn" title="Télécharger">
+                    <td><span class="file-size-badge">{{ $backup->size }}</span></td>
+                    <td style="color: var(--text-secondary);">{{ $backup->date }}</td>
+                    <td>
+                        <div class="actions-cell">
+                            <a href="{{ route('admin.backup.download', $backup->name) }}"
+                               class="action-btn" title="Télécharger">
                                 <i class="fas fa-download"></i>
                             </a>
-                            @if($canRestoreBackup)
-                            <button type="button" class="action-btn restore-btn" data-filename="{{ $backup->name }}" title="Restaurer">
+                            @if($canRestore)
+                            <button type="button" class="action-btn btn-restore restore-btn"
+                                    data-filename="{{ $backup->name }}" title="Restaurer">
                                 <i class="fas fa-undo-alt"></i>
                             </button>
                             @endif
-                            @if($canDeleteBackup)
-                            <button type="button" class="action-btn delete-btn" data-filename="{{ $backup->name }}" title="Supprimer">
+                            @if($canDelete)
+                            <button type="button" class="action-btn btn-del delete-btn"
+                                    data-filename="{{ $backup->name }}" title="Supprimer">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                             @endif
@@ -475,14 +696,17 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" class="empty-state" style="text-align: center; padding: 2rem;">
-                        <i class="fas fa-database" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; opacity: 0.5;"></i>
-                        <p>Aucune sauvegarde disponible</p>
-                        @if($canCreateBackup)
-                        <button type="button" id="createFirstBackupBtn" class="btn btn-primary" style="margin-top: 0.5rem;">
-                            <i class="fas fa-plus"></i> Créer votre première sauvegarde
-                        </button>
-                        @endif
+                    <td colspan="4">
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fas fa-database"></i></div>
+                            <div class="empty-title">Aucune sauvegarde</div>
+                            <div class="empty-text">Créez votre première sauvegarde pour protéger vos données.</div>
+                            @if($canCreate)
+                            <button type="button" id="createFirstBackupBtn" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Créer une sauvegarde
+                            </button>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @endforelse
@@ -491,6 +715,7 @@
     </div>
 </div>
 
+{{-- ─── Paramètres ──────────────────────────────────────── --}}
 <div class="card">
     <div class="card-header">
         <div class="card-title">
@@ -500,54 +725,61 @@
     <div class="card-body">
         <form method="POST" action="{{ route('admin.backup.settings') }}" id="settingsForm">
             @csrf
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+            <div class="form-grid">
                 <div class="form-group">
                     <label class="form-label">Email de notification</label>
-                    <input type="email" name="backup_email" class="form-control" value="{{ $settings->backup_email ?? '' }}" placeholder="email@exemple.com">
-                    <small class="form-help">Les backups seront envoyés à cette adresse</small>
+                    <input type="email" name="backup_email" class="form-control"
+                           value="{{ $settings->backup_email ?? '' }}"
+                           placeholder="email@exemple.com">
+                    <span class="form-hint">Les rapports de backup sont envoyés ici</span>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Type de sauvegarde</label>
+                    <label class="form-label">Type par défaut</label>
                     <select name="backup_type" class="form-select">
-                        <option value="full" {{ ($settings->backup_type ?? 'full') == 'full' ? 'selected' : '' }}>Complète</option>
-                        <option value="database" {{ ($settings->backup_type ?? '') == 'database' ? 'selected' : '' }}>Base de données uniquement</option>
-                        <option value="files" {{ ($settings->backup_type ?? '') == 'files' ? 'selected' : '' }}>Fichiers uniquement</option>
+                        <option value="full"     {{ ($settings->backup_type ?? 'full') == 'full'     ? 'selected' : '' }}>Complète</option>
+                        <option value="database" {{ ($settings->backup_type ?? '') == 'database'     ? 'selected' : '' }}>Base de données uniquement</option>
+                        <option value="files"    {{ ($settings->backup_type ?? '') == 'files'        ? 'selected' : '' }}>Fichiers uniquement</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Fréquence</label>
                     <select name="backup_frequency" class="form-select">
-                        <option value="daily" {{ ($settings->backup_frequency ?? 'daily') == 'daily' ? 'selected' : '' }}>Quotidienne</option>
-                        <option value="weekly" {{ ($settings->backup_frequency ?? '') == 'weekly' ? 'selected' : '' }}>Hebdomadaire</option>
-                        <option value="monthly" {{ ($settings->backup_frequency ?? '') == 'monthly' ? 'selected' : '' }}>Mensuelle</option>
+                        <option value="daily"   {{ ($settings->backup_frequency ?? 'daily') == 'daily'   ? 'selected' : '' }}>Quotidienne</option>
+                        <option value="weekly"  {{ ($settings->backup_frequency ?? '') == 'weekly'        ? 'selected' : '' }}>Hebdomadaire</option>
+                        <option value="monthly" {{ ($settings->backup_frequency ?? '') == 'monthly'       ? 'selected' : '' }}>Mensuelle</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Heure de sauvegarde</label>
-                    <input type="time" name="backup_time" class="form-control" value="{{ $settings->backup_time ?? '02:00' }}">
+                    <label class="form-label">Heure d'exécution</label>
+                    <input type="time" name="backup_time" class="form-control"
+                           value="{{ $settings->backup_time ?? '02:00' }}">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Conservation (jours)</label>
-                    <input type="number" name="auto_clean_days" class="form-control" value="{{ $settings->auto_clean_days ?? 30 }}" min="1" max="90">
-                    <small class="form-help">Supprimer automatiquement les backups après X jours</small>
+                    <input type="number" name="auto_clean_days" class="form-control"
+                           value="{{ $settings->auto_clean_days ?? 30 }}" min="1" max="90">
+                    <span class="form-hint">Suppression automatique après ce délai</span>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Dernière sauvegarde</label>
-                    <input type="text" class="form-control" value="{{ $settings->last_backup_at ? \Carbon\Carbon::parse($settings->last_backup_at)->format('d/m/Y H:i:s') : 'Jamais' }}" readonly disabled>
+                    <input type="text" class="form-control"
+                           value="{{ $settings->last_backup_at ? \Carbon\Carbon::parse($settings->last_backup_at)->format('d/m/Y à H:i') : 'Jamais effectuée' }}"
+                           readonly disabled>
                 </div>
             </div>
-            <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+            <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Enregistrer les paramètres
+                    <i class="fas fa-save"></i> Enregistrer
                 </button>
                 <button type="button" id="testEmailBtn" class="btn btn-secondary">
-                    <i class="fas fa-envelope"></i> Tester l'email
+                    <i class="fas fa-paper-plane"></i> Tester l'email
                 </button>
             </div>
         </form>
     </div>
 </div>
 
+{{-- ─── Historique ──────────────────────────────────────── --}}
 <div class="card">
     <div class="card-header">
         <div class="card-title">
@@ -559,7 +791,7 @@
         </button>
         @endif
     </div>
-    <div class="table-container">
+    <div class="table-wrap">
         <table class="data-table">
             <thead>
                 <tr>
@@ -573,25 +805,39 @@
             <tbody>
                 @forelse($logs as $log)
                 <tr>
-                    <td>{{ $log->filename }}</td>
-                    <td>{{ $log->type === 'manual' ? 'Manuelle' : 'Automatique' }}</td>
+                    <td style="font-size:.8125rem; color: var(--text-secondary); font-family: monospace;">
+                        {{ $log->filename }}
+                    </td>
+                    <td>
+                        <div class="log-type">
+                            <i class="fas {{ $log->type === 'manual' ? 'fa-hand-pointer' : 'fa-robot' }}"></i>
+                            {{ $log->type === 'manual' ? 'Manuelle' : 'Automatique' }}
+                        </div>
+                    </td>
                     <td>
                         <span class="badge {{ $log->status === 'success' ? 'badge-success' : 'badge-danger' }}">
-                            <i class="fas {{ $log->status === 'success' ? 'fa-check-circle' : 'fa-times-circle' }}"></i>
+                            <i class="fas {{ $log->status === 'success' ? 'fa-check' : 'fa-times' }}"></i>
                             {{ $log->status === 'success' ? 'Succès' : 'Échec' }}
                         </span>
                         @if($log->error_message)
-                        <div class="form-help" style="color: var(--brand-error);">{{ $log->error_message }}</div>
+                        <div style="font-size:.75rem; color: var(--brand-error); margin-top: 3px;">
+                            {{ $log->error_message }}
+                        </div>
                         @endif
                     </td>
-                    <td>{{ $log->size ?? '-' }}</td>
-                    <td>{{ \Carbon\Carbon::parse($log->created_at)->format('d/m/Y H:i:s') }}</td>
+                    <td style="color: var(--text-secondary);">{{ $log->size ?? '—' }}</td>
+                    <td style="color: var(--text-secondary); font-size: .8125rem;">
+                        {{ \Carbon\Carbon::parse($log->created_at)->format('d/m/Y H:i') }}
+                    </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="empty-state" style="text-align: center; padding: 2rem;">
-                        <i class="fas fa-history" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; opacity: 0.5;"></i>
-                        <p>Aucun historique disponible</p>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fas fa-history"></i></div>
+                            <div class="empty-title">Aucun historique</div>
+                            <div class="empty-text">L'historique des sauvegardes apparaîtra ici.</div>
+                        </div>
                     </td>
                 </tr>
                 @endforelse
@@ -600,317 +846,243 @@
     </div>
 </div>
 
-<!-- Modal de confirmation suppression -->
+{{-- ─── Modal : Suppression ─────────────────────────────── --}}
 <div id="deleteModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <h3><i class="fas fa-trash-alt"></i> Confirmer la suppression</h3>
-            <button type="button" class="modal-close" onclick="closeDeleteModal()">
-                <i class="fas fa-times"></i>
-            </button>
+            <div class="modal-title"><i class="fas fa-trash-alt"></i> Supprimer la sauvegarde</div>
+            <button type="button" class="modal-close" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
-            <p>Êtes-vous sûr de vouloir supprimer cette sauvegarde ?</p>
-            <p><strong id="deleteFilename"></strong></p>
-            <p class="form-help" style="color: var(--brand-error);">Cette action est irréversible.</p>
+            <p style="color: var(--text-secondary); font-size: .875rem;">Vous êtes sur le point de supprimer :</p>
+            <span class="file-highlight" id="deleteFilename"></span>
+            <div class="danger-box">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Cette action est <strong>irréversible</strong>. Le fichier de sauvegarde sera définitivement supprimé.</p>
+            </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Annuler</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('deleteModal')">Annuler</button>
             <form id="deleteForm" method="POST" action="">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-danger">Supprimer</button>
+                @csrf @method('DELETE')
+                <button type="submit" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Supprimer</button>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal de confirmation restauration -->
+{{-- ─── Modal : Restauration ───────────────────────────── --}}
 <div id="restoreModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <h3><i class="fas fa-undo-alt"></i> Confirmer la restauration</h3>
-            <button type="button" class="modal-close" onclick="closeRestoreModal()">
-                <i class="fas fa-times"></i>
-            </button>
+            <div class="modal-title"><i class="fas fa-undo-alt"></i> Restaurer la sauvegarde</div>
+            <button type="button" class="modal-close" onclick="closeModal('restoreModal')"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
-            <p>Êtes-vous sûr de vouloir restaurer cette sauvegarde ?</p>
-            <p><strong id="restoreFilename"></strong></p>
-            <p class="form-help" style="color: var(--brand-warning);">
-                <i class="fas fa-exclamation-triangle"></i> Attention : La restauration remplacera les données actuelles.
-                Cette action ne peut pas être annulée.
-            </p>
+            <p style="color: var(--text-secondary); font-size: .875rem;">Vous allez restaurer :</p>
+            <span class="file-highlight" id="restoreFilename"></span>
+            <div class="warn-box">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>La restauration <strong>remplacera toutes les données actuelles</strong> par celles de cette sauvegarde. Cette opération ne peut pas être annulée.</p>
+            </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeRestoreModal()">Annuler</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('restoreModal')">Annuler</button>
             <form id="restoreForm" method="POST" action="">
                 @csrf
-                <button type="submit" class="btn btn-warning">Restaurer</button>
+                <button type="submit" class="btn btn-warning"><i class="fas fa-undo-alt"></i> Restaurer</button>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal de création de première sauvegarde -->
+{{-- ─── Modal : Première sauvegarde ───────────────────── --}}
 <div id="firstBackupModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <h3><i class="fas fa-database"></i> Créer une sauvegarde</h3>
-            <button type="button" class="modal-close" onclick="closeFirstBackupModal()">
-                <i class="fas fa-times"></i>
-            </button>
+            <div class="modal-title"><i class="fas fa-plus-circle"></i> Créer une sauvegarde</div>
+            <button type="button" class="modal-close" onclick="closeModal('firstBackupModal')"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
-            <p>Choisissez le type de sauvegarde à créer :</p>
-            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
-                <form method="POST" action="{{ route('admin.backup.create') }}" id="fullBackupForm">
-                    @csrf
-                    <input type="hidden" name="type" value="full">
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">
-                        <i class="fas fa-database"></i> Sauvegarde complète
+            <p style="color: var(--text-secondary); font-size: .875rem;">Choisissez le type de sauvegarde :</p>
+            <div class="backup-type-list">
+                <form method="POST" action="{{ route('admin.backup.create') }}" class="backup-form">
+                    @csrf <input type="hidden" name="type" value="full">
+                    <button type="submit" class="backup-type-item" style="width:100%; text-align:left;">
+                        <div class="type-icon full"><i class="fas fa-database"></i></div>
+                        <div class="type-info">
+                            <div class="type-name">Complète</div>
+                            <div class="type-desc">Base de données + fichiers du projet</div>
+                        </div>
+                        <i class="fas fa-chevron-right arrow"></i>
                     </button>
                 </form>
-                <form method="POST" action="{{ route('admin.backup.create') }}" id="dbBackupForm">
-                    @csrf
-                    <input type="hidden" name="type" value="database">
-                    <button type="submit" class="btn btn-secondary" style="width: 100%;">
-                        <i class="fas fa-database"></i> Base de données uniquement
+                <form method="POST" action="{{ route('admin.backup.create') }}" class="backup-form">
+                    @csrf <input type="hidden" name="type" value="database">
+                    <button type="submit" class="backup-type-item" style="width:100%; text-align:left;">
+                        <div class="type-icon db"><i class="fas fa-table"></i></div>
+                        <div class="type-info">
+                            <div class="type-name">Base de données</div>
+                            <div class="type-desc">Uniquement les tables et données SQL</div>
+                        </div>
+                        <i class="fas fa-chevron-right arrow"></i>
                     </button>
                 </form>
-                <form method="POST" action="{{ route('admin.backup.create') }}" id="filesBackupForm">
-                    @csrf
-                    <input type="hidden" name="type" value="files">
-                    <button type="submit" class="btn btn-secondary" style="width: 100%;">
-                        <i class="fas fa-file"></i> Fichiers uniquement
+                <form method="POST" action="{{ route('admin.backup.create') }}" class="backup-form">
+                    @csrf <input type="hidden" name="type" value="files">
+                    <button type="submit" class="backup-type-item" style="width:100%; text-align:left;">
+                        <div class="type-icon files"><i class="fas fa-folder"></i></div>
+                        <div class="type-info">
+                            <div class="type-name">Fichiers</div>
+                            <div class="type-desc">Médias, uploads et assets uniquement</div>
+                        </div>
+                        <i class="fas fa-chevron-right arrow"></i>
                     </button>
                 </form>
             </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeFirstBackupModal()">Fermer</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('firstBackupModal')">Fermer</button>
         </div>
     </div>
 </div>
 
-<!-- Modal de test email -->
+{{-- ─── Modal : Test email ─────────────────────────────── --}}
 <div id="testEmailModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <h3><i class="fas fa-envelope"></i> Test d'envoi d'email</h3>
-            <button type="button" class="modal-close" onclick="closeTestEmailModal()">
-                <i class="fas fa-times"></i>
-            </button>
+            <div class="modal-title"><i class="fas fa-paper-plane"></i> Test d'envoi d'email</div>
+            <button type="button" class="modal-close" onclick="closeModal('testEmailModal')"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
             <div id="testEmailResult"></div>
-            <div class="progress-bar" style="margin-top: 1rem; display: none;" id="testEmailProgress">
-                <div class="progress-fill" style="width: 100%; animation: progress 2s linear infinite;"></div>
+            <div class="progress-bar" id="testEmailProgress" style="display:none;">
+                <div class="progress-fill"></div>
             </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeTestEmailModal()">Fermer</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('testEmailModal')">Fermer</button>
         </div>
     </div>
 </div>
-
-<style>
-    @keyframes progress {
-        0% { width: 0%; }
-        100% { width: 100%; }
-    }
-    .btn-warning {
-        background: #f59e0b;
-        color: white;
-    }
-    .btn-warning:hover {
-        background: #d97706;
-    }
-</style>
 
 @endsection
 
 @push('scripts')
 <script>
-    // Gestion de la suppression
-    const deleteModal = document.getElementById('deleteModal');
-    const deleteForm = document.getElementById('deleteForm');
-    let currentDeleteFilename = null;
+(function () {
+    'use strict';
 
-    function openDeleteModal(filename) {
-        currentDeleteFilename = filename;
-        document.getElementById('deleteFilename').textContent = filename;
-        deleteForm.action = "{{ url('admin/backup') }}/" + filename;
-        deleteModal.classList.add('active');
+    // ── Helpers ──────────────────────────────────────────
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
         document.body.style.overflow = 'hidden';
     }
 
-    function closeDeleteModal() {
-        deleteModal.classList.remove('active');
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
         document.body.style.overflow = '';
-        currentDeleteFilename = null;
     }
 
+    window.closeModal = closeModal;
+
+    // Close on backdrop click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function (e) {
+            if (e.target === this) closeModal(this.id);
+        });
+    });
+
+    // ── Suppression ──────────────────────────────────────
     document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const filename = this.dataset.filename;
-            openDeleteModal(filename);
+            document.getElementById('deleteFilename').textContent = filename;
+            document.getElementById('deleteForm').action = "{{ url('admin/backup') }}/" + filename;
+            openModal('deleteModal');
         });
     });
 
-    // Gestion de la restauration
-    const restoreModal = document.getElementById('restoreModal');
-    const restoreForm = document.getElementById('restoreForm');
-    let currentRestoreFilename = null;
-
-    function openRestoreModal(filename) {
-        currentRestoreFilename = filename;
-        document.getElementById('restoreFilename').textContent = filename;
-        restoreForm.action = "{{ url('admin/backup') }}/" + filename + "/restore";
-        restoreModal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeRestoreModal() {
-        restoreModal.classList.remove('active');
-        document.body.style.overflow = '';
-        currentRestoreFilename = null;
-    }
-
+    // ── Restauration ─────────────────────────────────────
     document.querySelectorAll('.restore-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const filename = this.dataset.filename;
-            openRestoreModal(filename);
+            document.getElementById('restoreFilename').textContent = filename;
+            document.getElementById('restoreForm').action = "{{ url('admin/backup') }}/" + filename + '/restore';
+            openModal('restoreModal');
         });
     });
 
-    // Première sauvegarde
-    const firstBackupModal = document.getElementById('firstBackupModal');
-    const createFirstBackupBtn = document.getElementById('createFirstBackupBtn');
+    // ── Première sauvegarde ──────────────────────────────
+    const firstBtn = document.getElementById('createFirstBackupBtn');
+    if (firstBtn) firstBtn.addEventListener('click', () => openModal('firstBackupModal'));
 
-    if (createFirstBackupBtn) {
-        createFirstBackupBtn.addEventListener('click', function() {
-            firstBackupModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
-    }
-
-    function closeFirstBackupModal() {
-        firstBackupModal.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
-    // Test email
-    const testEmailModal = document.getElementById('testEmailModal');
-    const testEmailResult = document.getElementById('testEmailResult');
-    const testEmailProgress = document.getElementById('testEmailProgress');
-    const testEmailBtn = document.getElementById('testEmailBtn');
-
-    if (testEmailBtn) {
-        testEmailBtn.addEventListener('click', async function() {
-            testEmailModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            testEmailProgress.style.display = 'block';
-            testEmailResult.innerHTML = '<p>Envoi en cours...</p>';
+    // ── Test email ───────────────────────────────────────
+    const testBtn = document.getElementById('testEmailBtn');
+    if (testBtn) {
+        testBtn.addEventListener('click', async function () {
+            const result   = document.getElementById('testEmailResult');
+            const progress = document.getElementById('testEmailProgress');
+            openModal('testEmailModal');
+            progress.style.display = 'block';
+            result.innerHTML = '<p style="color:var(--text-secondary);font-size:.875rem;">Envoi en cours…</p>';
 
             try {
-                const response = await fetch('{{ route("admin.backup.test-email") }}', {
+                const res  = await fetch('{{ route("admin.backup.test-email") }}', {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Content-Type': 'application/json'
                     }
                 });
-                const data = await response.json();
-
-                if (data.success) {
-                    testEmailResult.innerHTML = '<div class="badge badge-success" style="padding: 0.75rem;">Email de test envoyé avec succès !</div>';
-                } else {
-                    testEmailResult.innerHTML = '<div class="badge badge-danger" style="padding: 0.75rem;">❌ Erreur : ' + data.message + '</div>';
-                }
-            } catch (error) {
-                testEmailResult.innerHTML = '<div class="badge badge-danger" style="padding: 0.75rem;">❌ Erreur lors de l\'envoi de l\'email</div>';
+                const data = await res.json();
+                result.innerHTML = data.success
+                    ? '<span class="badge badge-success" style="font-size:.8125rem;padding:.5rem 1rem;"><i class="fas fa-check"></i> Email envoyé avec succès !</span>'
+                    : '<span class="badge badge-danger"  style="font-size:.8125rem;padding:.5rem 1rem;"><i class="fas fa-times"></i> Erreur : ' + data.message + '</span>';
+            } catch {
+                result.innerHTML = '<span class="badge badge-danger" style="font-size:.8125rem;padding:.5rem 1rem;"><i class="fas fa-times"></i> Erreur lors de l\'envoi</span>';
             } finally {
-                testEmailProgress.style.display = 'none';
+                progress.style.display = 'none';
             }
         });
     }
 
-    function closeTestEmailModal() {
-        testEmailModal.classList.remove('active');
-        document.body.style.overflow = '';
-        testEmailResult.innerHTML = '';
-    }
-
-    // Effacer les logs
-    const clearLogsBtn = document.getElementById('clearLogsBtn');
-    if (clearLogsBtn) {
-        clearLogsBtn.addEventListener('click', async function() {
-            if (confirm('Êtes-vous sûr de vouloir effacer tous les logs de sauvegarde ?')) {
-                try {
-                    const response = await fetch('{{ route("admin.backup.logs.clear") }}', {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    if (response.ok) {
-                        window.location.reload();
-                    }
-                } catch (error) {
-                    console.error('Erreur:', error);
-                }
+    // ── Effacer les logs ─────────────────────────────────
+    const clearBtn = document.getElementById('clearLogsBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', async function () {
+            if (!confirm('Effacer tous les logs de sauvegarde ?')) return;
+            try {
+                const res = await fetch('{{ route("admin.backup.logs.clear") }}', {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+                });
+                if (res.ok) window.location.reload();
+            } catch (err) {
+                console.error(err);
             }
         });
     }
 
-    // Fermer les modals en cliquant à l'extérieur
-    window.onclick = function(event) {
-        if (event.target === deleteModal) {
-            closeDeleteModal();
-        }
-        if (event.target === restoreModal) {
-            closeRestoreModal();
-        }
-        if (event.target === firstBackupModal) {
-            closeFirstBackupModal();
-        }
-        if (event.target === testEmailModal) {
-            closeTestEmailModal();
-        }
-    }
-
-    // Soumission des formulaires
-    const fullBackupForm = document.getElementById('fullBackupForm');
-    const dbBackupForm = document.getElementById('dbBackupForm');
-    const filesBackupForm = document.getElementById('filesBackupForm');
-
-    function disableSubmit(form) {
-        const btn = form.querySelector('button[type="submit"]');
-        if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création en cours...';
-        }
-    }
-
-    if (fullBackupForm) {
-        fullBackupForm.addEventListener('submit', () => disableSubmit(fullBackupForm));
-    }
-    if (dbBackupForm) {
-        dbBackupForm.addEventListener('submit', () => disableSubmit(dbBackupForm));
-    }
-    if (filesBackupForm) {
-        filesBackupForm.addEventListener('submit', () => disableSubmit(filesBackupForm));
-    }
+    // ── Désactiver boutons pendant soumission ────────────
+    document.querySelectorAll('.backup-form').forEach(form => {
+        form.addEventListener('submit', function () {
+            const btn = this.querySelector('button[type="submit"]');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> En cours…';
+            }
+        });
+    });
 
     const settingsForm = document.getElementById('settingsForm');
     if (settingsForm) {
-        settingsForm.addEventListener('submit', function() {
+        settingsForm.addEventListener('submit', function () {
             const btn = this.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement…'; }
         });
     }
+
+})();
 </script>
 @endpush

@@ -4,6 +4,7 @@
 namespace App\Mail;
 
 use App\Models\Invoice;
+use App\Models\CompanyInfo;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -22,7 +23,18 @@ class InvoiceReminderMail extends Mailable
     {
         $this->invoice = $invoice;
         $this->type = $type;
-        $this->company = $company;
+
+        // Récupération des infos entreprise si non fournies
+        if ($company) {
+            $this->company = $company;
+        } else {
+            $this->company = CompanyInfo::first();
+        }
+
+        // Ajout de l'URL absolue du logo
+        if ($this->company && $this->company->logo) {
+            $this->company->logo_url = url('storage/' . $this->company->logo);
+        }
     }
 
     public function envelope(): Envelope
