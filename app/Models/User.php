@@ -85,4 +85,96 @@ class User extends Authenticatable
     {
         return $this->hasMany(Ticket::class, 'assigned_to');
     }
+
+
+
+// ===== RELATIONS DU MODULE PROJETS =====
+
+/**
+ * Projets dont l'utilisateur est chef de projet
+ */
+public function managedProjects()
+{
+    return $this->hasMany(Project::class, 'project_manager_id');
+}
+
+/**
+ * Tâches assignées à l'utilisateur
+ */
+public function assignedTasks()
+{
+    return $this->hasMany(Task::class, 'assigned_to');
+}
+
+/**
+ * Tâches créées par l'utilisateur
+ */
+public function createdTasks()
+{
+    return $this->hasMany(Task::class, 'created_by');
+}
+
+/**
+ * Tâches reviewées par l'utilisateur
+ */
+public function reviewedTasks()
+{
+    return $this->hasMany(Task::class, 'reviewed_by');
+}
+
+/**
+ * Commentaires de l'utilisateur
+ */
+public function taskComments()
+{
+    return $this->hasMany(TaskComment::class);
+}
+
+/**
+ * Entrées de temps de l'utilisateur
+ */
+public function timeEntries()
+{
+    return $this->hasMany(TimeEntry::class);
+}
+
+/**
+ * Réunions organisées par l'utilisateur
+ */
+public function organizedMeetings()
+{
+    return $this->hasMany(Meeting::class, 'organizer_id');
+}
+
+/**
+ * Discussions créées par l'utilisateur
+ */
+public function discussions()
+{
+    return $this->hasMany(ProjectDiscussion::class);
+}
+
+/**
+ * Messages de discussion de l'utilisateur
+ */
+public function discussionMessages()
+{
+    return $this->hasMany(DiscussionMessage::class);
+}
+
+/**
+ * Activités de l'utilisateur
+ */
+public function activities()
+{
+    return $this->hasMany(ProjectActivity::class);
+}
+
+/**
+ * Fichiers attachés par l'utilisateur
+ */
+public function attachments()
+{
+    return $this->hasMany(TaskAttachment::class);
+}
 }

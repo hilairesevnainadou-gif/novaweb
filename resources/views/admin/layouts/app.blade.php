@@ -22,6 +22,7 @@
         $user = auth()->user();
         $isSuperAdmin = $user->hasRole('super-admin');
         $isAdmin = $user->hasRole('admin');
+        $isProjectManager = $user->hasRole('project-manager');
         $isEditor = $user->hasRole('editor');
         $isSupport = $user->hasRole('support');
         $isTechnician = $user->hasRole('technician');
@@ -1118,6 +1119,37 @@
                 </div>
                 @endif
 
+                <!-- Gestion de Projets - visible pour super-admin, admin, project-manager -->
+                @if($isSuperAdmin || $isAdmin || $isProjectManager)
+                <div class="nav-group">
+                    <div class="nav-group-label">Projets</div>
+
+                    @can('projects.view')
+                    <a href="{{ route('admin.projects.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.projects.*') ? 'active' : '' }}">
+                        <i class="fas fa-diagram-project"></i>
+                        <span>Projets</span>
+                    </a>
+                    @endcan
+
+                    @can('tasks.view')
+                    <a href="{{ route('admin.tasks.global-index') }}"
+                        class="nav-item {{ request()->routeIs('admin.tasks.*') ? 'active' : '' }}">
+                        <i class="fas fa-tasks"></i>
+                        <span>Tâches</span>
+                    </a>
+                    @endcan
+
+                    @can('meetings.view')
+                    <a href="{{ route('admin.meetings.global-index') }}"
+                        class="nav-item {{ request()->routeIs('admin.meetings.*') ? 'active' : '' }}">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Réunions</span>
+                    </a>
+                    @endcan
+                </div>
+                @endif
+
                 <!-- Administration - visible pour super-admin, admin -->
                 @if($isSuperAdmin || $isAdmin)
                 <div class="nav-group">
@@ -1170,6 +1202,8 @@
                                     <i class="fas fa-shield-alt" style="font-size:9px;"></i> Super Admin
                                 @elseif($isAdmin)
                                     <i class="fas fa-user-shield" style="font-size:9px;"></i> Admin
+                                @elseif($isProjectManager)
+                                    <i class="fas fa-diagram-project" style="font-size:9px;"></i> Chef de Projet
                                 @elseif($isEditor)
                                     <i class="fas fa-pen" style="font-size:9px;"></i> Éditeur
                                 @elseif($isSupport)

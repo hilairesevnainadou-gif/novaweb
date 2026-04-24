@@ -10,13 +10,16 @@ use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\MaintenanceController;
+use App\Http\Controllers\Admin\MeetingController;
 use App\Http\Controllers\Admin\NewsletterController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\TaskController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\TicketController;
@@ -782,4 +785,185 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             ->middleware('permission:backups.view')
             ->name('disk-space');
     });
+
+    // routes/admin.php - Ajoutez ce bloc
+
+/*─────────────────────────────────────────
+  Gestion de Projets
+─────────────────────────────────────────*/
+Route::prefix('projects')->name('projects.')->group(function () {
+
+    // Dashboard des projets
+    Route::get('/dashboard', [ProjectController::class, 'dashboard'])
+        ->middleware('permission:projects.view')
+        ->name('dashboard');
+
+    Route::get('/', [ProjectController::class, 'index'])
+        ->middleware('permission:projects.view')
+        ->name('index');
+
+    Route::get('/create', [ProjectController::class, 'create'])
+        ->middleware('permission:projects.create')
+        ->name('create');
+
+    Route::post('/', [ProjectController::class, 'store'])
+        ->middleware('permission:projects.create')
+        ->name('store');
+
+    Route::post('/{project}/progress', [ProjectController::class, 'updateProgress'])
+        ->middleware('permission:projects.edit')
+        ->name('update-progress');
+
+    Route::get('/{project}', [ProjectController::class, 'show'])
+        ->middleware('permission:projects.view')
+        ->name('show');
+
+    Route::get('/{project}/edit', [ProjectController::class, 'edit'])
+        ->middleware('permission:projects.edit')
+        ->name('edit');
+
+    Route::put('/{project}', [ProjectController::class, 'update'])
+        ->middleware('permission:projects.edit')
+        ->name('update');
+
+    Route::delete('/{project}', [ProjectController::class, 'destroy'])
+        ->middleware('permission:projects.delete')
+        ->name('destroy');
+
+    // Routes pour les tâches d'un projet
+    Route::prefix('{project}/tasks')->name('tasks.')->group(function () {
+
+        Route::get('/', [TaskController::class, 'index'])
+            ->middleware('permission:projects.view')
+            ->name('index');
+
+        Route::get('/kanban', [TaskController::class, 'kanban'])
+            ->middleware('permission:projects.view')
+            ->name('kanban');
+
+        Route::get('/create', [TaskController::class, 'create'])
+            ->middleware('permission:tasks.create')
+            ->name('create');
+
+        Route::post('/', [TaskController::class, 'store'])
+            ->middleware('permission:tasks.create')
+            ->name('store');
+    });
+
+    // Routes pour les réunions d'un projet
+    Route::prefix('{project}/meetings')->name('meetings.')->group(function () {
+
+        Route::get('/', [MeetingController::class, 'index'])
+            ->middleware('permission:projects.view')
+            ->name('index');
+
+        Route::get('/create', [MeetingController::class, 'create'])
+            ->middleware('permission:meetings.create')
+            ->name('create');
+
+        Route::post('/', [MeetingController::class, 'store'])
+            ->middleware('permission:meetings.create')
+            ->name('store');
+    });
+});
+
+
+// Routes pour les tâches (globales)
+Route::prefix('tasks')->name('tasks.')->group(function () {
+
+    // Route pour créer une tâche sans projet spécifique
+    Route::get('/create', [TaskController::class, 'createWithoutProject'])
+        ->middleware('permission:tasks.create')
+        ->name('create');
+
+    // Route pour enregistrer une tâche sans projet spécifique
+    Route::post('/', [TaskController::class, 'storeWithoutProject'])
+        ->middleware('permission:tasks.create')
+        ->name('store');
+
+    Route::get('/', [TaskController::class, 'globalIndex'])
+        ->middleware('permission:projects.view')
+        ->name('global-index');
+
+    Route::get('/{task}', [TaskController::class, 'show'])
+        ->middleware('permission:projects.view')
+        ->name('show');
+
+    Route::get('/{task}/edit', [TaskController::class, 'edit'])
+        ->middleware('permission:tasks.edit')
+        ->name('edit');
+
+    Route::put('/{task}', [TaskController::class, 'update'])
+        ->middleware('permission:tasks.edit')
+        ->name('update');
+
+    Route::post('/{task}/complete', [TaskController::class, 'markAsCompleted'])
+        ->middleware('permission:tasks.edit')
+        ->name('complete');
+
+    Route::post('/{task}/approve', [TaskController::class, 'approve'])
+        ->middleware('permission:tasks.approve')
+        ->name('approve');
+
+    Route::post('/{task}/reject', [TaskController::class, 'reject'])
+        ->middleware('permission:tasks.approve')
+        ->name('reject');
+
+    Route::delete('/{task}', [TaskController::class, 'destroy'])
+        ->middleware('permission:tasks.delete')
+        ->name('destroy');
+
+    Route::post('/update-order', [TaskController::class, 'updateOrder'])
+        ->middleware('permission:tasks.edit')
+        ->name('update-order');
+
+    Route::post('/{task}/comments', [TaskController::class, 'storeComment'])
+        ->middleware('permission:tasks.edit')
+        ->name('comments.store');
+
+    Route::post('/{task}/comments/{comment}/reply', [TaskController::class, 'replyToComment'])
+        ->middleware('permission:tasks.edit')
+        ->name('comments.reply');
+
+    Route::delete('/comments/{comment}', [TaskController::class, 'deleteComment'])
+        ->middleware('permission:tasks.edit')
+        ->name('comments.destroy');
+
+    // Time entries
+    Route::post('/{task}/time', [TaskController::class, 'addTimeEntry'])
+        ->middleware('permission:tasks.edit')
+        ->name('time.store');
+
+    Route::delete('/time/{entry}', [TaskController::class, 'deleteTimeEntry'])
+        ->middleware('permission:tasks.edit')
+        ->name('time.destroy');
+});
+
+// Routes pour les réunions (globales)
+Route::prefix('meetings')->name('meetings.')->group(function () {
+
+    Route::get('/', [MeetingController::class, 'globalIndex'])
+        ->middleware('permission:projects.view')
+        ->name('global-index');
+
+    Route::get('/{meeting}', [MeetingController::class, 'show'])
+        ->middleware('permission:projects.view')
+        ->name('show');
+
+    Route::get('/{meeting}/edit', [MeetingController::class, 'edit'])
+        ->middleware('permission:meetings.edit')
+        ->name('edit');
+
+    Route::put('/{meeting}', [MeetingController::class, 'update'])
+        ->middleware('permission:meetings.edit')
+        ->name('update');
+
+    Route::post('/{meeting}/minutes', [MeetingController::class, 'addMinutes'])
+        ->middleware('permission:meetings.edit')
+        ->name('add-minutes');
+
+    Route::delete('/{meeting}', [MeetingController::class, 'destroy'])
+        ->middleware('permission:meetings.delete')
+        ->name('destroy');
+});
 });
