@@ -335,6 +335,117 @@
         color: #ef4444;
         font-size: 0.7rem;
     }
+
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(2px);
+        z-index: 9999;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal {
+        width: min(100%, 520px);
+        max-height: calc(100vh - 2rem);
+        overflow-y: auto;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-light);
+        border-radius: 0.75rem;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem 1.25rem;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .modal-body {
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .modal-body p {
+        margin: 0;
+    }
+
+    .warning-text {
+        margin-top: 0.5rem !important;
+        color: #ef4444;
+        font-size: 0.85rem;
+    }
+
+    .modal-close {
+        border: none;
+        background: transparent;
+        color: var(--text-tertiary);
+        font-size: 1rem;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .modal-close:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .btn {
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.55rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-secondary {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-light);
+    }
+
+    .btn-danger {
+        background: #ef4444;
+        color: #fff;
+    }
+
+    .btn-danger:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
 </style>
 @endpush
 
@@ -433,7 +544,7 @@
             </select>
         </div>
         <div>
-            <button onclick="resetFilters()" class="btn-reset">
+            <button type="button" onclick="resetFilters()" class="btn-reset">
                 <i class="fas fa-undo-alt"></i>
                 Réinitialiser
             </button>
@@ -461,7 +572,9 @@
             <tr class="table-row"
                 data-id="{{ $task->id }}"
                 data-title="{{ strtolower($task->title) }}"
-                data-number="{{ $task->task_number }}"
+                data-number="{{ strtolower($task->task_number) }}"
+                data-project="{{ strtolower($task->project->name) }}"
+                data-assignee="{{ strtolower($task->assignee?->name ?? 'non assignee') }}"
                 data-status="{{ $task->status }}"
                 data-priority="{{ $task->priority }}"
                 style="animation-delay: {{ $index * 0.03 }}s;">
@@ -476,7 +589,7 @@
                         <a href="{{ route('admin.projects.show', $task->project) }}" style="color: var(--text-primary); text-decoration: none;">
                             {{ $task->project->name }}
                         </a>
-                        <div class="task-number">{{ $task->task_type_label }}</div>
+                        <div class="task-number">{{ $task->type_label }}</div>
                     </div>
                 </td>
                 <td>
@@ -496,7 +609,7 @@
                     </span>
                 </td>
                 <td>
-                    <span class="badge badge-{{ str_replace('_', '', $task->status) }}">
+                    <span class="badge badge-{{ $task->status }}">
                         <i class="fas
                             @switch($task->status)
                                 @case('todo') fa-circle @break
@@ -610,63 +723,96 @@
     const modal = document.getElementById('confirmationModal');
     const modalMessage = document.getElementById('modalMessage');
     const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+    const defaultConfirmBtnHtml = modalConfirmBtn ? modalConfirmBtn.innerHTML : 'Supprimer';
     let currentDeleteId = null;
+    let isDeleting = false;
+
+    function resetConfirmButton() {
+        if (!modalConfirmBtn) return;
+        modalConfirmBtn.disabled = false;
+        modalConfirmBtn.innerHTML = defaultConfirmBtnHtml;
+    }
 
     function openModal(id, title) {
+        if (!modal || !modalMessage || !modalConfirmBtn) return;
+
+        const safeTitle = (title || '').trim() || 'cette tâche';
         currentDeleteId = id;
-        modalMessage.textContent = `Êtes-vous sûr de vouloir supprimer la tâche "${title}" ?`;
+        isDeleting = false;
+        resetConfirmButton();
+
+        modalMessage.textContent = `Êtes-vous sûr de vouloir supprimer la tâche "${safeTitle}" ?`;
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
 
-    function closeModal() {
+    function closeModal(force = false) {
+        if (!modal) return;
+        if (isDeleting && !force) return;
+
         modal.classList.remove('active');
         document.body.style.overflow = '';
         currentDeleteId = null;
+        isDeleting = false;
+        resetConfirmButton();
     }
 
     function confirmDelete() {
-        if (currentDeleteId) {
-            modalConfirmBtn.disabled = true;
-            modalConfirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suppression...';
+        if (!currentDeleteId || isDeleting || !modalConfirmBtn) return;
 
-            fetch(`{{ url('admin/tasks') }}/${currentDeleteId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success || data.message) {
-                    location.reload();
-                } else {
-                    alert('Une erreur est survenue');
-                    modalConfirmBtn.disabled = false;
-                    modalConfirmBtn.innerHTML = 'Supprimer';
-                    closeModal();
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                alert('Une erreur technique est survenue');
-                modalConfirmBtn.disabled = false;
-                modalConfirmBtn.innerHTML = 'Supprimer';
-                closeModal();
-            });
-        }
+        isDeleting = true;
+        modalConfirmBtn.disabled = true;
+        modalConfirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suppression...';
+
+        fetch(`{{ url('admin/tasks') }}/${currentDeleteId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(async (res) => {
+            const contentType = res.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                return res.json();
+            }
+
+            if (res.redirected || res.ok) {
+                return { success: true, message: 'Tâche supprimée avec succès' };
+            }
+
+            throw new Error('Réponse serveur inattendue');
+        })
+        .then(data => {
+            if (data.success || data.message) {
+                closeModal(true);
+                location.reload();
+                return;
+            }
+
+            throw new Error(data?.message || 'Une erreur est survenue');
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert(error?.message || 'Une erreur technique est survenue');
+            isDeleting = false;
+            resetConfirmButton();
+        });
     }
 
-    modalConfirmBtn.onclick = confirmDelete;
+    if (modalConfirmBtn) {
+        modalConfirmBtn.onclick = confirmDelete;
+    }
 
-    modal.onclick = function(e) {
-        if (e.target === modal) closeModal();
-    };
+    if (modal) {
+        modal.onclick = function(e) {
+            if (e.target === modal) closeModal();
+        };
+    }
 
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+        if (e.key === 'Escape' && modal?.classList.contains('active')) closeModal();
     });
 
     document.querySelectorAll('.delete-btn').forEach(btn => {
@@ -689,10 +835,18 @@
             let show = true;
             const title = row.dataset.title || '';
             const number = row.dataset.number || '';
+            const project = row.dataset.project || '';
+            const assignee = row.dataset.assignee || '';
             const status = row.dataset.status || '';
             const priority = row.dataset.priority || '';
 
-            if (searchTerm && !title.includes(searchTerm) && !number.includes(searchTerm)) {
+            if (
+                searchTerm &&
+                !title.includes(searchTerm) &&
+                !number.includes(searchTerm) &&
+                !project.includes(searchTerm) &&
+                !assignee.includes(searchTerm)
+            ) {
                 show = false;
             }
             if (show && statusValue && status !== statusValue) show = false;

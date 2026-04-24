@@ -150,7 +150,7 @@
             <div>
                 <select name="status" class="filter-select">
                     <option value="">Tous statuts</option>
-                    @foreach(\App\Models\Project::STATUSES as $val => $label)
+                    @foreach($statuses as $val => $label)
                         <option value="{{ $val }}" @selected(request('status') === $val)>{{ $label }}</option>
                     @endforeach
                 </select>
@@ -158,7 +158,7 @@
             <div>
                 <select name="priority" class="filter-select">
                     <option value="">Toutes priorités</option>
-                    @foreach(\App\Models\Project::PRIORITIES as $val => $label)
+                    @foreach($priorities as $val => $label)
                         <option value="{{ $val }}" @selected(request('priority') === $val)>{{ $label }}</option>
                     @endforeach
                 </select>
@@ -166,7 +166,7 @@
             <div>
                 <select name="type" class="filter-select">
                     <option value="">Tous types</option>
-                    @foreach(\App\Models\Project::TYPES as $val => $label)
+                    @foreach($types as $val => $label)
                         <option value="{{ $val }}" @selected(request('type') === $val)>{{ $label }}</option>
                     @endforeach
                 </select>
@@ -203,7 +203,7 @@
             <tr class="table-row" style="animation-delay: {{ $index * 0.03 }}s;">
                 <td>
                     <div style="display:flex; align-items:center; gap:0.625rem;">
-                        <span class="project-color-dot" style="background:{{ $project->color }};"></span>
+                        <span class="project-color-dot" style="background: var(--brand-primary);"></span>
                         <div>
                             <div class="project-name">{{ $project->name }}</div>
                             <div class="project-number">{{ $project->project_number }}</div>
@@ -225,9 +225,9 @@
                 <td>
                     <div style="display:flex; align-items:center; gap:0.5rem;">
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width:{{ $project->progress }}%;"></div>
+                            <div class="progress-fill" style="width:{{ $project->progress_percentage ?? 0 }}%;"></div>
                         </div>
-                        <span style="font-size:0.75rem; color:var(--text-tertiary);">{{ $project->progress }}%</span>
+                        <span style="font-size:0.75rem; color:var(--text-tertiary);">{{ $project->progress_percentage ?? 0 }}%</span>
                     </div>
                 </td>
                 <td>
@@ -347,11 +347,22 @@
             method: 'DELETE',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
         })
-        .then(r => r.json())
+        .then(async (r) => {
+            const contentType = r.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                return r.json();
+            }
+
+            if (r.redirected || r.ok) {
+                return { success: true, message: 'Projet supprimé avec succès' };
+            }
+
+            throw new Error('Réponse serveur inattendue');
+        })
         .then(data => {
             if (data.success) {
-                showNotification('Projet supprimé avec succès', 'success');
-                setTimeout(() => location.reload(), 1500);
+                showNotification(data.message || 'Projet supprimé avec succès', 'success');
+                setTimeout(() => location.reload(), 1200);
             } else {
                 showNotification(data.message || 'Erreur lors de la suppression', 'error');
                 modalConfirmBtn.disabled = false;

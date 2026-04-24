@@ -155,7 +155,7 @@
         <div class="kanban-header">
             <h3>
                 {{ $status['label'] }}
-                <span class="task-count">{{ $tasks[$statusKey]->count() ?? 0 }}</span>
+                <span class="task-count">{{ ($tasks[$statusKey] ?? collect())->count() }}</span>
             </h3>
         </div>
         <div class="kanban-body" data-status="{{ $statusKey }}">

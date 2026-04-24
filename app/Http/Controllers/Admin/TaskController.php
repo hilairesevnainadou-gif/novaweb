@@ -1,4 +1,5 @@
 <?php
+
 // app/Http/Controllers/Admin/TaskController.php
 
 namespace App\Http\Controllers\Admin;
@@ -21,7 +22,7 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.view')) {
+        if (! $user->can('tasks.view')) {
             abort(403, 'Vous n\'avez pas la permission de voir cette page.');
         }
 
@@ -32,13 +33,13 @@ class TaskController extends Controller
         }
 
         // Restriction selon les permissions
-        if (!$user->can('tasks.view.all')) {
-            $query->where(function($q) use ($user) {
+        if (! $user->can('tasks.view.all')) {
+            $query->where(function ($q) use ($user) {
                 $q->where('assigned_to', $user->id)
-                  ->orWhere('created_by', $user->id)
-                  ->orWhereHas('project', function($pq) use ($user) {
-                      $pq->where('project_manager_id', $user->id);
-                  });
+                    ->orWhere('created_by', $user->id)
+                    ->orWhereHas('project', function ($pq) use ($user) {
+                        $pq->where('project_manager_id', $user->id);
+                    });
             });
         }
 
@@ -56,9 +57,9 @@ class TaskController extends Controller
         }
 
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->search . '%')
-                  ->orWhere('task_number', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%'.$request->search.'%')
+                    ->orWhere('task_number', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -77,14 +78,14 @@ class TaskController extends Controller
             'review' => 'En revue',
             'approved' => 'Approuvée',
             'rejected' => 'Rejetée',
-            'completed' => 'Terminée'
+            'completed' => 'Terminée',
         ];
 
         $priorities = [
             'low' => 'Basse',
             'medium' => 'Moyenne',
             'high' => 'Haute',
-            'urgent' => 'Urgente'
+            'urgent' => 'Urgente',
         ];
 
         $users = User::all();
@@ -107,7 +108,7 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.create')) {
+        if (! $user->can('tasks.create')) {
             abort(403, 'Vous n\'avez pas la permission de créer une tâche.');
         }
 
@@ -121,14 +122,14 @@ class TaskController extends Controller
             'research' => 'Recherche',
             'design' => 'Design',
             'testing' => 'Test',
-            'documentation' => 'Documentation'
+            'documentation' => 'Documentation',
         ];
 
         $priorities = [
             'low' => 'Basse',
             'medium' => 'Moyenne',
             'high' => 'Haute',
-            'urgent' => 'Urgente'
+            'urgent' => 'Urgente',
         ];
 
         $statuses = [
@@ -138,7 +139,7 @@ class TaskController extends Controller
             'approved' => 'Approuvée',
             'rejected' => 'Rejetée',
             'completed' => 'Terminée',
-            'cancelled' => 'Annulée'
+            'cancelled' => 'Annulée',
         ];
 
         $parentTasks = $project->tasks()->whereNull('parent_id')->get();
@@ -153,7 +154,7 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.create')) {
+        if (! $user->can('tasks.create')) {
             abort(403, 'Vous n\'avez pas la permission de créer une tâche.');
         }
 
@@ -167,14 +168,14 @@ class TaskController extends Controller
             'research' => 'Recherche',
             'design' => 'Design',
             'testing' => 'Test',
-            'documentation' => 'Documentation'
+            'documentation' => 'Documentation',
         ];
 
         $priorities = [
             'low' => 'Basse',
             'medium' => 'Moyenne',
             'high' => 'Haute',
-            'urgent' => 'Urgente'
+            'urgent' => 'Urgente',
         ];
 
         $statuses = [
@@ -184,7 +185,7 @@ class TaskController extends Controller
             'approved' => 'Approuvée',
             'rejected' => 'Rejetée',
             'completed' => 'Terminée',
-            'cancelled' => 'Annulée'
+            'cancelled' => 'Annulée',
         ];
 
         $parentTasks = collect();
@@ -199,7 +200,7 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.create')) {
+        if (! $user->can('tasks.create')) {
             abort(403, 'Vous n\'avez pas la permission de créer une tâche.');
         }
 
@@ -228,8 +229,8 @@ class TaskController extends Controller
             $task->project->activities()->create([
                 'user_id' => $user->id,
                 'activity_type' => 'task_created',
-                'description' => "Tâche '{$task->title}' créée par " . $user->name,
-                'metadata' => ['task_id' => $task->id]
+                'description' => "Tâche '{$task->title}' créée par ".$user->name,
+                'metadata' => ['task_id' => $task->id],
             ]);
 
             DB::commit();
@@ -239,7 +240,8 @@ class TaskController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Erreur lors de la création: ' . $e->getMessage());
+
+            return back()->with('error', 'Erreur lors de la création: '.$e->getMessage());
         }
     }
 
@@ -250,7 +252,7 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.create')) {
+        if (! $user->can('tasks.create')) {
             abort(403, 'Vous n\'avez pas la permission de créer une tâche.');
         }
 
@@ -279,8 +281,8 @@ class TaskController extends Controller
             $task->project->activities()->create([
                 'user_id' => $user->id,
                 'activity_type' => 'task_created',
-                'description' => "Tâche '{$task->title}' créée par " . $user->name,
-                'metadata' => ['task_id' => $task->id]
+                'description' => "Tâche '{$task->title}' créée par ".$user->name,
+                'metadata' => ['task_id' => $task->id],
             ]);
 
             DB::commit();
@@ -290,7 +292,8 @@ class TaskController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Erreur lors de la création: ' . $e->getMessage());
+
+            return back()->with('error', 'Erreur lors de la création: '.$e->getMessage());
         }
     }
 
@@ -301,17 +304,17 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.view')) {
+        if (! $user->can('tasks.view')) {
             abort(403, 'Vous n\'avez pas la permission de voir cette tâche.');
         }
 
         // Vérifier l'accès à la tâche
-        if (!$user->can('tasks.view.all')) {
+        if (! $user->can('tasks.view.all')) {
             $isAssignee = $task->assigned_to == $user->id;
             $isCreator = $task->created_by == $user->id;
             $isProjectManager = $task->project->project_manager_id == $user->id;
 
-            if (!$isAssignee && !$isCreator && !$isProjectManager) {
+            if (! $isAssignee && ! $isCreator && ! $isProjectManager) {
                 abort(403, 'Vous n\'avez pas accès à cette tâche.');
             }
         }
@@ -330,7 +333,7 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.edit')) {
+        if (! $user->can('tasks.edit')) {
             abort(403, 'Vous n\'avez pas la permission de modifier cette tâche.');
         }
 
@@ -344,7 +347,7 @@ class TaskController extends Controller
             'research' => 'Recherche',
             'design' => 'Design',
             'testing' => 'Test',
-            'documentation' => 'Documentation'
+            'documentation' => 'Documentation',
         ];
 
         $statuses = [
@@ -354,14 +357,14 @@ class TaskController extends Controller
             'approved' => 'Approuvée',
             'rejected' => 'Rejetée',
             'completed' => 'Terminée',
-            'cancelled' => 'Annulée'
+            'cancelled' => 'Annulée',
         ];
 
         $priorities = [
             'low' => 'Basse',
             'medium' => 'Moyenne',
             'high' => 'Haute',
-            'urgent' => 'Urgente'
+            'urgent' => 'Urgente',
         ];
 
         $parentTasks = $task->project->tasks()->whereNull('parent_id')->where('id', '!=', $task->id)->get();
@@ -376,7 +379,7 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.edit')) {
+        if (! $user->can('tasks.edit')) {
             abort(403, 'Vous n\'avez pas la permission de modifier cette tâche.');
         }
 
@@ -404,7 +407,7 @@ class TaskController extends Controller
                     'user_id' => $user->id,
                     'activity_type' => 'task_status_changed',
                     'description' => "Statut de la tâche '{$task->title}' changé de {$oldStatus} à {$task->status}",
-                    'metadata' => ['task_id' => $task->id]
+                    'metadata' => ['task_id' => $task->id],
                 ]);
             }
 
@@ -415,7 +418,8 @@ class TaskController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Erreur lors de la mise à jour: ' . $e->getMessage());
+
+            return back()->with('error', 'Erreur lors de la mise à jour: '.$e->getMessage());
         }
     }
 
@@ -429,12 +433,12 @@ class TaskController extends Controller
         $isAssignee = $task->assigned_to == $user->id;
         $isProjectManager = $task->project->project_manager_id == $user->id;
 
-        if (!$isAssignee && !$isProjectManager && !$user->can('tasks.edit')) {
+        if (! $isAssignee && ! $isProjectManager && ! $user->can('tasks.edit')) {
             return response()->json(['error' => 'Non autorisé'], 403);
         }
 
         $request->validate([
-            'completion_notes' => 'nullable|string'
+            'completion_notes' => 'nullable|string',
         ]);
 
         $task->markAsCompleted($user->id, $request->completion_notes);
@@ -451,12 +455,12 @@ class TaskController extends Controller
 
         $isProjectManager = $task->project->project_manager_id == $user->id;
 
-        if (!$isProjectManager && !$user->can('tasks.approve')) {
+        if (! $isProjectManager && ! $user->can('tasks.approve')) {
             return response()->json(['error' => 'Non autorisé'], 403);
         }
 
         $request->validate([
-            'review_notes' => 'nullable|string'
+            'review_notes' => 'nullable|string',
         ]);
 
         $task->approveTask($user->id, $request->review_notes);
@@ -473,12 +477,12 @@ class TaskController extends Controller
 
         $isProjectManager = $task->project->project_manager_id == $user->id;
 
-        if (!$isProjectManager && !$user->can('tasks.approve')) {
+        if (! $isProjectManager && ! $user->can('tasks.approve')) {
             return response()->json(['error' => 'Non autorisé'], 403);
         }
 
         $request->validate([
-            'review_notes' => 'required|string|min:10'
+            'review_notes' => 'required|string|min:10',
         ]);
 
         $task->rejectTask($user->id, $request->review_notes);
@@ -493,7 +497,7 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.delete')) {
+        if (! $user->can('tasks.delete')) {
             abort(403, 'Vous n\'avez pas la permission de supprimer cette tâche.');
         }
 
@@ -501,6 +505,13 @@ class TaskController extends Controller
         $taskTitle = $task->title;
 
         $task->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Tâche '{$taskTitle}' supprimée.",
+            ]);
+        }
 
         return redirect()->route('admin.projects.tasks.index', $projectId)
             ->with('success', "Tâche '{$taskTitle}' supprimée.");
@@ -513,7 +524,7 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.view')) {
+        if (! $user->can('tasks.view')) {
             abort(403, 'Vous n\'avez pas la permission de voir cette page.');
         }
 
@@ -528,8 +539,13 @@ class TaskController extends Controller
             'review' => ['label' => 'En revue', 'color' => 'yellow'],
             'approved' => ['label' => 'Approuvée', 'color' => 'green'],
             'rejected' => ['label' => 'Rejetée', 'color' => 'red'],
-            'completed' => ['label' => 'Terminée', 'color' => 'purple']
+            'completed' => ['label' => 'Terminée', 'color' => 'purple'],
         ];
+
+        // Garantir la présence de toutes les colonnes pour éviter "Undefined array key"
+        $tasks = collect($statuses)->keys()->mapWithKeys(function ($statusKey) use ($tasks) {
+            return [$statusKey => $tasks->get($statusKey, collect())];
+        });
 
         return view('admin.tasks.kanban', compact('project', 'tasks', 'statuses'));
     }
@@ -541,7 +557,7 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.edit')) {
+        if (! $user->can('tasks.edit')) {
             return response()->json(['error' => 'Non autorisé'], 403);
         }
 
@@ -559,18 +575,18 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.edit')) {
+        if (! $user->can('tasks.edit')) {
             return response()->json(['error' => 'Non autorisé'], 403);
         }
 
         $request->validate([
-            'comment' => 'required|string|min:2'
+            'comment' => 'required|string|min:2',
         ]);
 
         $comment = $task->comments()->create([
             'user_id' => $user->id,
             'comment' => $request->comment,
-            'parent_id' => null
+            'parent_id' => null,
         ]);
 
         if ($request->ajax()) {
@@ -587,18 +603,18 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.edit')) {
+        if (! $user->can('tasks.edit')) {
             return response()->json(['error' => 'Non autorisé'], 403);
         }
 
         $request->validate([
-            'comment' => 'required|string|min:2'
+            'comment' => 'required|string|min:2',
         ]);
 
         $reply = $task->comments()->create([
             'user_id' => $user->id,
             'comment' => $request->comment,
-            'parent_id' => $comment->id
+            'parent_id' => $comment->id,
         ]);
 
         if ($request->ajax()) {
@@ -615,7 +631,7 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if ($comment->user_id !== $user->id && !$user->can('tasks.delete')) {
+        if ($comment->user_id !== $user->id && ! $user->can('tasks.delete')) {
             return response()->json(['error' => 'Non autorisé'], 403);
         }
 
@@ -635,14 +651,14 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('tasks.edit')) {
+        if (! $user->can('tasks.edit')) {
             return response()->json(['error' => 'Non autorisé'], 403);
         }
 
         $request->validate([
             'date' => 'required|date',
             'hours' => 'required|numeric|min:0.5|max:24',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         $timeEntry = $task->timeEntries()->create([
@@ -651,7 +667,7 @@ class TaskController extends Controller
             'date' => $request->date,
             'hours' => $request->hours,
             'description' => $request->description,
-            'is_billable' => true
+            'is_billable' => true,
         ]);
 
         // Mettre à jour les heures réelles de la tâche
@@ -676,7 +692,7 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if ($entry->user_id !== $user->id && !$user->can('tasks.delete')) {
+        if ($entry->user_id !== $user->id && ! $user->can('tasks.delete')) {
             return response()->json(['error' => 'Non autorisé'], 403);
         }
 

@@ -1,15 +1,16 @@
 <?php
+
 // app/Http/Controllers/Admin/ProjectController.php
 
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Project;
 use App\Models\Client;
-use App\Models\User;
-use App\Models\Task;
 use App\Models\Meeting;
+use App\Models\Project;
 use App\Models\ProjectActivity;
+use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -26,7 +27,7 @@ class ProjectController extends Controller
         $canViewAllProjects = $user->can('projects.view.all');
         $canViewProjects = $user->can('projects.view');
 
-        if (!$canViewProjects) {
+        if (! $canViewProjects) {
             abort(403, 'Vous n\'avez pas la permission de voir cette page.');
         }
 
@@ -36,13 +37,13 @@ class ProjectController extends Controller
         } else {
             // L'utilisateur ne voit que les projets où il est chef de projet ou assigné à des tâches
             $projects = Project::where('project_manager_id', $user->id)
-                ->orWhereHas('tasks', function($q) use ($user) {
+                ->orWhereHas('tasks', function ($q) use ($user) {
                     $q->where('assigned_to', $user->id);
                 })
                 ->active()
                 ->get();
             $pendingReviewTasks = Task::pendingReview()
-                ->whereHas('project', function($q) use ($user) {
+                ->whereHas('project', function ($q) use ($user) {
                     $q->where('project_manager_id', $user->id);
                 })
                 ->get();
@@ -75,14 +76,14 @@ class ProjectController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('projects.view')) {
+        if (! $user->can('projects.view')) {
             abort(403, 'Vous n\'avez pas la permission de voir cette page.');
         }
 
         $query = Project::with(['client', 'projectManager']);
 
         // Restriction selon les permissions
-        if (!$user->can('projects.view.all')) {
+        if (! $user->can('projects.view.all')) {
             $query->where('project_manager_id', $user->id);
         }
 
@@ -104,44 +105,51 @@ class ProjectController extends Controller
         }
 
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('project_number', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('project_number', 'like', '%'.$request->search.'%');
             });
         }
 
         $projects = $query->latest()->paginate(15);
+
+        $stats = [
+            'total' => Project::count(),
+            'active' => Project::whereNotIn('status', ['completed', 'cancelled'])->count(),
+            'completed' => Project::where('status', 'completed')->count(),
+            'on_hold' => Project::where('status', 'review')->count(),
+        ];
 
         $statuses = [
             'planning' => 'Planification',
             'in_progress' => 'En cours',
             'review' => 'En revue',
             'completed' => 'Terminé',
-            'cancelled' => 'Annulé'
+            'cancelled' => 'Annulé',
         ];
 
         $types = [
             'web' => 'Site Web / App Web',
             'mobile' => 'Application Mobile',
             'software' => 'Logiciel Desktop',
-            'other' => 'Autre'
+            'other' => 'Autre',
         ];
 
         $priorities = [
             'low' => 'Basse',
             'medium' => 'Moyenne',
             'high' => 'Haute',
-            'critical' => 'Critique'
+            'critical' => 'Critique',
         ];
 
         // Récupérer tous les chefs de projet potentiels (utilisateurs avec permission de gérer des projets)
-        $projectManagers = User::whereHas('permissions', function($query) {
+        $projectManagers = User::whereHas('permissions', function ($query) {
             $query->where('name', 'projects.view.all');
-        })->orWhereHas('permissions', function($query) {
+        })->orWhereHas('permissions', function ($query) {
             $query->where('name', 'projects.create');
         })->get();
 
-        return view('admin.projects.index', compact('projects', 'statuses', 'types', 'priorities', 'projectManagers'));
+        return view('admin.projects.index', compact('projects', 'statuses', 'types', 'priorities', 'projectManagers', 'stats'));
     }
 
     /**
@@ -151,35 +159,35 @@ class ProjectController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('projects.create')) {
+        if (! $user->can('projects.create')) {
             abort(403, 'Vous n\'avez pas la permission de créer un projet.');
         }
 
         $clients = Client::active()->get();
 
         // Récupérer les utilisateurs qui peuvent être chefs de projet (ceux qui ont la permission de gérer des projets)
-        $projectManagers = User::whereHas('permissions', function($query) {
+        $projectManagers = User::whereHas('permissions', function ($query) {
             $query->whereIn('name', ['projects.view.all', 'projects.create', 'projects.edit']);
         })->get();
 
         $statuses = [
             'planning' => 'Planification',
             'in_progress' => 'En cours',
-            'review' => 'En revue'
+            'review' => 'En revue',
         ];
 
         $types = [
             'web' => 'Site Web / Application Web',
             'mobile' => 'Application Mobile',
             'software' => 'Logiciel Desktop',
-            'other' => 'Autre'
+            'other' => 'Autre',
         ];
 
         $priorities = [
             'low' => 'Basse',
             'medium' => 'Moyenne',
             'high' => 'Haute',
-            'critical' => 'Critique'
+            'critical' => 'Critique',
         ];
 
         return view('admin.projects.create', compact('clients', 'projectManagers', 'statuses', 'types', 'priorities'));
@@ -192,7 +200,7 @@ class ProjectController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('projects.create')) {
+        if (! $user->can('projects.create')) {
             abort(403, 'Vous n\'avez pas la permission de créer un projet.');
         }
 
@@ -227,7 +235,7 @@ class ProjectController extends Controller
                 'project_id' => $project->id,
                 'user_id' => $user->id,
                 'activity_type' => 'project_created',
-                'description' => "Projet '{$project->name}' créé par " . $user->name
+                'description' => "Projet '{$project->name}' créé par ".$user->name,
             ]);
 
             DB::commit();
@@ -237,7 +245,8 @@ class ProjectController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Erreur lors de la création du projet: ' . $e->getMessage());
+
+            return back()->with('error', 'Erreur lors de la création du projet: '.$e->getMessage());
         }
     }
 
@@ -248,14 +257,14 @@ class ProjectController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('projects.view')) {
+        if (! $user->can('projects.view')) {
             abort(403, 'Vous n\'avez pas la permission de voir ce projet.');
         }
 
         // Vérifier si l'utilisateur a accès à ce projet spécifique
-        if (!$user->can('projects.view.all') && $project->project_manager_id !== $user->id) {
+        if (! $user->can('projects.view.all') && $project->project_manager_id !== $user->id) {
             $hasTask = $project->tasks()->where('assigned_to', $user->id)->exists();
-            if (!$hasTask) {
+            if (! $hasTask) {
                 abort(403, 'Vous n\'avez pas accès à ce projet.');
             }
         }
@@ -290,17 +299,17 @@ class ProjectController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('projects.edit')) {
+        if (! $user->can('projects.edit')) {
             abort(403, 'Vous n\'avez pas la permission de modifier ce projet.');
         }
 
-        if (!$user->can('projects.view.all') && $project->project_manager_id !== $user->id) {
+        if (! $user->can('projects.view.all') && $project->project_manager_id !== $user->id) {
             abort(403, 'Vous ne pouvez modifier que vos propres projets.');
         }
 
         $clients = Client::active()->get();
 
-        $projectManagers = User::whereHas('permissions', function($query) {
+        $projectManagers = User::whereHas('permissions', function ($query) {
             $query->whereIn('name', ['projects.view.all', 'projects.create', 'projects.edit']);
         })->get();
 
@@ -309,21 +318,21 @@ class ProjectController extends Controller
             'in_progress' => 'En cours',
             'review' => 'En revue',
             'completed' => 'Terminé',
-            'cancelled' => 'Annulé'
+            'cancelled' => 'Annulé',
         ];
 
         $types = [
             'web' => 'Site Web / Application Web',
             'mobile' => 'Application Mobile',
             'software' => 'Logiciel Desktop',
-            'other' => 'Autre'
+            'other' => 'Autre',
         ];
 
         $priorities = [
             'low' => 'Basse',
             'medium' => 'Moyenne',
             'high' => 'Haute',
-            'critical' => 'Critique'
+            'critical' => 'Critique',
         ];
 
         return view('admin.projects.edit', compact('project', 'clients', 'projectManagers', 'statuses', 'types', 'priorities'));
@@ -336,11 +345,11 @@ class ProjectController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('projects.edit')) {
+        if (! $user->can('projects.edit')) {
             abort(403, 'Vous n\'avez pas la permission de modifier ce projet.');
         }
 
-        if (!$user->can('projects.view.all') && $project->project_manager_id !== $user->id) {
+        if (! $user->can('projects.view.all') && $project->project_manager_id !== $user->id) {
             abort(403, 'Vous ne pouvez modifier que vos propres projets.');
         }
 
@@ -376,7 +385,7 @@ class ProjectController extends Controller
                     'project_id' => $project->id,
                     'user_id' => $user->id,
                     'activity_type' => 'status_changed',
-                    'description' => "Statut du projet changé de {$oldStatus} à {$project->status} par " . $user->name
+                    'description' => "Statut du projet changé de {$oldStatus} à {$project->status} par ".$user->name,
                 ]);
             }
 
@@ -387,7 +396,8 @@ class ProjectController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Erreur lors de la mise à jour: ' . $e->getMessage());
+
+            return back()->with('error', 'Erreur lors de la mise à jour: '.$e->getMessage());
         }
     }
 
@@ -398,11 +408,11 @@ class ProjectController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('projects.delete')) {
+        if (! $user->can('projects.delete')) {
             abort(403, 'Vous n\'avez pas la permission de supprimer ce projet.');
         }
 
-        if (!$user->can('projects.view.all') && $project->project_manager_id !== $user->id) {
+        if (! $user->can('projects.view.all') && $project->project_manager_id !== $user->id) {
             abort(403, 'Vous ne pouvez supprimer que vos propres projets.');
         }
 
@@ -414,12 +424,26 @@ class ProjectController extends Controller
 
             DB::commit();
 
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Projet '{$projectName}' supprimé avec succès.",
+                ]);
+            }
+
             return redirect()->route('admin.projects.index')
                 ->with('success', "Projet '{$projectName}' supprimé avec succès.");
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Erreur lors de la suppression: ' . $e->getMessage());
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur lors de la suppression: '.$e->getMessage(),
+                ], 500);
+            }
+
+            return back()->with('error', 'Erreur lors de la suppression: '.$e->getMessage());
         }
     }
 
@@ -430,12 +454,12 @@ class ProjectController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->can('projects.edit')) {
+        if (! $user->can('projects.edit')) {
             return response()->json(['error' => 'Permission refusée'], 403);
         }
 
         $request->validate([
-            'progress_percentage' => 'required|integer|min:0|max:100'
+            'progress_percentage' => 'required|integer|min:0|max:100',
         ]);
 
         $project->update(['progress_percentage' => $request->progress_percentage]);
@@ -444,7 +468,7 @@ class ProjectController extends Controller
             'project_id' => $project->id,
             'user_id' => $user->id,
             'activity_type' => 'progress_updated',
-            'description' => "Progression mise à jour à {$request->progress_percentage}% par " . $user->name
+            'description' => "Progression mise à jour à {$request->progress_percentage}% par ".$user->name,
         ]);
 
         return response()->json(['success' => true]);
