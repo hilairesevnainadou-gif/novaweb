@@ -991,6 +991,52 @@
                 </div>
                 @endif
 
+                <!-- PROJETS SECTION -->
+                @if($isSuperAdmin || $isAdmin || $isSupport || $isTechnician || $isViewer)
+                @canany(['projects.view', 'tasks.view', 'meetings.view'])
+                <div class="nav-group">
+                    <div class="nav-group-label">Projets</div>
+
+                    @can('projects.view')
+                    <a href="{{ route('admin.projects.dashboard') }}"
+                        class="nav-item {{ request()->routeIs('admin.projects.dashboard') ? 'active' : '' }}">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Tableau de bord</span>
+                    </a>
+                    <a href="{{ route('admin.projects.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.projects.index') || (request()->routeIs('admin.projects.*') && !request()->routeIs('admin.projects.dashboard') && !request()->routeIs('admin.projects.*.tasks.*') && !request()->routeIs('admin.projects.*.meetings.*')) ? 'active' : '' }}">
+                        <i class="fas fa-folder-open"></i>
+                        <span>Projets</span>
+                        @php $activeProjects = \App\Models\Project::where('status', 'active')->count(); @endphp
+                        @if($activeProjects > 0)
+                        <span class="nav-badge">{{ $activeProjects }}</span>
+                        @endif
+                    </a>
+                    @endcan
+
+                    @can('tasks.view')
+                    <a href="{{ route('admin.tasks.global-index') }}"
+                        class="nav-item {{ request()->routeIs('admin.tasks.global-index') ? 'active' : '' }}">
+                        <i class="fas fa-check-square"></i>
+                        <span>Tâches</span>
+                        @php $urgentTasks = \App\Models\Task::where('priority', 'urgent')->whereNotIn('status', ['done','cancelled'])->count(); @endphp
+                        @if($urgentTasks > 0)
+                        <span class="nav-badge">{{ $urgentTasks }}</span>
+                        @endif
+                    </a>
+                    @endcan
+
+                    @can('meetings.view')
+                    <a href="{{ route('admin.meetings.global-index') }}"
+                        class="nav-item {{ request()->routeIs('admin.meetings.global-index') ? 'active' : '' }}">
+                        <i class="fas fa-video"></i>
+                        <span>Réunions</span>
+                    </a>
+                    @endcan
+                </div>
+                @endcanany
+                @endif
+
                 <!-- MAINTENANCE SECTION - visible pour super-admin, admin, support, technician -->
                 @if($isSuperAdmin || $isAdmin || $isSupport || $isTechnician)
                 <div class="nav-group">

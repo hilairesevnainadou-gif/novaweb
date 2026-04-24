@@ -157,6 +157,28 @@ class RolePermissionSeeder extends Seeder
             'team.create',
             'team.edit',
             'team.delete',
+
+            // ── Projets ───────────────────────────────────────────────────
+            'projects.view',
+            'projects.view.all',
+            'projects.create',
+            'projects.edit',
+            'projects.delete',
+
+            // ── Tâches ────────────────────────────────────────────────────
+            'tasks.view',
+            'tasks.view.all',
+            'tasks.create',
+            'tasks.edit',
+            'tasks.delete',
+            'tasks.approve',
+
+            // ── Réunions ──────────────────────────────────────────────────
+            'meetings.view',
+            'meetings.view.all',
+            'meetings.create',
+            'meetings.edit',
+            'meetings.delete',
         ];
 
         // ── Créer toutes les permissions (idempotent) ─────────────────────
@@ -301,6 +323,28 @@ class RolePermissionSeeder extends Seeder
                     'team.create',
                     'team.edit',
                     'team.delete',
+
+                    // Projets
+                    'projects.view',
+                    'projects.view.all',
+                    'projects.create',
+                    'projects.edit',
+                    'projects.delete',
+
+                    // Tâches
+                    'tasks.view',
+                    'tasks.view.all',
+                    'tasks.create',
+                    'tasks.edit',
+                    'tasks.delete',
+                    'tasks.approve',
+
+                    // Réunions
+                    'meetings.view',
+                    'meetings.view.all',
+                    'meetings.create',
+                    'meetings.edit',
+                    'meetings.delete',
                 ],
             ],
 
@@ -367,6 +411,25 @@ class RolePermissionSeeder extends Seeder
                     'contact.view',
                     'contact.reply',
 
+                    // Projets
+                    'projects.view',
+                    'projects.view.all',
+                    'projects.create',
+                    'projects.edit',
+
+                    // Tâches
+                    'tasks.view',
+                    'tasks.view.all',
+                    'tasks.create',
+                    'tasks.edit',
+                    'tasks.approve',
+
+                    // Réunions
+                    'meetings.view',
+                    'meetings.view.all',
+                    'meetings.create',
+                    'meetings.edit',
+
                     'profile.view',
                     'profile.edit',
                 ],
@@ -386,7 +449,12 @@ class RolePermissionSeeder extends Seeder
                     'interventions.edit',
                     'interventions.rate',
 
-
+                    // Projets (accès limité)
+                    'projects.view',
+                    'tasks.view',
+                    'tasks.create',
+                    'tasks.edit',
+                    'meetings.view',
 
                     'profile.view',
                     'profile.edit',
@@ -408,6 +476,9 @@ class RolePermissionSeeder extends Seeder
                     'maintenance.view',
                     'interventions.view',
                     'devices.view',
+                    'projects.view',
+                    'tasks.view',
+                    'meetings.view',
                     'profile.view',
                 ],
             ],
