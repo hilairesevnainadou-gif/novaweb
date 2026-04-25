@@ -349,26 +349,87 @@ class RolePermissionSeeder extends Seeder
                 ],
             ],
 
-            // ── Support ───────────────────────────────────────────────────
-            'support' => [
-                'display_name' => 'Support Technique',
-                'description'  => 'Gestion des tickets, interventions et périphériques',
+            // ── Manager Technicien ────────────────────────────────────────
+            'tech-manager' => [
+                'display_name' => 'Manager Technicien',
+                'description'  => 'Gestion des techniciens, assignation des interventions et facturation',
                 'permissions'  => [
                     'dashboard.view',
 
+                    // Interventions (gestion complète + assignation)
+                    'interventions.view.all', 'interventions.view',
+                    'interventions.create', 'interventions.edit',
+                    'interventions.delete', 'interventions.assign',
+                    'interventions.rate',
+
+                    // Devices (gestion complète)
+                    'devices.view', 'devices.create', 'devices.edit', 'devices.delete',
+
+                    // Maintenance
+                    'maintenance.view', 'maintenance.access',
+                    'maintenance.export', 'maintenance.statistics',
+
+                    // Tickets
+                    'tickets.view', 'tickets.create', 'tickets.edit', 'tickets.assign',
+
+                    // Clients (lecture pour facturation)
+                    'clients.view',
+
+                    // Facturation
+                    'billing.view',
+                    'billing.invoices.view', 'billing.invoices.create',
+                    'billing.invoices.edit', 'billing.invoices.delete',
+                    'billing.invoices.send',
+                    'billing.payments.view', 'billing.payments.create',
+                    'billing.payments.resend',
+
+                    // Profil
+                    'profile.view', 'profile.edit',
+                ],
+            ],
+
+            // ── Développeur ───────────────────────────────────────────────
+            'developer' => [
+                'display_name' => 'Développeur',
+                'description'  => 'Intervient sur les projets et tâches assignés, sans création de projet',
+                'permissions'  => [
+                    'dashboard.view',
+
+                    // Projets (lecture seule — ne crée pas de projet)
+                    'projects.view',
+
+                    // Tâches (peut travailler sur les tâches assignées)
+                    'tasks.view', 'tasks.create', 'tasks.edit',
+
+                    // Réunions (participation)
+                    'meetings.view', 'meetings.create', 'meetings.edit',
+
+                    // Profil
+                    'profile.view', 'profile.edit',
+                ],
+            ],
+
+            // ── Support ───────────────────────────────────────────────────
+            'support' => [
+                'display_name' => 'Support Technique',
+                'description'  => 'Gestion des tickets et des contacts clients',
+                'permissions'  => [
+                    'dashboard.view',
+
+                    // Tickets
                     'tickets.view', 'tickets.create', 'tickets.edit',
                     'tickets.delete', 'tickets.assign',
 
-                    'maintenance.view', 'maintenance.access',
+                    // Interventions (vue uniquement — l'assignation revient au Manager)
+                    'interventions.view',
 
-                    'interventions.view.all', 'interventions.view',
-                    'interventions.create', 'interventions.edit',
-                    'interventions.assign', 'interventions.rate',
+                    // Maintenance (vue)
+                    'maintenance.view',
 
-                    'devices.view', 'devices.create', 'devices.edit',
-
+                    // Contacts
                     'contact.view', 'contact.reply',
 
+                    // Profil
                     'profile.view', 'profile.edit',
                 ],
             ],
@@ -376,19 +437,21 @@ class RolePermissionSeeder extends Seeder
             // ── Technicien ────────────────────────────────────────────────
             'technician' => [
                 'display_name' => 'Technicien',
-                'description'  => 'Gestion des interventions et des périphériques',
+                'description'  => 'Réalise les interventions assignées par le Manager Technicien',
                 'permissions'  => [
                     'dashboard.view',
 
+                    // Interventions (travaille sur ce qui lui est assigné — pas d'assignation)
+                    'interventions.view', 'interventions.create',
+                    'interventions.edit', 'interventions.rate',
+
+                    // Maintenance (vue)
                     'maintenance.view',
 
-                    'interventions.view',
-                    'interventions.create',
-                    'interventions.edit',
-                    'interventions.rate',
-
+                    // Devices (vue)
                     'devices.view',
 
+                    // Profil
                     'profile.view', 'profile.edit',
                 ],
             ],
@@ -432,12 +495,14 @@ class RolePermissionSeeder extends Seeder
 
         // ── Utilisateurs de test ──────────────────────────────────────────
         $testUsers = [
-            ['email' => 'admin@novatech.com',          'name' => 'Super Admin',         'role' => 'super-admin',     'password' => 'NovaTech@2026!'],
-            ['email' => 'projectmanager@novatech.com', 'name' => 'Chef de Projet Test', 'role' => 'project-manager', 'password' => 'password'],
-            ['email' => 'technicien@novatech.com',     'name' => 'Technicien Test',      'role' => 'technician',      'password' => 'password'],
-            ['email' => 'support@novatech.com',        'name' => 'Support Test',         'role' => 'support',         'password' => 'password'],
-            ['email' => 'editor@novatech.com',         'name' => 'Éditeur Test',         'role' => 'editor',          'password' => 'password'],
-            ['email' => 'viewer@novatech.com',         'name' => 'Visualisateur Test',   'role' => 'viewer',          'password' => 'password'],
+            ['email' => 'admin@novatech.com',          'name' => 'Super Admin',              'role' => 'super-admin',     'password' => 'NovaTech@2026!'],
+            ['email' => 'projectmanager@novatech.com', 'name' => 'Chef de Projet Test',      'role' => 'project-manager', 'password' => 'password'],
+            ['email' => 'techmanager@novatech.com',    'name' => 'Manager Technicien Test',  'role' => 'tech-manager',    'password' => 'password'],
+            ['email' => 'developer@novatech.com',      'name' => 'Développeur Test',         'role' => 'developer',       'password' => 'password'],
+            ['email' => 'technicien@novatech.com',     'name' => 'Technicien Test',          'role' => 'technician',      'password' => 'password'],
+            ['email' => 'support@novatech.com',        'name' => 'Support Test',             'role' => 'support',         'password' => 'password'],
+            ['email' => 'editor@novatech.com',         'name' => 'Éditeur Test',             'role' => 'editor',          'password' => 'password'],
+            ['email' => 'viewer@novatech.com',         'name' => 'Visualisateur Test',       'role' => 'viewer',          'password' => 'password'],
         ];
 
         foreach ($testUsers as $userData) {

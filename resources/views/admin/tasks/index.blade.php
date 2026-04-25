@@ -1,8 +1,8 @@
 {{-- resources/views/admin/tasks/index.blade.php --}}
 @extends('admin.layouts.app')
 
-@section('title', 'Tâches - NovaTech Admin')
-@section('page-title', 'Gestion des Tâches')
+@section('title', isset($canViewAll) && $canViewAll ? 'Toutes les tâches - NovaTech Admin' : 'Mes tâches - NovaTech Admin')
+@section('page-title', isset($canViewAll) && $canViewAll ? 'Toutes les tâches' : 'Mes tâches')
 
 @push('styles')
 <style>
@@ -85,29 +85,73 @@
         outline: none;
     }
 
-    .grid {
+    .filters-grid {
         display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.625rem 1rem;
+        margin-bottom: 0.75rem;
     }
 
-    .grid-cols-1 {
-        grid-template-columns: repeat(1, minmax(0, 1fr));
+    .filter-group label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-tertiary);
+        margin-bottom: 0.3rem;
     }
 
-    .gap-3 {
+    .filters-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         gap: 0.75rem;
+        flex-wrap: wrap;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border-light);
     }
 
-    @media (min-width: 640px) {
-        .sm\:grid-cols-2 {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        flex: 1;
     }
 
-    @media (min-width: 1024px) {
-        .lg\:grid-cols-4 {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-        }
+    .filter-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.2rem 0.6rem 0.2rem 0.75rem;
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--brand-primary);
+        border: 1px solid rgba(99, 102, 241, 0.25);
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
     }
+
+    .filter-tag a {
+        color: inherit;
+        text-decoration: none;
+        opacity: 0.6;
+        line-height: 1;
+    }
+
+    .filter-tag a:hover { opacity: 1; }
+
+    .filters-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .badge-role-assigned { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .badge-role-creator  { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+    .badge-role-manager  { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 
     .btn-reset {
         width: 100%;
@@ -450,67 +494,84 @@
 @endpush
 
 @section('content')
+@php
+    $userId       = auth()->id();
+    $canViewAll   = $canViewAll ?? false;
+
+    // Libellés des filtres actifs
+    $filterLabels = [];
+    if (!empty($filters['search']))    { $filterLabels['search']      = 'Recherche : ' . $filters['search']; }
+    if (!empty($filters['status']))    { $filterLabels['status']      = 'Statut : ' . ($statuses[$filters['status']] ?? $filters['status']); }
+    if (!empty($filters['priority']))  { $filterLabels['priority']    = 'Priorité : ' . ($priorities[$filters['priority']] ?? $filters['priority']); }
+    if (!empty($filters['project_id'])) {
+        $fp = ($projects ?? collect())->firstWhere('id', $filters['project_id']);
+        $filterLabels['project_id'] = 'Projet : ' . ($fp?->name ?? $filters['project_id']);
+    }
+    if (!empty($filters['client_id'])) {
+        $fc = ($clients ?? collect())->firstWhere('id', $filters['client_id']);
+        $filterLabels['client_id'] = 'Client : ' . ($fc?->name ?? $filters['client_id']);
+    }
+    if (!empty($filters['assigned_to']) && $canViewAll) {
+        $fa = ($users ?? collect())->firstWhere('id', $filters['assigned_to']);
+        $filterLabels['assigned_to'] = 'Assigné : ' . ($fa?->name ?? $filters['assigned_to']);
+    }
+@endphp
 @can('tasks.view')
 <div class="page-header">
     <div class="page-title-section">
-        <h1>Tâches</h1>
-        <p>Gérez toutes les tâches des projets
+        <h1>{{ $canViewAll ? 'Toutes les tâches' : 'Mes tâches' }}</h1>
+        <p>
+            @if($canViewAll)
+                Vue globale de toutes les tâches
+            @else
+                Tâches qui vous concernent (assignées, créées ou en tant que chef de projet)
+            @endif
             @if(isset($project))
-                - {{ $project->name }}
+                — {{ $project->name }}
             @endif
         </p>
     </div>
     @can('tasks.create')
-<div>
-    @if(isset($project))
-        <a href="{{ route('admin.projects.tasks.create', $project) }}" class="btn-primary">
-            <i class="fas fa-plus"></i>
-            Nouvelle tâche
-        </a>
-    @else
-        <a href="{{ route('admin.tasks.create') }}" class="btn-primary">
-            <i class="fas fa-plus"></i>
-            Nouvelle tâche
-        </a>
-    @endif
-</div>
-@endcan
+    <div>
+        @if(isset($project))
+            <a href="{{ route('admin.projects.tasks.create', $project) }}" class="btn-primary">
+                <i class="fas fa-plus"></i> Nouvelle tâche
+            </a>
+        @else
+            <a href="{{ route('admin.tasks.create') }}" class="btn-primary">
+                <i class="fas fa-plus"></i> Nouvelle tâche
+            </a>
+        @endif
+    </div>
+    @endcan
 </div>
 
 <!-- Statistiques -->
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-header">
-            <div class="stat-icon blue">
-                <i class="fas fa-tasks"></i>
-            </div>
+            <div class="stat-icon blue"><i class="fas fa-tasks"></i></div>
         </div>
-        <div class="stat-value">{{ $tasks->total() }}</div>
+        <div class="stat-value">{{ $stats['total'] ?? 0 }}</div>
         <div class="stat-label">Total tâches</div>
     </div>
     <div class="stat-card">
         <div class="stat-header">
-            <div class="stat-icon yellow">
-                <i class="fas fa-spinner fa-pulse"></i>
-            </div>
+            <div class="stat-icon yellow"><i class="fas fa-spinner fa-pulse"></i></div>
         </div>
         <div class="stat-value">{{ $stats['in_progress'] ?? 0 }}</div>
         <div class="stat-label">En cours</div>
     </div>
     <div class="stat-card">
         <div class="stat-header">
-            <div class="stat-icon purple">
-                <i class="fas fa-check-circle"></i>
-            </div>
+            <div class="stat-icon purple"><i class="fas fa-check-circle"></i></div>
         </div>
         <div class="stat-value">{{ $stats['completed'] ?? 0 }}</div>
         <div class="stat-label">Terminées</div>
     </div>
     <div class="stat-card">
         <div class="stat-header">
-            <div class="stat-icon green">
-                <i class="fas fa-clock"></i>
-            </div>
+            <div class="stat-icon green"><i class="fas fa-clock"></i></div>
         </div>
         <div class="stat-value">{{ $stats['overdue'] ?? 0 }}</div>
         <div class="stat-label">En retard</div>
@@ -519,37 +580,111 @@
 
 <!-- Filtres -->
 <div class="filters-container">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div>
-            <input type="text" id="search" placeholder="Rechercher une tâche..." class="filter-input" autocomplete="off">
+    <form method="GET" action="{{ url()->current() }}">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label for="search"><i class="fas fa-search" style="margin-right:0.25rem;"></i>Recherche</label>
+                <input type="text" id="search" name="search"
+                    value="{{ $filters['search'] ?? '' }}"
+                    placeholder="Titre, n° tâche..."
+                    class="filter-input" autocomplete="off">
+            </div>
+
+            <div class="filter-group">
+                <label for="status"><i class="fas fa-circle-dot" style="margin-right:0.25rem;"></i>Statut</label>
+                <select id="status" name="status" class="filter-select">
+                    <option value="">Tous</option>
+                    @foreach(($statuses ?? []) as $statusKey => $statusLabel)
+                        <option value="{{ $statusKey }}" {{ (($filters['status'] ?? '') === $statusKey) ? 'selected' : '' }}>
+                            {{ $statusLabel }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="priority"><i class="fas fa-flag" style="margin-right:0.25rem;"></i>Priorité</label>
+                <select id="priority" name="priority" class="filter-select">
+                    <option value="">Toutes</option>
+                    @foreach(($priorities ?? []) as $priorityKey => $priorityLabel)
+                        <option value="{{ $priorityKey }}" {{ (($filters['priority'] ?? '') === $priorityKey) ? 'selected' : '' }}>
+                            {{ $priorityLabel }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="client_id"><i class="fas fa-building" style="margin-right:0.25rem;"></i>Client</label>
+                <select id="client_id" name="client_id" class="filter-select">
+                    <option value="">Tous</option>
+                    @foreach(($clients ?? collect()) as $client)
+                        <option value="{{ $client->id }}" {{ (($filters['client_id'] ?? '') == (string) $client->id) ? 'selected' : '' }}>
+                            {{ $client->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="project_id"><i class="fas fa-folder" style="margin-right:0.25rem;"></i>Projet</label>
+                <select id="project_id" name="project_id" class="filter-select">
+                    <option value="">Tous</option>
+                    @foreach(($projects ?? collect()) as $p)
+                        <option value="{{ $p->id }}" data-client-id="{{ $p->client_id }}"
+                            {{ (($filters['project_id'] ?? '') == (string) $p->id) ? 'selected' : '' }}>
+                            {{ $p->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            @if($canViewAll)
+            <div class="filter-group">
+                <label for="assigned_to"><i class="fas fa-user" style="margin-right:0.25rem;"></i>Assigné à</label>
+                <select id="assigned_to" name="assigned_to" class="filter-select">
+                    <option value="">Tous</option>
+                    @foreach(($users ?? collect()) as $u)
+                        <option value="{{ $u->id }}" {{ (($filters['assigned_to'] ?? '') == (string) $u->id) ? 'selected' : '' }}>
+                            {{ $u->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
         </div>
-        <div>
-            <select id="status" class="filter-select">
-                <option value="">Tous statuts</option>
-                <option value="todo">À faire</option>
-                <option value="in_progress">En cours</option>
-                <option value="review">En revue</option>
-                <option value="approved">Approuvée</option>
-                <option value="rejected">Rejetée</option>
-                <option value="completed">Terminée</option>
-            </select>
+
+        <div class="filters-footer">
+            <div class="active-filters">
+                @if(count($filterLabels) > 0)
+                    <span style="font-size:0.75rem; color:var(--text-tertiary); margin-right:0.25rem;">Filtres actifs :</span>
+                    @foreach($filterLabels as $key => $label)
+                    @php
+                        $removeParams = array_merge(array_filter($filters, fn($v) => $v !== ''), ['page' => null]);
+                        unset($removeParams[$key]);
+                        $removeUrl = url()->current() . '?' . http_build_query(array_filter($removeParams, fn($v) => $v !== null));
+                    @endphp
+                    <span class="filter-tag">
+                        {{ $label }}
+                        <a href="{{ $removeUrl }}" title="Retirer ce filtre"><i class="fas fa-times"></i></a>
+                    </span>
+                    @endforeach
+                @else
+                    <span style="font-size:0.75rem; color:var(--text-tertiary);">Aucun filtre actif</span>
+                @endif
+            </div>
+            <div class="filters-actions">
+                @if(count($filterLabels) > 0)
+                <a href="{{ url()->current() }}" style="font-size:0.8rem; color:var(--text-tertiary); text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;">
+                    <i class="fas fa-undo-alt"></i> Tout effacer
+                </a>
+                @endif
+                <button type="submit" class="btn-primary" style="padding:0.5rem 1rem; font-size:0.8rem;">
+                    <i class="fas fa-filter"></i> Appliquer
+                </button>
+            </div>
         </div>
-        <div>
-            <select id="priority" class="filter-select">
-                <option value="">Toutes priorités</option>
-                <option value="low">Basse</option>
-                <option value="medium">Moyenne</option>
-                <option value="high">Haute</option>
-                <option value="urgent">Urgente</option>
-            </select>
-        </div>
-        <div>
-            <button type="button" onclick="resetFilters()" class="btn-reset">
-                <i class="fas fa-undo-alt"></i>
-                Réinitialiser
-            </button>
-        </div>
-    </div>
+    </form>
 </div>
 
 <!-- Tableau -->
@@ -559,6 +694,9 @@
             <tr>
                 <th>Tâche</th>
                 <th>Projet</th>
+                @if(!$canViewAll)
+                <th>Mon rôle</th>
+                @endif
                 <th>Assignée à</th>
                 <th>Priorité</th>
                 <th>Statut</th>
@@ -569,11 +707,30 @@
         </thead>
         <tbody id="tasksTableBody">
             @forelse($tasks as $index => $task)
+            @php
+                $myRoleLabel = null;
+                $myRoleClass = null;
+                if (!$canViewAll) {
+                    if ($task->assigned_to == $userId) {
+                        $myRoleLabel = 'Assigné';
+                        $myRoleClass = 'badge-role-assigned';
+                    } elseif ($task->created_by == $userId) {
+                        $myRoleLabel = 'Créateur';
+                        $myRoleClass = 'badge-role-creator';
+                    } elseif (($task->project->project_manager_id ?? null) == $userId) {
+                        $myRoleLabel = 'Chef projet';
+                        $myRoleClass = 'badge-role-manager';
+                    }
+                }
+            @endphp
             <tr class="table-row"
                 data-id="{{ $task->id }}"
                 data-title="{{ strtolower($task->title) }}"
                 data-number="{{ strtolower($task->task_number) }}"
                 data-project="{{ strtolower($task->project->name) }}"
+                data-project-id="{{ $task->project_id }}"
+                data-client="{{ strtolower($task->project->client->name ?? 'sans client') }}"
+                data-client-id="{{ $task->project->client_id }}"
                 data-assignee="{{ strtolower($task->assignee?->name ?? 'non assignee') }}"
                 data-status="{{ $task->status }}"
                 data-priority="{{ $task->priority }}"
@@ -589,9 +746,20 @@
                         <a href="{{ route('admin.projects.show', $task->project) }}" style="color: var(--text-primary); text-decoration: none;">
                             {{ $task->project->name }}
                         </a>
-                        <div class="task-number">{{ $task->type_label }}</div>
+                        <div class="task-number">
+                            {{ $task->project->client->name ?? 'Client non défini' }} • {{ $task->type_label }}
+                        </div>
                     </div>
                 </td>
+                @if(!$canViewAll)
+                <td>
+                    @if($myRoleLabel)
+                        <span class="badge {{ $myRoleClass }}">{{ $myRoleLabel }}</span>
+                    @else
+                        <span style="color:var(--text-tertiary);">—</span>
+                    @endif
+                </td>
+                @endif
                 <td>
                     @if($task->assignee)
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -661,14 +829,19 @@
             </tr>
             @empty
             <tr id="emptyStateRow">
-                <td colspan="8" class="empty-state">
+                <td colspan="{{ $canViewAll ? 8 : 9 }}" class="empty-state">
                     <i class="fas fa-tasks"></i>
                     <p>Aucune tâche trouvée</p>
-                    <p style="font-size: 0.875rem;">Commencez par créer votre première tâche</p>
+                    <p style="font-size: 0.875rem;">
+                        @if($canViewAll)
+                            Aucune tâche ne correspond aux critères sélectionnés.
+                        @else
+                            Vous n'avez pas encore de tâches qui vous concernent.
+                        @endif
+                    </p>
                     @can('tasks.create')
                     <a href="{{ isset($project) ? route('admin.projects.tasks.create', $project) : route('admin.tasks.create') }}" class="btn-primary" style="margin-top: 1rem; display: inline-flex;">
-                        <i class="fas fa-plus"></i>
-                        Créer une tâche
+                        <i class="fas fa-plus"></i> Créer une tâche
                     </a>
                     @endcan
                 </td>
@@ -719,6 +892,8 @@
     const searchInput = document.getElementById('search');
     const statusSelect = document.getElementById('status');
     const prioritySelect = document.getElementById('priority');
+    const projectSelect = document.getElementById('project_id');
+    const clientSelect = document.getElementById('client_id');
 
     const modal = document.getElementById('confirmationModal');
     const modalMessage = document.getElementById('modalMessage');
@@ -827,6 +1002,8 @@
         const searchTerm = searchInput?.value.toLowerCase() || '';
         const statusValue = statusSelect?.value || '';
         const priorityValue = prioritySelect?.value || '';
+        const projectIdValue = projectSelect?.value || '';
+        const clientIdValue = clientSelect?.value || '';
 
         const rows = document.querySelectorAll('#tasksTableBody tr:not(#emptyStateRow)');
         let hasVisibleRows = false;
@@ -836,6 +1013,9 @@
             const title = row.dataset.title || '';
             const number = row.dataset.number || '';
             const project = row.dataset.project || '';
+            const projectId = row.dataset.projectId || '';
+            const client = row.dataset.client || '';
+            const clientId = row.dataset.clientId || '';
             const assignee = row.dataset.assignee || '';
             const status = row.dataset.status || '';
             const priority = row.dataset.priority || '';
@@ -845,12 +1025,16 @@
                 !title.includes(searchTerm) &&
                 !number.includes(searchTerm) &&
                 !project.includes(searchTerm) &&
+                !client.includes(searchTerm) &&
                 !assignee.includes(searchTerm)
             ) {
                 show = false;
             }
+
             if (show && statusValue && status !== statusValue) show = false;
             if (show && priorityValue && priority !== priorityValue) show = false;
+            if (show && projectIdValue && projectId !== projectIdValue) show = false;
+            if (show && clientIdValue && clientId !== clientIdValue) show = false;
 
             row.style.display = show ? '' : 'none';
             if (show) hasVisibleRows = true;
@@ -862,7 +1046,7 @@
                 const tbody = document.getElementById('tasksTableBody');
                 const emptyRow = document.createElement('tr');
                 emptyRow.id = 'noResultsRow';
-                emptyRow.innerHTML = `<td colspan="8" class="empty-state">
+                emptyRow.innerHTML = `<td colspan="{{ $canViewAll ? 8 : 9 }}" class="empty-state">
                     <i class="fas fa-search"></i>
                     <p>Aucun résultat ne correspond à vos critères</p>
                     <button onclick="resetFilters()" class="btn-primary" style="margin-top: 1rem;">
@@ -880,6 +1064,8 @@
         if (searchInput) searchInput.value = '';
         if (statusSelect) statusSelect.value = '';
         if (prioritySelect) prioritySelect.value = '';
+        if (projectSelect) projectSelect.value = '';
+        if (clientSelect) clientSelect.value = '';
         filterTable();
     };
 
@@ -892,6 +1078,27 @@
     }
     if (statusSelect) statusSelect.addEventListener('change', filterTable);
     if (prioritySelect) prioritySelect.addEventListener('change', filterTable);
+    if (projectSelect) projectSelect.addEventListener('change', filterTable);
+    if (clientSelect) {
+        clientSelect.addEventListener('change', function() {
+            const selectedClientId = clientSelect.value;
+            if (projectSelect) {
+                Array.from(projectSelect.options).forEach((option) => {
+                    if (!option.value) return;
+                    const optionClientId = option.dataset.clientId || '';
+                    option.hidden = !!selectedClientId && optionClientId !== selectedClientId;
+                });
+
+                const currentProjectOption = projectSelect.options[projectSelect.selectedIndex];
+                if (currentProjectOption && currentProjectOption.hidden) {
+                    projectSelect.value = '';
+                }
+            }
+            filterTable();
+        });
+
+        clientSelect.dispatchEvent(new Event('change'));
+    }
 
     window.closeModal = closeModal;
 </script>

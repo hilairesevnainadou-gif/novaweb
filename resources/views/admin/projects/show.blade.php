@@ -223,6 +223,113 @@
         gap: 0.65rem;
     }
 
+    /* ── Status badges ── */
+    .badge-planning    { background: rgba(100,116,139,.18); color: #94a3b8;  border: 1px solid rgba(100,116,139,.3); }
+    .badge-inprogress  { background: rgba(59,130,246,.15);  color: #60a5fa;  border: 1px solid rgba(59,130,246,.3); }
+    .badge-review      { background: rgba(245,158,11,.15);  color: #fbbf24;  border: 1px solid rgba(245,158,11,.3); }
+    .badge-completed   { background: rgba(16,185,129,.15);  color: #34d399;  border: 1px solid rgba(16,185,129,.3); }
+    .badge-cancelled   { background: rgba(239,68,68,.15);   color: #f87171;  border: 1px solid rgba(239,68,68,.3); }
+
+    /* ── Priority badges ── */
+    .badge-low      { background: rgba(16,185,129,.12);  color: #34d399;  border: 1px solid rgba(16,185,129,.25); }
+    .badge-medium   { background: rgba(59,130,246,.12);  color: #60a5fa;  border: 1px solid rgba(59,130,246,.25); }
+    .badge-high     { background: rgba(245,158,11,.12);  color: #fbbf24;  border: 1px solid rgba(245,158,11,.25); }
+    .badge-critical { background: rgba(239,68,68,.12);   color: #f87171;  border: 1px solid rgba(239,68,68,.25); }
+
+    /* ── Action button (icon) ── */
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-light);
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.75rem;
+        transition: all 0.18s;
+        margin-left: 0.25rem;
+    }
+
+    .action-btn:hover {
+        background: var(--bg-hover);
+        color: var(--brand-primary);
+        border-color: rgba(59,130,246,.35);
+    }
+
+    /* ── btn-primary ── */
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.52rem 1rem;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-decoration: none;
+        background: var(--brand-primary);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        transition: background 0.18s;
+    }
+
+    .btn-primary:hover { background: var(--brand-primary-hover); color: #fff; }
+
+    /* ── Empty state ── */
+    .empty-state {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        color: var(--text-tertiary);
+    }
+
+    .empty-state i { font-size: 2rem; margin-bottom: 0.65rem; display: block; }
+    .empty-state p  { margin: 0 0 0.5rem; font-size: 0.85rem; }
+
+    /* ── Activity feed ── */
+    .activity-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px dashed var(--border-light);
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-light);
+        color: var(--brand-primary);
+        font-size: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .activity-content { flex: 1; min-width: 0; }
+
+    .activity-description {
+        font-size: 0.82rem;
+        color: var(--text-primary);
+        line-height: 1.45;
+    }
+
+    .activity-time {
+        font-size: 0.68rem;
+        color: var(--text-tertiary);
+        margin-top: 0.2rem;
+    }
+
+    /* ── Table last row / header corners ── */
+    .task-table tbody tr:last-child td { border-bottom: none; }
+
     @media (max-width: 980px) {
         .stats-grid-small { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -239,8 +346,11 @@
 @php
     $user = auth()->user();
     $canEditProjects = $user->can('projects.edit');
-    $canViewTasks = $user->can('projects.view');
-    $canCreateTasks = $user->can('tasks.create');
+    $canViewTasks    = $user->can('projects.view');
+    $canCreateTasks  = $user->can('tasks.create');
+    $isProjectManager = $project->project_manager_id === $user->id;
+    $canManageMembers = $canEditProjects || $isProjectManager;
+    $canManageDocs    = $canEditProjects || $project->isMember($user->id);
 @endphp
 
 <div class="project-header">
@@ -310,6 +420,16 @@
     <button class="tab-btn active" data-tab="overview">Vue d'ensemble</button>
     <button class="tab-btn" data-tab="tasks">Tâches</button>
     <button class="tab-btn" data-tab="meetings">Réunions</button>
+    <button class="tab-btn" data-tab="documents">
+        Documents
+        @if($project->documents->count())
+            <span style="background:rgba(59,130,246,.2);color:#60a5fa;font-size:.6rem;padding:.1rem .4rem;border-radius:9999px;margin-left:.3rem">{{ $project->documents->count() }}</span>
+        @endif
+    </button>
+    <button class="tab-btn" data-tab="team">
+        Équipe
+        <span style="background:rgba(59,130,246,.2);color:#60a5fa;font-size:.6rem;padding:.1rem .4rem;border-radius:9999px;margin-left:.3rem">{{ $project->members->count() + 1 }}</span>
+    </button>
     <button class="tab-btn" data-tab="activities">Activités</button>
 </div>
 
@@ -497,6 +617,190 @@
         <p>Aucune réunion planifiée</p>
     </div>
     @endforelse
+</div>
+
+<!-- Tab Documents -->
+<div class="tab-content" id="tab-documents">
+
+    @if(session('success') && request()->fragment === 'tab-documents')
+    <div style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.82rem;color:#34d399;">
+        <i class="fas fa-check-circle"></i> {{ session('success') }}
+    </div>
+    @endif
+
+    {{-- Upload form --}}
+    @if($canManageDocs)
+    <div style="background:var(--bg-secondary);border:1px solid var(--border-light);border-radius:0.9rem;padding:1.1rem;margin-bottom:1rem;">
+        <h3 style="font-size:.85rem;font-weight:700;margin:0 0 .85rem;display:flex;align-items:center;gap:.5rem;">
+            <i class="fas fa-cloud-arrow-up" style="color:var(--brand-primary)"></i> Ajouter un document
+        </h3>
+        <form action="{{ route('admin.projects.documents.store', $project) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;">
+                <div style="display:flex;flex-direction:column;gap:.28rem;">
+                    <label style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary)">Titre <span style="color:#f87171">*</span></label>
+                    <input type="text" name="title" required placeholder="Ex : Cahier des charges v2"
+                           style="padding:.45rem .7rem;border-radius:7px;border:1px solid var(--border-medium);background:var(--bg-tertiary);color:var(--text-primary);font-size:.8rem;outline:none;width:100%;">
+                </div>
+                <div style="display:flex;flex-direction:column;gap:.28rem;">
+                    <label style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary)">Fichier <span style="color:#f87171">*</span></label>
+                    <input type="file" name="file" required
+                           style="padding:.38rem .7rem;border-radius:7px;border:1px solid var(--border-medium);background:var(--bg-tertiary);color:var(--text-primary);font-size:.78rem;width:100%;cursor:pointer;">
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:.28rem;margin-bottom:.75rem;">
+                <label style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary)">Description (optionnel)</label>
+                <input type="text" name="description" placeholder="Brève description du document…"
+                       style="padding:.45rem .7rem;border-radius:7px;border:1px solid var(--border-medium);background:var(--bg-tertiary);color:var(--text-primary);font-size:.8rem;outline:none;width:100%;">
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+                <button type="submit" class="btn-primary" style="font-size:.78rem;padding:.45rem .9rem;">
+                    <i class="fas fa-upload"></i> Uploader
+                </button>
+            </div>
+        </form>
+    </div>
+    @endif
+
+    {{-- Document list --}}
+    <div style="background:var(--bg-secondary);border:1px solid var(--border-light);border-radius:0.9rem;overflow:hidden;">
+        @forelse($project->documents as $doc)
+        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;border-bottom:1px dashed var(--border-light);">
+            <div style="width:38px;height:38px;border-radius:9px;background:var(--bg-tertiary);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.05rem;color:{{ $doc->file_icon_color }};">
+                <i class="{{ $doc->file_icon }}"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:.85rem;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $doc->title }}</div>
+                <div style="font-size:.7rem;color:var(--text-tertiary);margin-top:.1rem;">
+                    {{ $doc->original_name }} · {{ $doc->size_formatted }}
+                    @if($doc->description)
+                        · {{ $doc->description }}
+                    @endif
+                </div>
+                <div style="font-size:.68rem;color:var(--text-disabled);margin-top:.1rem;">
+                    Ajouté par {{ $doc->uploader->name }} · {{ $doc->created_at->diffForHumans() }}
+                </div>
+            </div>
+            <div style="display:flex;gap:.35rem;flex-shrink:0;">
+                <a href="{{ route('admin.projects.documents.download', [$project, $doc]) }}"
+                   class="action-btn" title="Télécharger">
+                    <i class="fas fa-download"></i>
+                </a>
+                @if($canEditProjects || $doc->user_id === $user->id || $isProjectManager)
+                <form action="{{ route('admin.projects.documents.destroy', [$project, $doc]) }}" method="POST"
+                      onsubmit="return confirm('Supprimer ce document ?')">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="action-btn" style="color:#f87171;border-color:rgba(239,68,68,.2);" title="Supprimer">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+                @endif
+            </div>
+        </div>
+        @empty
+        <div class="empty-state" style="padding:2.5rem 1rem;">
+            <i class="fas fa-folder-open"></i>
+            <p>Aucun document pour ce projet</p>
+            @if($canManageDocs)
+            <p style="font-size:.78rem;color:var(--text-disabled);">Utilisez le formulaire ci-dessus pour ajouter le premier document.</p>
+            @endif
+        </div>
+        @endforelse
+    </div>
+</div>
+
+<!-- Tab Équipe -->
+<div class="tab-content" id="tab-team">
+
+    {{-- Ajouter un membre --}}
+    @if($canManageMembers && $nonMembers->count())
+    <div style="background:var(--bg-secondary);border:1px solid var(--border-light);border-radius:0.9rem;padding:1.1rem;margin-bottom:1rem;">
+        <h3 style="font-size:.85rem;font-weight:700;margin:0 0 .85rem;display:flex;align-items:center;gap:.5rem;">
+            <i class="fas fa-user-plus" style="color:var(--brand-primary)"></i> Ajouter un membre
+        </h3>
+        <form action="{{ route('admin.projects.members.store', $project) }}" method="POST">
+            @csrf
+            <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:.75rem;align-items:flex-end;">
+                <div style="display:flex;flex-direction:column;gap:.28rem;">
+                    <label style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary)">Utilisateur <span style="color:#f87171">*</span></label>
+                    <select name="user_id" required style="padding:.45rem .7rem;border-radius:7px;border:1px solid var(--border-medium);background:var(--bg-tertiary);color:var(--text-primary);font-size:.8rem;cursor:pointer;">
+                        <option value="">Sélectionner…</option>
+                        @foreach($nonMembers as $u)
+                            <option value="{{ $u->id }}">{{ $u->name }} — {{ $u->email }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:.28rem;">
+                    <label style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary)">Rôle dans le projet</label>
+                    <input type="text" name="role" placeholder="Ex : Développeur, Designer…"
+                           style="padding:.45rem .7rem;border-radius:7px;border:1px solid var(--border-medium);background:var(--bg-tertiary);color:var(--text-primary);font-size:.8rem;outline:none;width:100%;">
+                </div>
+                <button type="submit" class="btn-primary" style="font-size:.78rem;padding:.45rem .9rem;white-space:nowrap;">
+                    <i class="fas fa-plus"></i> Ajouter
+                </button>
+            </div>
+        </form>
+    </div>
+    @endif
+
+    {{-- Liste des membres --}}
+    <div style="background:var(--bg-secondary);border:1px solid var(--border-light);border-radius:0.9rem;overflow:hidden;">
+
+        {{-- Chef de projet (toujours en premier) --}}
+        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;border-bottom:1px dashed var(--border-light);">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(59,130,246,.15);display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#60a5fa;font-weight:700;flex-shrink:0;">
+                {{ strtoupper(substr($project->projectManager->name ?? 'N', 0, 1)) }}
+            </div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:.85rem;color:var(--text-primary);">{{ $project->projectManager->name ?? 'N/A' }}</div>
+                <div style="font-size:.7rem;color:var(--text-tertiary);">{{ $project->projectManager->email ?? '' }}</div>
+            </div>
+            <span style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);font-size:.65rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;">Chef de projet</span>
+        </div>
+
+        {{-- Membres assignés --}}
+        @forelse($project->members as $member)
+        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;border-bottom:1px dashed var(--border-light);">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(139,92,246,.15);display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#a78bfa;font-weight:700;flex-shrink:0;">
+                {{ strtoupper(substr($member->name, 0, 1)) }}
+            </div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:.85rem;color:var(--text-primary);">{{ $member->name }}</div>
+                <div style="font-size:.7rem;color:var(--text-tertiary);">{{ $member->email }}</div>
+            </div>
+            @if($member->pivot->role)
+            <span style="background:var(--bg-tertiary);color:var(--text-secondary);border:1px solid var(--border-light);font-size:.65rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;">
+                {{ $member->pivot->role }}
+            </span>
+            @endif
+            @if($canManageMembers)
+            <form action="{{ route('admin.projects.members.destroy', [$project, $member]) }}" method="POST"
+                  onsubmit="return confirm('Retirer {{ $member->name }} du projet ?')">
+                @csrf @method('DELETE')
+                <button type="submit" class="action-btn" style="color:#f87171;border-color:rgba(239,68,68,.2);" title="Retirer">
+                    <i class="fas fa-user-minus"></i>
+                </button>
+            </form>
+            @endif
+        </div>
+        @empty
+        @if(!$project->projectManager)
+        <div class="empty-state" style="padding:2rem;">
+            <i class="fas fa-users"></i>
+            <p>Aucun membre assigné</p>
+        </div>
+        @endif
+        @endforelse
+
+        @if($project->members->isEmpty() && $project->projectManager)
+        <div style="padding:.85rem 1rem;font-size:.78rem;color:var(--text-tertiary);text-align:center;">
+            Seul le chef de projet est actuellement assigné.
+            @if($canManageMembers && $nonMembers->count())
+                Utilisez le formulaire ci-dessus pour ajouter des membres.
+            @endif
+        </div>
+        @endif
+    </div>
 </div>
 
 <!-- Tab Activities -->

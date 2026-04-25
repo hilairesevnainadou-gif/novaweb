@@ -90,7 +90,7 @@
         background: var(--bg-secondary);
         border: 1px solid var(--border-light);
         border-radius: 14px;
-        overflow: hidden;
+        overflow: visible;
         margin-bottom: 1rem;
         box-shadow: 0 2px 8px rgba(0,0,0,.18);
     }
@@ -104,6 +104,7 @@
         padding: 0.9rem 1.1rem;
         border-bottom: 1px solid var(--border-light);
         background: rgba(255,255,255,.02);
+        border-radius: 14px 14px 0 0;
     }
 
     .form-card-icon {
@@ -404,6 +405,7 @@
         padding: 0.9rem 1.1rem;
         border-top: 1px solid var(--border-light);
         background: rgba(255,255,255,.015);
+        border-radius: 0 0 14px 14px;
     }
 
     .action-bar .left { display: flex; align-items: center; gap: 0.5rem; }
@@ -614,6 +616,142 @@
     @media (max-width: 680px) {
         .fg-2, .fg-3 { grid-template-columns: 1fr; }
     }
+
+    /* ── Searchable Select ── */
+    .searchable-select { position: relative; }
+
+    .ss-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-medium);
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-size: 0.8rem;
+        min-height: 38px;
+        cursor: pointer;
+        transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+        user-select: none;
+    }
+
+    .ss-trigger:hover { border-color: var(--border-heavy); background: var(--bg-elevated); }
+    .ss-trigger.open  { border-color: var(--brand-primary); background: var(--bg-elevated); box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
+
+    .ss-display {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--text-disabled);
+        font-size: 0.77rem;
+    }
+
+    .ss-display.has-value { color: var(--text-primary); font-size: 0.8rem; }
+
+    .ss-arrow {
+        font-size: 0.65rem;
+        color: var(--text-tertiary);
+        transition: transform var(--transition-fast);
+        flex-shrink: 0;
+        margin-left: 0.5rem;
+    }
+
+    .ss-trigger.open .ss-arrow { transform: rotate(180deg); }
+
+    .ss-dropdown {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0; right: 0;
+        z-index: 200;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-medium);
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.18);
+        overflow: hidden;
+    }
+
+    .ss-dropdown.open { display: block; animation: ssIn 0.15s ease; }
+
+    @keyframes ssIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .ss-search-wrap {
+        position: relative;
+        padding: 0.45rem;
+        border-bottom: 1px solid var(--border-light);
+        background: var(--bg-secondary);
+    }
+
+    .ss-search-icon {
+        position: absolute;
+        left: 0.95rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-tertiary);
+        font-size: 0.7rem;
+        pointer-events: none;
+    }
+
+    .ss-search {
+        width: 100%;
+        padding: 0.4rem 0.7rem 0.4rem 1.9rem;
+        border-radius: 6px;
+        border: 1px solid var(--border-light);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: 0.78rem;
+        outline: none;
+        transition: border-color var(--transition-fast);
+        font-family: inherit;
+    }
+
+    .ss-search:focus { border-color: var(--brand-primary); }
+
+    .ss-options { max-height: 190px; overflow-y: auto; padding: 0.2rem 0; }
+
+    .ss-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.45rem 0.8rem;
+        font-size: 0.8rem;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: background var(--transition-fast);
+    }
+
+    .ss-option:hover   { background: var(--bg-hover); }
+    .ss-option.selected { background: rgba(59,130,246,.1); color: var(--brand-primary); font-weight: 600; }
+    .ss-option.hidden   { display: none; }
+
+    .ss-option-avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px; height: 24px;
+        border-radius: 50%;
+        background: var(--brand-primary);
+        color: #fff;
+        font-size: 0.65rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .ss-no-results {
+        padding: 0.65rem 0.8rem;
+        font-size: 0.78rem;
+        color: var(--text-tertiary);
+        text-align: center;
+    }
+
+    .ss-trigger.is-invalid { border-color: #f87171; background: rgba(239,68,68,.05); }
+    .ss-trigger.is-invalid.open { box-shadow: 0 0 0 3px rgba(239,68,68,.12); }
 </style>
 @endpush
 
@@ -759,31 +897,80 @@
                     <span class="form-card-desc">Responsabilités</span>
                 </div>
                 <div class="form-card-body">
+                    @php
+                        $pmId     = old('project_manager_id', $project->project_manager_id);
+                        $clientId = old('client_id', $project->client_id);
+                        $selPm     = ($projectManagers ?? collect())->firstWhere('id', $pmId);
+                        $selClient = ($clients ?? collect())->firstWhere('id', $clientId);
+                    @endphp
                     <div class="fg-2">
 
+                        {{-- Chef de projet --}}
                         <div class="field">
                             <label>Chef de projet <span class="req">*</span></label>
-                            <select name="project_manager_id" class="fi {{ $errors->has('project_manager_id') ? 'is-invalid' : '' }}" required>
-                                <option value="">— Sélectionner —</option>
-                                @foreach($projectManagers ?? [] as $pm)
-                                    <option value="{{ $pm->id }}" {{ old('project_manager_id', $project->project_manager_id) == $pm->id ? 'selected' : '' }}>
-                                        {{ $pm->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="searchable-select" id="pm-select-wrapper">
+                                <input type="hidden" name="project_manager_id" id="pm_id_input" value="{{ $pmId }}" required>
+                                <div class="ss-trigger {{ $errors->has('project_manager_id') ? 'is-invalid' : '' }}" id="pm-trigger">
+                                    <span class="ss-display {{ $selPm ? 'has-value' : '' }}">
+                                        {{ $selPm ? $selPm->name : '— Sélectionner —' }}
+                                    </span>
+                                    <i class="fas fa-chevron-down ss-arrow"></i>
+                                </div>
+                                <div class="ss-dropdown" id="pm-dropdown">
+                                    <div class="ss-search-wrap">
+                                        <i class="fas fa-search ss-search-icon"></i>
+                                        <input type="text" class="ss-search" placeholder="Rechercher un chef de projet…" autocomplete="off">
+                                    </div>
+                                    <div class="ss-options">
+                                        <div class="ss-option {{ !$pmId ? 'selected' : '' }}" data-value="" data-label="— Sélectionner —">— Sélectionner —</div>
+                                        @foreach($projectManagers ?? [] as $pm)
+                                            <div class="ss-option {{ $pmId == $pm->id ? 'selected' : '' }}" data-value="{{ $pm->id }}" data-label="{{ $pm->name }}">
+                                                <span class="ss-option-avatar">{{ strtoupper(substr($pm->name, 0, 1)) }}</span>
+                                                {{ $pm->name }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                            @if(($projectManagers ?? collect())->isEmpty())
+                                <div class="field-hint" style="color:#f87171"><i class="fas fa-exclamation-triangle"></i> Aucun chef de projet disponible</div>
+                            @else
+                                <div class="field-hint">{{ ($projectManagers ?? collect())->count() }} chef(s) disponible(s)</div>
+                            @endif
                             @error('project_manager_id')<div class="invalid-msg"><i class="fas fa-circle-exclamation" style="font-size:.6rem"></i> {{ $message }}</div>@enderror
                         </div>
 
+                        {{-- Client --}}
                         <div class="field">
                             <label>Client</label>
-                            <select name="client_id" class="fi {{ $errors->has('client_id') ? 'is-invalid' : '' }}">
-                                <option value="">— Aucun client —</option>
-                                @foreach($clients ?? [] as $client)
-                                    <option value="{{ $client->id }}" {{ old('client_id', $project->client_id) == $client->id ? 'selected' : '' }}>
-                                        {{ $client->name }}{{ $client->company_name ? ' · ' . $client->company_name : '' }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="searchable-select" id="client-select-wrapper">
+                                <input type="hidden" name="client_id" id="client_id_input" value="{{ $clientId }}">
+                                <div class="ss-trigger {{ $errors->has('client_id') ? 'is-invalid' : '' }}" id="client-trigger">
+                                    <span class="ss-display {{ $selClient ? 'has-value' : '' }}">
+                                        @if($selClient)
+                                            {{ $selClient->name }}{{ $selClient->company_name ? ' · '.$selClient->company_name : '' }}
+                                        @else
+                                            — Aucun client —
+                                        @endif
+                                    </span>
+                                    <i class="fas fa-chevron-down ss-arrow"></i>
+                                </div>
+                                <div class="ss-dropdown" id="client-dropdown">
+                                    <div class="ss-search-wrap">
+                                        <i class="fas fa-search ss-search-icon"></i>
+                                        <input type="text" class="ss-search" placeholder="Rechercher un client…" autocomplete="off">
+                                    </div>
+                                    <div class="ss-options">
+                                        <div class="ss-option {{ !$clientId ? 'selected' : '' }}" data-value="" data-label="— Aucun client —">— Aucun client —</div>
+                                        @foreach($clients ?? [] as $client)
+                                            @php $clientLabel = $client->name.($client->company_name ? ' · '.$client->company_name : ''); @endphp
+                                            <div class="ss-option {{ $clientId == $client->id ? 'selected' : '' }}" data-value="{{ $client->id }}" data-label="{{ $clientLabel }}">
+                                                {{ $clientLabel }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
                             @error('client_id')<div class="invalid-msg"><i class="fas fa-circle-exclamation" style="font-size:.6rem"></i> {{ $message }}</div>@enderror
                         </div>
 
@@ -1076,6 +1263,61 @@
 
 @push('scripts')
 <script>
+/* ── Searchable Select ── */
+(function () {
+    function initSS(wrapperId, inputId) {
+        const wrapper = document.getElementById(wrapperId);
+        if (!wrapper) return;
+
+        const hidden  = document.getElementById(inputId);
+        const trigger = wrapper.querySelector('.ss-trigger');
+        const display = wrapper.querySelector('.ss-display');
+        const dropdown= wrapper.querySelector('.ss-dropdown');
+        const search  = wrapper.querySelector('.ss-search');
+        const options = wrapper.querySelectorAll('.ss-option');
+
+        function open()  { trigger.classList.add('open'); dropdown.classList.add('open'); search?.focus(); }
+        function close() {
+            trigger.classList.remove('open'); dropdown.classList.remove('open');
+            if (search) { search.value = ''; filter(''); }
+        }
+
+        function filter(q) {
+            const lq = q.toLowerCase().trim();
+            let vis = 0;
+            options.forEach(o => {
+                const show = !lq || o.textContent.toLowerCase().includes(lq);
+                o.classList.toggle('hidden', !show);
+                if (show) vis++;
+            });
+            let nr = wrapper.querySelector('.ss-no-results');
+            if (vis === 0) {
+                if (!nr) { nr = document.createElement('div'); nr.className = 'ss-no-results'; nr.textContent = 'Aucun résultat'; wrapper.querySelector('.ss-options').appendChild(nr); }
+                nr.style.display = 'block';
+            } else if (nr) { nr.style.display = 'none'; }
+        }
+
+        trigger.addEventListener('click', () => dropdown.classList.contains('open') ? close() : open());
+        search?.addEventListener('input', e => filter(e.target.value));
+
+        options.forEach(opt => {
+            opt.addEventListener('click', () => {
+                options.forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                hidden.value = opt.dataset.value;
+                display.textContent = opt.dataset.label ?? opt.textContent.trim();
+                display.classList.toggle('has-value', !!opt.dataset.value);
+                close();
+            });
+        });
+
+        document.addEventListener('click', e => { if (!wrapper.contains(e.target)) close(); });
+    }
+
+    initSS('pm-select-wrapper',     'pm_id_input');
+    initSS('client-select-wrapper', 'client_id_input');
+})();
+
 (function () {
     /* ── Progress range ── */
     const rangeInput    = document.getElementById('progress-range');

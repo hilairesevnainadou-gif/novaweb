@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan *)"
+      "Bash(php artisan *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(vendor/bin/pint --dirty --format agent)",
+      "mcp__laravel-boost__tinker",
+      "Bash(vendor/bin/pint --dirty --format agent app/Http/Controllers/Admin/ProjectController.php)",
+      "mcp__laravel-boost__application-info",
+      "mcp__laravel-boost__database-schema"
     ]
   }
 }

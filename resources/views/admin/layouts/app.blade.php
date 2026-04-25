@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#0f0f12">
+    <meta name="theme-color" content="#07080f">
     <title>@yield('title', config('app.name', 'NovaTech Admin'))</title>
 
     <!-- Fonts & Icons -->
@@ -19,14 +19,31 @@
     <!-- Favicon dynamique -->
     @php
         $companyInfo = \App\Models\CompanyInfo::first();
-        $user = auth()->user();
-        $isSuperAdmin = $user->hasRole('super-admin');
-        $isAdmin = $user->hasRole('admin');
-        $isProjectManager = $user->hasRole('project-manager');
-        $isEditor = $user->hasRole('editor');
-        $isSupport = $user->hasRole('support');
-        $isTechnician = $user->hasRole('technician');
-        $isViewer = $user->hasRole('viewer');
+        $user        = auth()->user();
+
+        $isSuperAdmin    = $user->hasRole('super-admin');
+        $isAdmin         = $user->hasRole('admin');
+        $isProjectManager= $user->hasRole('project-manager');
+        $isTechManager   = $user->hasRole('tech-manager');
+        $isDeveloper     = $user->hasRole('developer');
+        $isEditor        = $user->hasRole('editor');
+        $isSupport       = $user->hasRole('support');
+        $isTechnician    = $user->hasRole('technician');
+        $isViewer        = $user->hasRole('viewer');
+
+        // Rôle principal affiché (en priorité si multi-rôles)
+        $displayRole = match(true) {
+            $isSuperAdmin     => ['label' => 'Super Admin',        'icon' => 'fa-shield-alt',       'class' => 'role-super-admin'],
+            $isAdmin          => ['label' => 'Administrateur',     'icon' => 'fa-user-shield',       'class' => 'role-admin'],
+            $isProjectManager => ['label' => 'Chef de Projet',     'icon' => 'fa-diagram-project',   'class' => 'role-project-manager'],
+            $isTechManager    => ['label' => 'Manager Technicien', 'icon' => 'fa-screwdriver-wrench','class' => 'role-tech-manager'],
+            $isDeveloper      => ['label' => 'Développeur',        'icon' => 'fa-code',              'class' => 'role-developer'],
+            $isEditor         => ['label' => 'Éditeur',            'icon' => 'fa-pen-nib',           'class' => 'role-editor'],
+            $isSupport        => ['label' => 'Support Technique',  'icon' => 'fa-headset',           'class' => 'role-support'],
+            $isTechnician     => ['label' => 'Technicien',         'icon' => 'fa-hard-hat',          'class' => 'role-technician'],
+            $isViewer         => ['label' => 'Visualisateur',      'icon' => 'fa-eye',               'class' => 'role-viewer'],
+            default           => ['label' => 'Utilisateur',        'icon' => 'fa-user',              'class' => 'role-default'],
+        };
     @endphp
     @if($companyInfo && $companyInfo->favicon)
         <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $companyInfo->favicon) }}">
@@ -49,57 +66,57 @@
         }
 
         :root {
-            /* ===== DARK THEME (Default) ===== */
-            --bg-primary: #0a0a0c;
-            --bg-secondary: #111113;
-            --bg-tertiary: #1a1a1e;
-            --bg-elevated: #222226;
-            --bg-hover: rgba(59, 130, 246, 0.1);
-            --bg-active: rgba(59, 130, 246, 0.15);
-            --bg-selected: rgba(59, 130, 246, 0.2);
+            /* ===== DARK THEME (Default) — Palette NovaTech Indigo/Cyan ===== */
+            --bg-primary:   #07080f;
+            --bg-secondary: #0c0e1a;
+            --bg-tertiary:  #131626;
+            --bg-elevated:  #1a1e32;
+            --bg-hover:     rgba(99, 102, 241, 0.10);
+            --bg-active:    rgba(99, 102, 241, 0.16);
+            --bg-selected:  rgba(99, 102, 241, 0.20);
 
-            /* Text colors */
-            --text-primary: #ffffff;
-            --text-secondary: #c0c0c8;
-            --text-tertiary: #888894;
-            --text-disabled: #3f3f46;
+            /* Text */
+            --text-primary:   #f0f1ff;
+            --text-secondary: #a9aecf;
+            --text-tertiary:  #6b7099;
+            --text-disabled:  #2e3352;
 
-            /* Brand colors */
-            --brand-primary: #3b82f6;
-            --brand-primary-hover: #2563eb;
-            --brand-secondary: #8b5cf6;
-            --brand-accent: #06b6d4;
-            --brand-success: #10b981;
-            --brand-warning: #f59e0b;
-            --brand-error: #ef4444;
-            --brand-info: #3b82f6;
+            /* Brand — Indigo primary, Cyan secondary */
+            --brand-primary:       #6366f1;
+            --brand-primary-hover: #4f46e5;
+            --brand-secondary:     #06b6d4;
+            --brand-accent:        #8b5cf6;
+            --brand-success:       #22c55e;
+            --brand-warning:       #f59e0b;
+            --brand-error:         #f43f5e;
+            --brand-info:          #6366f1;
 
-            /* Border colors */
-            --border-light: rgba(255, 255, 255, 0.06);
-            --border-medium: rgba(255, 255, 255, 0.1);
-            --border-heavy: rgba(255, 255, 255, 0.15);
+            /* Borders */
+            --border-light:  rgba(99, 102, 241, 0.08);
+            --border-medium: rgba(99, 102, 241, 0.14);
+            --border-heavy:  rgba(99, 102, 241, 0.22);
 
             /* Shadows */
-            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
-            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.55);
+            --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.55);
+            --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.55);
+            --shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.55);
+            --shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.65);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
 
-            /* Spacing */
-            --sidebar-width: 260px;
+            /* Layout */
+            --sidebar-width:     260px;
             --sidebar-collapsed: 72px;
-            --header-height: 64px;
-            --container-max: 1400px;
+            --header-height:     64px;
+            --container-max:     1400px;
 
-            /* Border radius */
-            --radius-xs: 4px;
-            --radius-sm: 6px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
-            --radius-2xl: 20px;
+            /* Radii */
+            --radius-xs:   4px;
+            --radius-sm:   6px;
+            --radius-md:   8px;
+            --radius-lg:   12px;
+            --radius-xl:   16px;
+            --radius-2xl:  20px;
             --radius-full: 9999px;
 
             /* Transitions */
@@ -107,40 +124,62 @@
             --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
             --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
-            /* Z-index layers */
-            --z-negative: -1;
-            --z-elevate: 10;
-            --z-dropdown: 50;
-            --z-modal: 100;
-            --z-tooltip: 150;
-            --z-toast: 200;
+            /* Z-index */
+            --z-negative:  -1;
+            --z-elevate:   10;
+            --z-dropdown:  50;
+            --z-modal:     100;
+            --z-tooltip:   150;
+            --z-toast:     200;
+
+            /* ── Couleurs de badge par rôle ── */
+            --role-super-admin-bg:     rgba(245, 158, 11, 0.15);
+            --role-super-admin-color:  #f59e0b;
+            --role-admin-bg:           rgba(99, 102, 241, 0.15);
+            --role-admin-color:        #6366f1;
+            --role-pm-bg:              rgba(34, 197, 94, 0.15);
+            --role-pm-color:           #22c55e;
+            --role-tech-manager-bg:    rgba(249, 115, 22, 0.15);
+            --role-tech-manager-color: #f97316;
+            --role-developer-bg:       rgba(139, 92, 246, 0.15);
+            --role-developer-color:    #8b5cf6;
+            --role-editor-bg:          rgba(244, 63, 94, 0.15);
+            --role-editor-color:       #f43f5e;
+            --role-support-bg:         rgba(234, 179, 8, 0.15);
+            --role-support-color:      #eab308;
+            --role-technician-bg:      rgba(6, 182, 212, 0.15);
+            --role-technician-color:   #06b6d4;
+            --role-viewer-bg:          rgba(148, 163, 184, 0.15);
+            --role-viewer-color:       #94a3b8;
+            --role-default-bg:         rgba(107, 114, 128, 0.15);
+            --role-default-color:      #9ca3af;
         }
 
         /* ===== LIGHT THEME ===== */
         [data-theme="light"] {
-            --bg-primary: #f5f7fa;
+            --bg-primary:   #f1f4ff;
             --bg-secondary: #ffffff;
-            --bg-tertiary: #f0f2f5;
-            --bg-elevated: #ffffff;
-            --bg-hover: rgba(59, 130, 246, 0.08);
-            --bg-active: rgba(59, 130, 246, 0.12);
-            --bg-selected: rgba(59, 130, 246, 0.15);
+            --bg-tertiary:  #e8eeff;
+            --bg-elevated:  #ffffff;
+            --bg-hover:     rgba(99, 102, 241, 0.07);
+            --bg-active:    rgba(99, 102, 241, 0.12);
+            --bg-selected:  rgba(99, 102, 241, 0.15);
 
-            --text-primary: #1a1a2e;
-            --text-secondary: #4a4a5a;
-            --text-tertiary: #8a8a9a;
-            --text-disabled: #cbd5e1;
+            --text-primary:   #0f1129;
+            --text-secondary: #3d4166;
+            --text-tertiary:  #7b80a8;
+            --text-disabled:  #c4c8e8;
 
-            --border-light: rgba(0, 0, 0, 0.06);
-            --border-medium: rgba(0, 0, 0, 0.1);
-            --border-heavy: rgba(0, 0, 0, 0.15);
+            --border-light:  rgba(99, 102, 241, 0.09);
+            --border-medium: rgba(99, 102, 241, 0.16);
+            --border-heavy:  rgba(99, 102, 241, 0.24);
 
-            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
-            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            --shadow-xs:  0 1px 2px rgba(15, 17, 41, 0.06);
+            --shadow-sm:  0 1px 3px rgba(15, 17, 41, 0.09);
+            --shadow-md:  0 4px 6px -1px rgba(15, 17, 41, 0.09);
+            --shadow-lg:  0 10px 15px -3px rgba(15, 17, 41, 0.09);
+            --shadow-xl:  0 20px 25px -5px rgba(15, 17, 41, 0.09);
+            --shadow-2xl: 0 25px 50px -12px rgba(15, 17, 41, 0.18);
         }
 
         /* Base styles */
@@ -460,12 +499,22 @@
             gap: 4px;
             font-size: 10px;
             font-weight: 600;
-            color: var(--brand-primary);
-            background: rgba(59,130,246,0.12);
             border-radius: var(--radius-full);
-            padding: 1px 7px;
+            padding: 2px 8px;
             margin-top: 3px;
         }
+
+        /* ── Couleurs par rôle ── */
+        .user-role-badge.role-super-admin    { background: var(--role-super-admin-bg);    color: var(--role-super-admin-color); }
+        .user-role-badge.role-admin          { background: var(--role-admin-bg);          color: var(--role-admin-color); }
+        .user-role-badge.role-project-manager{ background: var(--role-pm-bg);             color: var(--role-pm-color); }
+        .user-role-badge.role-tech-manager   { background: var(--role-tech-manager-bg);   color: var(--role-tech-manager-color); }
+        .user-role-badge.role-developer      { background: var(--role-developer-bg);      color: var(--role-developer-color); }
+        .user-role-badge.role-editor         { background: var(--role-editor-bg);         color: var(--role-editor-color); }
+        .user-role-badge.role-support        { background: var(--role-support-bg);        color: var(--role-support-color); }
+        .user-role-badge.role-technician     { background: var(--role-technician-bg);     color: var(--role-technician-color); }
+        .user-role-badge.role-viewer         { background: var(--role-viewer-bg);         color: var(--role-viewer-color); }
+        .user-role-badge.role-default        { background: var(--role-default-bg);        color: var(--role-default-color); }
 
         .profile-actions {
             display: flex;
@@ -921,8 +970,8 @@
                 </div>
                 @endcan
 
-                <!-- Content Management - visible pour super-admin, admin, editor -->
-                @if($isSuperAdmin || $isAdmin || $isEditor)
+                {{-- ── Contenu (editor, admin, super-admin) ── --}}
+                @if($user->canAny(['portfolio.view','blog.view','services.view','testimonials.view','team.view','tools.view','faqs.view','clients.view']))
                 <div class="nav-group">
                     <div class="nav-group-label">Contenu</div>
 
@@ -992,8 +1041,39 @@
                 </div>
                 @endif
 
-                <!-- MAINTENANCE SECTION - visible pour super-admin, admin, support, technician -->
-                @if($isSuperAdmin || $isAdmin || $isSupport || $isTechnician)
+                {{-- ── Projets (developer, project-manager, admin, super-admin) ── --}}
+                @if($user->canAny(['projects.view','tasks.view','meetings.view']))
+                <div class="nav-group">
+                    <div class="nav-group-label">Projets</div>
+
+                    @can('projects.view')
+                    <a href="{{ route('admin.projects.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.projects.*') ? 'active' : '' }}">
+                        <i class="fas fa-diagram-project"></i>
+                        <span>Projets</span>
+                    </a>
+                    @endcan
+
+                    @can('tasks.view')
+                    <a href="{{ route('admin.tasks.global-index') }}"
+                        class="nav-item {{ request()->routeIs('admin.tasks.*') ? 'active' : '' }}">
+                        <i class="fas fa-list-check"></i>
+                        <span>Tâches</span>
+                    </a>
+                    @endcan
+
+                    @can('meetings.view')
+                    <a href="{{ route('admin.meetings.global-index') }}"
+                        class="nav-item {{ request()->routeIs('admin.meetings.*') ? 'active' : '' }}">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Réunions</span>
+                    </a>
+                    @endcan
+                </div>
+                @endif
+
+                {{-- ── Maintenance (technician, tech-manager, support, admin, super-admin) ── --}}
+                @if($user->canAny(['maintenance.view','devices.view','interventions.view','maintenance.statistics']))
                 <div class="nav-group">
                     <div class="nav-group-label">Maintenance</div>
 
@@ -1010,9 +1090,7 @@
                         class="nav-item {{ request()->routeIs('admin.maintenance.devices*') ? 'active' : '' }}">
                         <i class="fas fa-microchip"></i>
                         <span>Appareils</span>
-                        @php
-                            $devicesInMaintenance = \App\Models\Device::whereIn('status', ['maintenance', 'repair'])->count();
-                        @endphp
+                        @php $devicesInMaintenance = \App\Models\Device::whereIn('status', ['maintenance', 'repair'])->count(); @endphp
                         @if($devicesInMaintenance > 0)
                         <span class="nav-badge">{{ $devicesInMaintenance }}</span>
                         @endif
@@ -1024,9 +1102,7 @@
                         class="nav-item {{ request()->routeIs('admin.maintenance.interventions*') ? 'active' : '' }}">
                         <i class="fas fa-wrench"></i>
                         <span>Interventions</span>
-                        @php
-                            $pendingInterventions = \App\Models\Intervention::where('status', 'pending')->count();
-                        @endphp
+                        @php $pendingInterventions = \App\Models\Intervention::where('status', 'pending')->count(); @endphp
                         @if($pendingInterventions > 0)
                         <span class="nav-badge">{{ $pendingInterventions }}</span>
                         @endif
@@ -1043,8 +1119,8 @@
                 </div>
                 @endif
 
-                <!-- Communications - visible pour super-admin, admin, support, editor -->
-                @if($isSuperAdmin || $isAdmin || $isSupport || $isEditor)
+                {{-- ── Communications (support, tech-manager, editor, admin, super-admin) ── --}}
+                @if($user->canAny(['users.view','contact.view','tickets.view','newsletter.view']))
                 <div class="nav-group">
                     <div class="nav-group-label">Communications</div>
 
@@ -1082,12 +1158,10 @@
 
                     @can('newsletter.view')
                     <a href="{{ route('admin.newsletter.index') }}"
-                        class="nav-item {{ request()->routeIs('admin.newsletter.*') ? 'active' : ''}}">
+                        class="nav-item {{ request()->routeIs('admin.newsletter.*') ? 'active' : '' }}">
                         <i class="fas fa-mail-bulk"></i>
                         <span>Newsletter</span>
-                        @php
-                        $activeSubscribers = \App\Models\Newsletter::where('is_active', true)->count();
-                        @endphp
+                        @php $activeSubscribers = \App\Models\Newsletter::where('is_active', true)->count(); @endphp
                         @if($activeSubscribers > 0)
                         <span class="nav-badge">{{ $activeSubscribers }}</span>
                         @endif
@@ -1096,8 +1170,8 @@
                 </div>
                 @endif
 
-                <!-- Finance & Facturation - visible pour super-admin, admin -->
-                @if($isSuperAdmin || $isAdmin)
+                {{-- ── Finance (tech-manager, admin, super-admin) ── --}}
+                @if($user->canAny(['billing.invoices.view','billing.payments.view']))
                 <div class="nav-group">
                     <div class="nav-group-label">Finance</div>
 
@@ -1119,39 +1193,8 @@
                 </div>
                 @endif
 
-                <!-- Gestion de Projets - visible pour super-admin, admin, project-manager -->
-                @if($isSuperAdmin || $isAdmin || $isProjectManager)
-                <div class="nav-group">
-                    <div class="nav-group-label">Projets</div>
-
-                    @can('projects.view')
-                    <a href="{{ route('admin.projects.index') }}"
-                        class="nav-item {{ request()->routeIs('admin.projects.*') ? 'active' : '' }}">
-                        <i class="fas fa-diagram-project"></i>
-                        <span>Projets</span>
-                    </a>
-                    @endcan
-
-                    @can('tasks.view')
-                    <a href="{{ route('admin.tasks.global-index') }}"
-                        class="nav-item {{ request()->routeIs('admin.tasks.*') ? 'active' : '' }}">
-                        <i class="fas fa-tasks"></i>
-                        <span>Tâches</span>
-                    </a>
-                    @endcan
-
-                    @can('meetings.view')
-                    <a href="{{ route('admin.meetings.global-index') }}"
-                        class="nav-item {{ request()->routeIs('admin.meetings.*') ? 'active' : '' }}">
-                        <i class="fas fa-calendar-check"></i>
-                        <span>Réunions</span>
-                    </a>
-                    @endcan
-                </div>
-                @endif
-
-                <!-- Administration - visible pour super-admin, admin -->
-                @if($isSuperAdmin || $isAdmin)
+                {{-- ── Administration (admin, super-admin) ── --}}
+                @if($user->canAny(['roles.view','settings.view','backups.view']))
                 <div class="nav-group">
                     <div class="nav-group-label">Administration</div>
 
@@ -1197,24 +1240,9 @@
                         </div>
                         <div class="user-info">
                             <div class="user-name">{{ auth()->user()->name ?? 'Administrateur' }}</div>
-                            <div class="user-role-badge">
-                                @if($isSuperAdmin)
-                                    <i class="fas fa-shield-alt" style="font-size:9px;"></i> Super Admin
-                                @elseif($isAdmin)
-                                    <i class="fas fa-user-shield" style="font-size:9px;"></i> Admin
-                                @elseif($isProjectManager)
-                                    <i class="fas fa-diagram-project" style="font-size:9px;"></i> Chef de Projet
-                                @elseif($isEditor)
-                                    <i class="fas fa-pen" style="font-size:9px;"></i> Éditeur
-                                @elseif($isSupport)
-                                    <i class="fas fa-headset" style="font-size:9px;"></i> Support
-                                @elseif($isTechnician)
-                                    <i class="fas fa-hard-hat" style="font-size:9px;"></i> Technicien
-                                @elseif($isViewer)
-                                    <i class="fas fa-eye" style="font-size:9px;"></i> Visualisateur
-                                @else
-                                    <i class="fas fa-user" style="font-size:9px;"></i> Utilisateur
-                                @endif
+                            <div class="user-role-badge {{ $displayRole['class'] }}">
+                                <i class="fas {{ $displayRole['icon'] }}" style="font-size:9px;"></i>
+                                {{ $displayRole['label'] }}
                             </div>
                         </div>
                     </div>

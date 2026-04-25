@@ -1,8 +1,8 @@
 {{-- resources/views/admin/projects/index.blade.php --}}
 @extends('admin.layouts.app')
 
-@section('title', 'Projets - NovaTech Admin')
-@section('page-title', 'Gestion des Projets')
+@section('title', isset($canViewAll) && $canViewAll ? 'Tous les projets - NovaTech Admin' : 'Mes projets - NovaTech Admin')
+@section('page-title', isset($canViewAll) && $canViewAll ? 'Tous les projets' : 'Mes projets')
 
 @push('styles')
 <style>
@@ -19,10 +19,19 @@
     .stat-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-tertiary); letter-spacing: 0.5px; }
 
     .filters-container { background: var(--bg-secondary); border-radius: 0.75rem; padding: 1rem; border: 1px solid var(--border-light); margin-bottom: 1.5rem; }
-    .filter-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 0.75rem; align-items: end; }
+    .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.625rem 1rem; margin-bottom: 0.75rem; }
+    .filter-group label { display: block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-tertiary); margin-bottom: 0.3rem; }
+    .filters-footer { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; padding-top: 0.75rem; border-top: 1px solid var(--border-light); }
+    .active-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; flex: 1; }
+    .filter-tag { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.2rem 0.6rem 0.2rem 0.75rem; background: rgba(99,102,241,0.1); color: var(--brand-primary); border: 1px solid rgba(99,102,241,0.25); border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+    .filter-tag a { color: inherit; text-decoration: none; opacity: 0.6; line-height: 1; }
+    .filter-tag a:hover { opacity: 1; }
+    .filters-actions { display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0; }
     .filter-input, .filter-select { width: 100%; padding: 0.625rem 1rem; border-radius: 0.5rem; border: 1px solid var(--border-light); background: var(--bg-primary); color: var(--text-primary); font-size: 0.875rem; outline: none; transition: all 0.2s; }
     .filter-input:focus, .filter-select:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
     .filter-input::placeholder { color: var(--text-tertiary); }
+    .badge-role-pm   { background: rgba(16,185,129,0.1); color: #10b981; }
+    .badge-role-dev  { background: rgba(99,102,241,0.1);  color: #6366f1; }
 
     .table-container { background: var(--bg-secondary); border-radius: 0.75rem; border: 1px solid var(--border-light); overflow-x: auto; }
     .projects-table { width: 100%; border-collapse: collapse; min-width: 900px; }
@@ -89,7 +98,7 @@
 
     @media (max-width: 768px) {
         .stats-grid { grid-template-columns: repeat(2, 1fr); }
-        .filter-row { grid-template-columns: 1fr; }
+        .filters-grid { grid-template-columns: 1fr; }
     }
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .table-row { animation: fadeInUp 0.3s ease forwards; }
@@ -97,12 +106,37 @@
 @endpush
 
 @section('content')
+@php
+    $userId     = auth()->id();
+    $canViewAll = $canViewAll ?? false;
+
+    // Libellés des filtres actifs
+    $filterLabels = [];
+    if (!empty($filters['search']))             { $filterLabels['search']             = 'Recherche : ' . $filters['search']; }
+    if (!empty($filters['status']))             { $filterLabels['status']             = 'Statut : ' . ($statuses[$filters['status']] ?? $filters['status']); }
+    if (!empty($filters['priority']))           { $filterLabels['priority']           = 'Priorité : ' . ($priorities[$filters['priority']] ?? $filters['priority']); }
+    if (!empty($filters['type']))               { $filterLabels['type']               = 'Type : ' . ($types[$filters['type']] ?? $filters['type']); }
+    if (!empty($filters['client_id'])) {
+        $fc = ($clients ?? collect())->firstWhere('id', $filters['client_id']);
+        $filterLabels['client_id'] = 'Client : ' . ($fc?->company_name ?? $fc?->name ?? $filters['client_id']);
+    }
+    if (!empty($filters['project_manager_id']) && $canViewAll) {
+        $fpm = ($projectManagers ?? collect())->firstWhere('id', $filters['project_manager_id']);
+        $filterLabels['project_manager_id'] = 'Chef : ' . ($fpm?->name ?? $filters['project_manager_id']);
+    }
+@endphp
 @can('projects.view')
 
 <div class="page-header">
     <div class="page-title-section">
-        <h1>Projets</h1>
-        <p>Gérez vos projets et suivez leur avancement</p>
+        <h1>{{ $canViewAll ? 'Tous les projets' : 'Mes projets' }}</h1>
+        <p>
+            @if($canViewAll)
+                Vue globale de tous les projets
+            @else
+                Projets dont vous êtes chef ou sur lesquels vous intervenez
+            @endif
+        </p>
     </div>
     <div class="header-actions">
         <a href="{{ route('admin.projects.dashboard') }}" class="btn-secondary-sm">
@@ -136,48 +170,107 @@
     <div class="stat-card">
         <div class="stat-header"><div class="stat-icon orange"><i class="fas fa-pause-circle"></i></div></div>
         <div class="stat-value">{{ $stats['on_hold'] }}</div>
-        <div class="stat-label">En pause</div>
+        <div class="stat-label">En revue</div>
     </div>
 </div>
 
 {{-- Filtres --}}
 <div class="filters-container">
     <form method="GET" action="{{ route('admin.projects.index') }}">
-        <div class="filter-row">
-            <div>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Rechercher un projet..." class="filter-input" autocomplete="off">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label for="search"><i class="fas fa-search" style="margin-right:0.25rem;"></i>Recherche</label>
+                <input type="text" id="search" name="search"
+                    value="{{ $filters['search'] ?? '' }}"
+                    placeholder="Nom, n° projet..."
+                    class="filter-input" autocomplete="off">
             </div>
-            <div>
-                <select name="status" class="filter-select">
-                    <option value="">Tous statuts</option>
+
+            <div class="filter-group">
+                <label for="status"><i class="fas fa-circle-dot" style="margin-right:0.25rem;"></i>Statut</label>
+                <select id="status" name="status" class="filter-select">
+                    <option value="">Tous</option>
                     @foreach($statuses as $val => $label)
-                        <option value="{{ $val }}" @selected(request('status') === $val)>{{ $label }}</option>
+                        <option value="{{ $val }}" @selected(($filters['status'] ?? '') === $val)>{{ $label }}</option>
                     @endforeach
                 </select>
             </div>
-            <div>
-                <select name="priority" class="filter-select">
-                    <option value="">Toutes priorités</option>
+
+            <div class="filter-group">
+                <label for="priority"><i class="fas fa-flag" style="margin-right:0.25rem;"></i>Priorité</label>
+                <select id="priority" name="priority" class="filter-select">
+                    <option value="">Toutes</option>
                     @foreach($priorities as $val => $label)
-                        <option value="{{ $val }}" @selected(request('priority') === $val)>{{ $label }}</option>
+                        <option value="{{ $val }}" @selected(($filters['priority'] ?? '') === $val)>{{ $label }}</option>
                     @endforeach
                 </select>
             </div>
-            <div>
-                <select name="type" class="filter-select">
-                    <option value="">Tous types</option>
+
+            <div class="filter-group">
+                <label for="type"><i class="fas fa-tag" style="margin-right:0.25rem;"></i>Type</label>
+                <select id="type" name="type" class="filter-select">
+                    <option value="">Tous</option>
                     @foreach($types as $val => $label)
-                        <option value="{{ $val }}" @selected(request('type') === $val)>{{ $label }}</option>
+                        <option value="{{ $val }}" @selected(($filters['type'] ?? '') === $val)>{{ $label }}</option>
                     @endforeach
                 </select>
             </div>
-            <div style="display:flex; gap:0.5rem;">
-                <button type="submit" class="btn-primary" style="flex:1; justify-content:center;">
-                    <i class="fas fa-search"></i>
-                </button>
-                <a href="{{ route('admin.projects.index') }}" class="btn-reset" style="flex:1;">
-                    <i class="fas fa-undo-alt"></i>
+
+            <div class="filter-group">
+                <label for="client_id"><i class="fas fa-building" style="margin-right:0.25rem;"></i>Client</label>
+                <select id="client_id" name="client_id" class="filter-select">
+                    <option value="">Tous</option>
+                    @foreach(($clients ?? collect()) as $client)
+                        <option value="{{ $client->id }}" @selected(($filters['client_id'] ?? '') == (string) $client->id)>
+                            {{ $client->company_name ?? $client->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            @if($canViewAll)
+            <div class="filter-group">
+                <label for="project_manager_id"><i class="fas fa-user-tie" style="margin-right:0.25rem;"></i>Chef de projet</label>
+                <select id="project_manager_id" name="project_manager_id" class="filter-select">
+                    <option value="">Tous</option>
+                    @foreach(($projectManagers ?? collect()) as $pm)
+                        <option value="{{ $pm->id }}" @selected(($filters['project_manager_id'] ?? '') == (string) $pm->id)>
+                            {{ $pm->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
+        </div>
+
+        <div class="filters-footer">
+            <div class="active-filters">
+                @if(count($filterLabels) > 0)
+                    <span style="font-size:0.75rem; color:var(--text-tertiary); margin-right:0.25rem;">Filtres actifs :</span>
+                    @foreach($filterLabels as $key => $label)
+                    @php
+                        $removeParams = array_merge(array_filter($filters, fn($v) => $v !== ''), ['page' => null]);
+                        unset($removeParams[$key]);
+                        $removeUrl = route('admin.projects.index') . '?' . http_build_query(array_filter($removeParams, fn($v) => $v !== null));
+                    @endphp
+                    <span class="filter-tag">
+                        {{ $label }}
+                        <a href="{{ $removeUrl }}" title="Retirer ce filtre"><i class="fas fa-times"></i></a>
+                    </span>
+                    @endforeach
+                @else
+                    <span style="font-size:0.75rem; color:var(--text-tertiary);">Aucun filtre actif</span>
+                @endif
+            </div>
+            <div class="filters-actions">
+                @if(count($filterLabels) > 0)
+                <a href="{{ route('admin.projects.index') }}" style="font-size:0.8rem; color:var(--text-tertiary); text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;">
+                    <i class="fas fa-undo-alt"></i> Tout effacer
                 </a>
+                @endif
+                <button type="submit" class="btn-primary" style="padding:0.5rem 1rem; font-size:0.8rem;">
+                    <i class="fas fa-filter"></i> Appliquer
+                </button>
             </div>
         </div>
     </form>
@@ -190,7 +283,11 @@
             <tr>
                 <th>Projet</th>
                 <th>Client</th>
-                <th>Type</th>
+                @if(!$canViewAll)
+                <th>Mon rôle</th>
+                @else
+                <th>Chef de projet</th>
+                @endif
                 <th>Statut</th>
                 <th>Priorité</th>
                 <th>Avancement</th>
@@ -200,6 +297,19 @@
         </thead>
         <tbody>
             @forelse($projects as $index => $project)
+            @php
+                $myRoleLabel = null;
+                $myRoleClass = null;
+                if (!$canViewAll) {
+                    if ($project->project_manager_id == $userId) {
+                        $myRoleLabel = 'Chef projet';
+                        $myRoleClass = 'badge-role-pm';
+                    } else {
+                        $myRoleLabel = 'Intervenant';
+                        $myRoleClass = 'badge-role-dev';
+                    }
+                }
+            @endphp
             <tr class="table-row" style="animation-delay: {{ $index * 0.03 }}s;">
                 <td>
                     <div style="display:flex; align-items:center; gap:0.625rem;">
@@ -215,13 +325,26 @@
                         {{ $project->client?->company_name ?? $project->client?->name ?? '-' }}
                     </span>
                 </td>
-                <td><span style="font-size:0.8125rem;">{{ $project->type_label }}</span></td>
-                <td><span class="badge {{ $project->status_badge_class }}">{{ $project->status_label }}</span></td>
+                @if(!$canViewAll)
                 <td>
-                    <span class="badge {{ $project->priority_badge_class }}">
-                        {{ $project->priority_label }}
-                    </span>
+                    @if($myRoleLabel)
+                        <span class="badge {{ $myRoleClass }}">{{ $myRoleLabel }}</span>
+                    @endif
                 </td>
+                @else
+                <td>
+                    @if($project->projectManager)
+                        <div style="display:flex; align-items:center; gap:0.4rem;">
+                            <i class="fas fa-user-tie" style="color:var(--brand-primary); font-size:0.75rem;"></i>
+                            <span style="font-size:0.8125rem;">{{ $project->projectManager->name }}</span>
+                        </div>
+                    @else
+                        <span style="color:var(--text-tertiary);">-</span>
+                    @endif
+                </td>
+                @endif
+                <td><span class="badge {{ $project->status_badge_class }}">{{ $project->status_label }}</span></td>
+                <td><span class="badge {{ $project->priority_badge_class }}">{{ $project->priority_label }}</span></td>
                 <td>
                     <div style="display:flex; align-items:center; gap:0.5rem;">
                         <div class="progress-bar">
@@ -269,6 +392,13 @@
                 <td colspan="8" class="empty-state">
                     <i class="fas fa-folder-open"></i>
                     <p>Aucun projet trouvé</p>
+                    <p style="font-size:0.875rem;">
+                        @if($canViewAll)
+                            Aucun projet ne correspond aux critères sélectionnés.
+                        @else
+                            Vous n'avez pas encore de projets qui vous concernent.
+                        @endif
+                    </p>
                     @can('projects.create')
                     <a href="{{ route('admin.projects.create') }}" class="btn-primary" style="margin-top:1rem; display:inline-flex;">
                         <i class="fas fa-plus"></i> Créer un projet

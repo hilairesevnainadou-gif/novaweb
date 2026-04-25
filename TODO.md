@@ -1,12 +1,14 @@
-# TODO - Revue vue index tâches (modal)
+# Tâches en cours - Vue Edit Réunion
 
-- [ ] Corriger la gestion du modal de suppression (`resources/views/admin/tasks/index.blade.php`)
-  - [x] Corriger ouverture/fermeture robuste (overlay + ESC + état body)
-  - [x] Réinitialiser proprement l’état du bouton de confirmation
-  - [x] Éviter les doubles soumissions pendant la requête
-  - [x] Sécuriser le texte du message modal (fallback titre)
-  - [x] Harmoniser la fermeture du modal après succès/erreur
-  - [x] Corriger le positionnement du modal (centré viewport, plus en bas du tableau)
+## Étapes du plan (4/7 complétées)
 
-- [ ] Vérification finale
-  - [ ] Vérifier syntaxe Blade/JS de `resources/views/admin/tasks/index.blade.php`
+✅ 1. Créer resources/views/admin/meetings/edit.blade.php  
+✅ 2. Copier structure de create.blade.php et adapter titres/breadcrumbs  
+✅ 3. Pré-remplir tous les champs avec données $meeting  
+✅ 4. Adapter JS participants avec $meeting->attendees  
+
+- [ ] 5. Ajouter permissions @can('meetings.edit') sur actions  
+- [ ] 6. Adapter sidebar pour infos réunion (organizer, status, etc.)  
+- [ ] 7. Vérifier routes et tester formulaire  
+
+**Prochaine étape :** Finaliser permissions et sidebar

@@ -5,11 +5,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Client;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskComment;
 use App\Models\TimeEntry;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -21,26 +23,27 @@ class TaskController extends Controller
     public function index(Request $request, ?Project $project = null)
     {
         $user = auth()->user();
+        $canViewAll = $user->can('tasks.view.all');
 
         if (! $user->can('tasks.view')) {
             abort(403, 'Vous n\'avez pas la permission de voir cette page.');
         }
 
-        $query = Task::with(['project', 'assignee', 'creator']);
+        // Contrainte de scope (tâches concernant l'utilisateur si pas de vue globale)
+        $scopeQuery = function ($q) use ($user, $canViewAll): void {
+            if (! $canViewAll) {
+                $q->where(function ($inner) use ($user) {
+                    $inner->where('assigned_to', $user->id)
+                        ->orWhere('created_by', $user->id)
+                        ->orWhereHas('project', fn ($pq) => $pq->where('project_manager_id', $user->id));
+                });
+            }
+        };
+
+        $query = Task::with(['project.client', 'assignee', 'creator'])->tap($scopeQuery);
 
         if ($project) {
             $query->where('project_id', $project->id);
-        }
-
-        // Restriction selon les permissions
-        if (! $user->can('tasks.view.all')) {
-            $query->where(function ($q) use ($user) {
-                $q->where('assigned_to', $user->id)
-                    ->orWhere('created_by', $user->id)
-                    ->orWhereHas('project', function ($pq) use ($user) {
-                        $pq->where('project_manager_id', $user->id);
-                    });
-            });
         }
 
         // Filtres
@@ -52,7 +55,17 @@ class TaskController extends Controller
             $query->where('priority', $request->priority);
         }
 
-        if ($request->filled('assigned_to') && $user->can('tasks.view.all')) {
+        if ($request->filled('project_id')) {
+            $query->where('project_id', $request->integer('project_id'));
+        }
+
+        if ($request->filled('client_id')) {
+            $query->whereHas('project', function ($q) use ($request) {
+                $q->where('client_id', $request->integer('client_id'));
+            });
+        }
+
+        if ($request->filled('assigned_to') && $canViewAll) {
             $query->where('assigned_to', $request->assigned_to);
         }
 
@@ -63,13 +76,15 @@ class TaskController extends Controller
             });
         }
 
-        $tasks = $query->orderBy('order')->paginate(20);
+        $tasks = $query->orderBy('order')->paginate(20)->withQueryString();
 
-        // Statistiques pour la vue
+        // Statistiques scoped au périmètre de l'utilisateur
+        $sb = Task::query()->tap($scopeQuery);
         $stats = [
-            'in_progress' => Task::where('status', Task::STATUS_IN_PROGRESS)->count(),
-            'completed' => Task::where('status', Task::STATUS_COMPLETED)->count(),
-            'overdue' => Task::overdue()->count(),
+            'total' => (clone $sb)->count(),
+            'in_progress' => (clone $sb)->where('status', Task::STATUS_IN_PROGRESS)->count(),
+            'completed' => (clone $sb)->where('status', Task::STATUS_COMPLETED)->count(),
+            'overdue' => (clone $sb)->overdue()->count(),
         ];
 
         $statuses = [
@@ -90,7 +105,53 @@ class TaskController extends Controller
 
         $users = User::all();
 
-        return view('admin.tasks.index', compact('tasks', 'statuses', 'priorities', 'users', 'project', 'stats'));
+        $projectsQuery = Project::query()
+            ->with('client')
+            ->orderBy('name');
+
+        if ($project) {
+            $projectsQuery->where('id', $project->id);
+        }
+
+        if (! $user->can('tasks.view.all')) {
+            $projectsQuery->where(function ($q) use ($user) {
+                $q->where('project_manager_id', $user->id)
+                    ->orWhereHas('tasks', function ($tq) use ($user) {
+                        $tq->where('assigned_to', $user->id)
+                            ->orWhere('created_by', $user->id);
+                    });
+            });
+        }
+
+        $projects = $projectsQuery->get();
+
+        $clientsQuery = Client::query()
+            ->whereIn('id', $projects->pluck('client_id')->filter()->unique()->values())
+            ->orderBy('name');
+
+        $clients = $clientsQuery->get();
+
+        $filters = [
+            'search' => $request->string('search')->toString(),
+            'status' => $request->string('status')->toString(),
+            'priority' => $request->string('priority')->toString(),
+            'assigned_to' => $request->string('assigned_to')->toString(),
+            'project_id' => $request->string('project_id')->toString(),
+            'client_id' => $request->string('client_id')->toString(),
+        ];
+
+        return view('admin.tasks.index', compact(
+            'tasks',
+            'statuses',
+            'priorities',
+            'users',
+            'project',
+            'stats',
+            'projects',
+            'clients',
+            'filters',
+            'canViewAll'
+        ));
     }
 
     /**
@@ -99,6 +160,43 @@ class TaskController extends Controller
     public function globalIndex(Request $request)
     {
         return $this->index($request, null);
+    }
+
+    /**
+     * Retourne les tâches parentes (sans parent) d'un projet en JSON pour le sélecteur.
+     */
+    public function parentTasksJson(Project $project): JsonResponse
+    {
+        $user = auth()->user();
+
+        if (! $user->can('tasks.create')) {
+            abort(403);
+        }
+
+        $tasks = $project->tasks()
+            ->whereNull('parent_id')
+            ->orderBy('title')
+            ->get(['id', 'title', 'task_number']);
+
+        return response()->json($tasks);
+    }
+
+    /**
+     * Retourne les projets accessibles à l'utilisateur pour le sélecteur de tâche.
+     */
+    private function accessibleProjects(\App\Models\User $user): \Illuminate\Database\Eloquent\Collection
+    {
+        $query = Project::with(['client', 'projectManager'])->active();
+
+        if (! $user->can('projects.view.all')) {
+            $query->where(function ($q) use ($user) {
+                $q->where('project_manager_id', $user->id)
+                  ->orWhereHas('tasks', fn ($tq) => $tq->where('assigned_to', $user->id)
+                      ->orWhere('created_by', $user->id));
+            });
+        }
+
+        return $query->orderBy('name')->get();
     }
 
     /**
@@ -112,7 +210,7 @@ class TaskController extends Controller
             abort(403, 'Vous n\'avez pas la permission de créer une tâche.');
         }
 
-        $projects = Project::active()->get();
+        $projects = $this->accessibleProjects($user);
         $users = User::all();
 
         $taskTypes = [
@@ -158,7 +256,7 @@ class TaskController extends Controller
             abort(403, 'Vous n\'avez pas la permission de créer une tâche.');
         }
 
-        $projects = Project::active()->get();
+        $projects = $this->accessibleProjects($user);
         $users = User::all();
 
         $taskTypes = [
@@ -551,21 +649,138 @@ class TaskController extends Controller
     }
 
     /**
-     * Mettre à jour l'ordre via Kanban
+     * Mettre à jour l'ordre et/ou le statut via Kanban.
+     *
+     * Deux modes sont supportés :
+     *  - Changement de colonne (drag cross-colonne) :
+     *      Payload : { task_id: int, status: string, order?: int }
+     *  - Réordonnancement dans une même colonne :
+     *      Payload : { tasks: [id1, id2, id3, ...], status?: string }
      */
     public function updateOrder(Request $request)
     {
         $user = auth()->user();
 
         if (! $user->can('tasks.edit')) {
-            return response()->json(['error' => 'Non autorisé'], 403);
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de modifier une tâche.',
+            ], 403);
         }
 
-        foreach ($request->tasks as $index => $taskId) {
-            Task::where('id', $taskId)->update(['order' => $index]);
-        }
+        $validStatuses = [
+            Task::STATUS_TODO,
+            Task::STATUS_IN_PROGRESS,
+            Task::STATUS_REVIEW,
+            Task::STATUS_APPROVED,
+            Task::STATUS_REJECTED,
+            Task::STATUS_COMPLETED,
+            Task::STATUS_CANCELLED,
+        ];
 
-        return response()->json(['success' => true]);
+        $validated = $request->validate([
+            'task_id' => 'nullable|integer|exists:tasks,id',
+            'status' => ['nullable', 'string', 'in:'.implode(',', $validStatuses)],
+            'order' => 'nullable|integer|min:0',
+            'tasks' => 'nullable|array',
+            'tasks.*' => 'integer|exists:tasks,id',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $updatedTask = null;
+
+            // --- Mode 1 : changement de colonne (statut) ---
+            if (! empty($validated['task_id']) && ! empty($validated['status'])) {
+                $task = Task::findOrFail($validated['task_id']);
+
+                // Vérification d'accès niveau tâche
+                if (! $user->can('tasks.view.all')) {
+                    $isAssignee = $task->assigned_to === $user->id;
+                    $isCreator = $task->created_by === $user->id;
+                    $isProjectManager = optional($task->project)->project_manager_id === $user->id;
+
+                    if (! $isAssignee && ! $isCreator && ! $isProjectManager) {
+                        DB::rollBack();
+
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Vous n\'avez pas accès à cette tâche.',
+                        ], 403);
+                    }
+                }
+
+                $oldStatus = $task->status;
+
+                $task->status = $validated['status'];
+                if (array_key_exists('order', $validated) && $validated['order'] !== null) {
+                    $task->order = (int) $validated['order'];
+                }
+
+                // Champs additionnels selon la transition
+                if ($oldStatus !== $task->status) {
+                    if ($task->status === Task::STATUS_IN_PROGRESS && empty($task->start_date)) {
+                        $task->start_date = now();
+                    }
+
+                    if ($task->status === Task::STATUS_COMPLETED) {
+                        $task->completed_at = $task->completed_at ?? now();
+                        $task->completed_by = $task->completed_by ?? $user->id;
+                        $task->is_approved = true;
+                    }
+                }
+
+                $task->save();
+
+                if ($oldStatus !== $task->status && $task->project) {
+                    $task->project->activities()->create([
+                        'user_id' => $user->id,
+                        'activity_type' => 'task_status_changed',
+                        'description' => "Statut de la tâche '{$task->title}' changé de ".
+                                           ($oldStatus ?? '—')." à {$task->status} par {$user->name}",
+                        'metadata' => [
+                            'task_id' => $task->id,
+                            'old_status' => $oldStatus,
+                            'new_status' => $task->status,
+                        ],
+                    ]);
+                }
+
+                $updatedTask = $task->fresh(['assignee']);
+            }
+
+            // --- Mode 2 : réordonnancement (bulk) ---
+            if (! empty($validated['tasks']) && is_array($validated['tasks'])) {
+                foreach ($validated['tasks'] as $index => $taskId) {
+                    $update = ['order' => $index];
+                    if (! empty($validated['status'])) {
+                        $update['status'] = $validated['status'];
+                    }
+                    Task::where('id', $taskId)->update($update);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Tâche mise à jour.',
+                'task' => $updatedTask ? [
+                    'id' => $updatedTask->id,
+                    'status' => $updatedTask->status,
+                    'status_label' => $updatedTask->status_label,
+                    'order' => $updatedTask->order,
+                ] : null,
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la mise à jour : '.$e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

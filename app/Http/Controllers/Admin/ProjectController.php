@@ -74,82 +74,104 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
-        $user = auth()->user();
+        $user       = auth()->user();
+        $canViewAll = $user->can('projects.view.all');
 
         if (! $user->can('projects.view')) {
             abort(403, 'Vous n\'avez pas la permission de voir cette page.');
         }
 
-        $query = Project::with(['client', 'projectManager']);
+        // Contrainte de scope (projets concernant l'utilisateur si pas de vue globale)
+        $scopeQuery = function ($q) use ($user, $canViewAll): void {
+            if (! $canViewAll) {
+                $q->where(function ($inner) use ($user) {
+                    $inner->where('project_manager_id', $user->id)
+                          ->orWhereHas('tasks', fn ($tq) => $tq->where('assigned_to', $user->id)
+                              ->orWhere('created_by', $user->id));
+                });
+            }
+        };
 
-        // Restriction selon les permissions
-        if (! $user->can('projects.view.all')) {
-            $query->where('project_manager_id', $user->id);
-        }
+        $query = Project::with(['client', 'projectManager'])->tap($scopeQuery);
 
         // Filtres
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                  ->orWhere('project_number', 'like', '%'.$request->search.'%');
+            });
         }
 
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         if ($request->filled('priority')) {
             $query->where('priority', $request->priority);
         }
 
-        if ($request->filled('project_manager_id') && $user->can('projects.view.all')) {
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('client_id')) {
+            $query->where('client_id', $request->integer('client_id'));
+        }
+
+        if ($request->filled('project_manager_id') && $canViewAll) {
             $query->where('project_manager_id', $request->project_manager_id);
         }
 
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%'.$request->search.'%')
-                    ->orWhere('project_number', 'like', '%'.$request->search.'%');
-            });
-        }
+        $projects = $query->latest()->paginate(15)->withQueryString();
 
-        $projects = $query->latest()->paginate(15);
-
+        // Statistiques scoped au périmètre de l'utilisateur
+        $sb    = Project::query()->tap($scopeQuery);
         $stats = [
-            'total' => Project::count(),
-            'active' => Project::whereNotIn('status', ['completed', 'cancelled'])->count(),
-            'completed' => Project::where('status', 'completed')->count(),
-            'on_hold' => Project::where('status', 'review')->count(),
+            'total'     => (clone $sb)->count(),
+            'active'    => (clone $sb)->whereNotIn('status', ['completed', 'cancelled'])->count(),
+            'completed' => (clone $sb)->where('status', 'completed')->count(),
+            'on_hold'   => (clone $sb)->where('status', 'review')->count(),
         ];
 
         $statuses = [
-            'planning' => 'Planification',
+            'planning'    => 'Planification',
             'in_progress' => 'En cours',
-            'review' => 'En revue',
-            'completed' => 'Terminé',
-            'cancelled' => 'Annulé',
+            'review'      => 'En revue',
+            'completed'   => 'Terminé',
+            'cancelled'   => 'Annulé',
         ];
 
         $types = [
-            'web' => 'Site Web / App Web',
-            'mobile' => 'Application Mobile',
+            'web'      => 'Site Web / App Web',
+            'mobile'   => 'Application Mobile',
             'software' => 'Logiciel Desktop',
-            'other' => 'Autre',
+            'other'    => 'Autre',
         ];
 
         $priorities = [
-            'low' => 'Basse',
-            'medium' => 'Moyenne',
-            'high' => 'Haute',
+            'low'      => 'Basse',
+            'medium'   => 'Moyenne',
+            'high'     => 'Haute',
             'critical' => 'Critique',
         ];
 
-        // Récupérer tous les chefs de projet potentiels (utilisateurs avec permission de gérer des projets)
-        $projectManagers = User::whereHas('permissions', function ($query) {
-            $query->where('name', 'projects.view.all');
-        })->orWhereHas('permissions', function ($query) {
-            $query->where('name', 'projects.create');
-        })->get();
+        $clients = Client::active()->orderBy('name')->get();
 
-        return view('admin.projects.index', compact('projects', 'statuses', 'types', 'priorities', 'projectManagers', 'stats'));
+        $projectManagers = User::permission(['projects.view.all', 'projects.create', 'projects.edit'])->get();
+
+        $filters = [
+            'search'             => $request->string('search')->toString(),
+            'status'             => $request->string('status')->toString(),
+            'priority'           => $request->string('priority')->toString(),
+            'type'               => $request->string('type')->toString(),
+            'client_id'          => $request->string('client_id')->toString(),
+            'project_manager_id' => $request->string('project_manager_id')->toString(),
+        ];
+
+        return view('admin.projects.index', compact(
+            'projects', 'statuses', 'types', 'priorities',
+            'projectManagers', 'stats', 'clients', 'filters', 'canViewAll'
+        ));
     }
 
     /**
@@ -165,10 +187,8 @@ class ProjectController extends Controller
 
         $clients = Client::active()->get();
 
-        // Récupérer les utilisateurs qui peuvent être chefs de projet (ceux qui ont la permission de gérer des projets)
-        $projectManagers = User::whereHas('permissions', function ($query) {
-            $query->whereIn('name', ['projects.view.all', 'projects.create', 'projects.edit']);
-        })->get();
+        // Récupérer les utilisateurs qui peuvent être chefs de projet (via rôles ou permissions directes)
+        $projectManagers = User::permission(['projects.view.all', 'projects.create', 'projects.edit'])->get();
 
         $statuses = [
             'planning' => 'Planification',
@@ -262,14 +282,19 @@ class ProjectController extends Controller
         }
 
         // Vérifier si l'utilisateur a accès à ce projet spécifique
-        if (! $user->can('projects.view.all') && $project->project_manager_id !== $user->id) {
-            $hasTask = $project->tasks()->where('assigned_to', $user->id)->exists();
-            if (! $hasTask) {
-                abort(403, 'Vous n\'avez pas accès à ce projet.');
-            }
+        if (! $user->can('projects.view.all') && ! $project->isMember($user->id)) {
+            abort(403, 'Vous n\'avez pas accès à ce projet.');
         }
 
-        $project->load(['client', 'projectManager', 'tasks.assignee', 'meetings', 'activities.user']);
+        $project->load([
+            'client',
+            'projectManager',
+            'tasks.assignee',
+            'meetings',
+            'activities.user',
+            'members',
+            'documents.uploader',
+        ]);
 
         // Statistiques
         $stats = [
@@ -289,7 +314,11 @@ class ProjectController extends Controller
             ->pluck('total', 'status')
             ->toArray();
 
-        return view('admin.projects.show', compact('project', 'stats', 'taskStatsByStatus'));
+        $allUsers = User::orderBy('name')->get();
+        $memberIds = $project->members->pluck('id')->push($project->project_manager_id)->filter()->unique();
+        $nonMembers = $allUsers->whereNotIn('id', $memberIds->toArray())->values();
+
+        return view('admin.projects.show', compact('project', 'stats', 'taskStatsByStatus', 'nonMembers'));
     }
 
     /**
@@ -309,9 +338,7 @@ class ProjectController extends Controller
 
         $clients = Client::active()->get();
 
-        $projectManagers = User::whereHas('permissions', function ($query) {
-            $query->whereIn('name', ['projects.view.all', 'projects.create', 'projects.edit']);
-        })->get();
+        $projectManagers = User::permission(['projects.view.all', 'projects.create', 'projects.edit'])->get();
 
         $statuses = [
             'planning' => 'Planification',
