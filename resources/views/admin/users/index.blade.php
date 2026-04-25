@@ -421,13 +421,21 @@
     }
 
     .badge-inactive {
-        background: rgba(245, 158, 11, 0.1);
-        color: #f59e0b;
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
     }
 
     .badge-pending {
         background: rgba(245, 158, 11, 0.1);
         color: #f59e0b;
+    }
+
+    .action-btn.toggle-on:hover {
+        color: #ef4444;
+    }
+
+    .action-btn.toggle-off:hover {
+        color: #10b981;
     }
 
     .actions-cell {
@@ -629,14 +637,14 @@
         </div>
         <div class="stat-value" id="statActive">
             @php
-            $verifiedCount = 0;
+            $activeCount = 0;
             foreach($users as $u) {
-            if($u->email_verified_at) $verifiedCount++;
+                if($u->email_verified_at && $u->is_active) $activeCount++;
             }
-            echo $verifiedCount;
+            echo $activeCount;
             @endphp
         </div>
-        <div class="stat-label">Vérifiés</div>
+        <div class="stat-label">Actifs</div>
     </div>
     <div class="stat-card">
         <div class="stat-header">
@@ -646,7 +654,7 @@
             @php
             $pendingCount = 0;
             foreach($users as $u) {
-            if(!$u->email_verified_at) $pendingCount++;
+                if(!$u->email_verified_at) $pendingCount++;
             }
             echo $pendingCount;
             @endphp
@@ -685,7 +693,8 @@
         <div>
             <select id="statusFilter" class="filter-select">
                 <option value="">Tous statuts</option>
-                <option value="verified">Vérifié</option>
+                <option value="active">Actif</option>
+                <option value="inactive">Inactif</option>
                 <option value="pending">En attente d'invitation</option>
             </select>
         </div>
@@ -709,7 +718,8 @@
             @forelse($users as $index => $user)
             <tr class="table-row" data-id="{{ $user->id }}" data-name="{{ strtolower($user->name) }}"
                 data-email="{{ strtolower($user->email) }}" data-roles="{{ $user->roles->pluck('name')->implode(',') }}"
-                data-status="{{ $user->email_verified_at ? 'verified' : 'pending' }}"
+                data-status="{{ !$user->email_verified_at ? 'pending' : ($user->is_active ? 'active' : 'inactive') }}"
+                data-active="{{ $user->is_active ? '1' : '0' }}"
                 style="animation-delay: {{ $index * 0.03 }}s;">
                 <td>
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -743,13 +753,17 @@
                     </div>
                 </td>
                 <td>
-                    @if($user->email_verified_at)
+                    @if(!$user->email_verified_at)
+                    <span class="badge badge-pending">
+                        <i class="fas fa-clock"></i> En attente
+                    </span>
+                    @elseif($user->is_active)
                     <span class="badge badge-active">
-                        <i class="fas fa-check-circle"></i> Vérifié
+                        <i class="fas fa-check-circle"></i> Actif
                     </span>
                     @else
-                    <span class="badge badge-pending">
-                        <i class="fas fa-clock"></i> En attente d'invitation
+                    <span class="badge badge-inactive">
+                        <i class="fas fa-ban"></i> Inactif
                     </span>
                     @endif
                 </td>
@@ -770,6 +784,18 @@
                             <i class="fas fa-key"></i>
                         </button>
                         @if($user->id !== auth()->id())
+                        @can('users.toggle-status')
+                        @if($user->email_verified_at)
+                        <button type="button"
+                            class="action-btn {{ $user->is_active ? 'toggle-on' : 'toggle-off' }} toggle-status-btn"
+                            data-id="{{ $user->id }}"
+                            data-name="{{ $user->name }}"
+                            data-active="{{ $user->is_active ? '1' : '0' }}"
+                            title="{{ $user->is_active ? 'Désactiver le compte' : 'Activer le compte' }}">
+                            <i class="fas fa-{{ $user->is_active ? 'user-slash' : 'user-check' }}"></i>
+                        </button>
+                        @endif
+                        @endcan
                         <button type="button" class="action-btn delete delete-btn" data-id="{{ $user->id }}"
                             data-name="{{ $user->name }}" title="Supprimer">
                             <i class="fas fa-trash"></i>
@@ -989,6 +1015,57 @@
         });
     }
 
+    // ==================== TOGGLE STATUS ====================
+    function initToggleStatusButtons() {
+        var buttons = document.querySelectorAll('.toggle-status-btn');
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].removeEventListener('click', handleToggleClick);
+            buttons[i].addEventListener('click', handleToggleClick);
+        }
+    }
+
+    function handleToggleClick() {
+        var id = this.dataset.id;
+        var name = this.dataset.name;
+        var isActive = this.dataset.active === '1';
+        openModal(
+            isActive ? 'Désactiver le compte' : 'Activer le compte',
+            isActive
+                ? 'Êtes-vous sûr de vouloir désactiver le compte de "' + name + '" ?'
+                : 'Êtes-vous sûr de vouloir activer le compte de "' + name + '" ?',
+            isActive ? 'L\'utilisateur ne pourra plus se connecter.' : '',
+            isActive ? 'Désactiver' : 'Activer',
+            isActive ? 'btn-danger' : 'btn-info',
+            function() { toggleStatus(id); }
+        );
+    }
+
+    function toggleStatus(id) {
+        var url = '{{ route("admin.users.toggle-status", ":id") }}'.replace(':id', id);
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(function() { location.reload(); }, 800);
+            } else {
+                showToast(data.message || 'Une erreur est survenue', 'error');
+            }
+        })
+        .catch(function() {
+            showToast('Une erreur est survenue', 'error');
+        });
+    }
+
     // ==================== SUPPRESSION ====================
     function initDeleteButtons() {
         var buttons = document.querySelectorAll('.delete-btn');
@@ -1077,9 +1154,9 @@
 
             if (show) {
                 visibleCount++;
-                if (status === 'verified') {
+                if (status === 'active') {
                     verifiedCount++;
-                } else {
+                } else if (status === 'pending') {
                     pendingCount++;
                 }
             }
@@ -1112,6 +1189,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         initResendInvitationButtons();
         initResetPasswordButtons();
+        initToggleStatusButtons();
         initDeleteButtons();
     });
 

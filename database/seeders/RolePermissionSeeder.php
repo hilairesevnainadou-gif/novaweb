@@ -521,11 +521,13 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($testUsers as $userData) {
-            $user = User::firstOrCreate(
+            $user = User::updateOrCreate(
                 ['email' => $userData['email']],
                 [
-                    'name'     => $userData['name'],
-                    'password' => bcrypt($userData['password']),
+                    'name'              => $userData['name'],
+                    'password'          => bcrypt($userData['password']),
+                    'email_verified_at' => now(),
+                    'is_active'         => true,
                 ]
             );
             if (! $user->hasRole($userData['role'])) {

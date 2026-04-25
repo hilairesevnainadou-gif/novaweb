@@ -535,6 +535,13 @@
                 <i class="fas fa-lock"></i>
                 <span>Sécurité & Mot de passe</span>
             </div>
+            <div class="profile-nav-item" data-section="2fa">
+                <i class="fas fa-shield-alt"></i>
+                <span>Double authentification</span>
+                @if(Auth::user()->two_factor_confirmed_at)
+                    <span style="margin-left:auto;font-size:0.65rem;background:rgba(16,185,129,0.15);color:#10b981;padding:0.1rem 0.4rem;border-radius:9999px;">ON</span>
+                @endif
+            </div>
         </nav>
     </aside>
 
@@ -607,6 +614,98 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Section 2FA -->
+        <div id="section-2fa" class="profile-section">
+            <div class="section-header">
+                <h2><i class="fas fa-shield-alt"></i> Double authentification (2FA)</h2>
+                <p>Sécurisez votre compte avec une application d'authentification (Google Authenticator, Authy…)</p>
+            </div>
+            <div class="section-body">
+
+                @php $user2fa = Auth::user(); @endphp
+
+                {{-- ── État : 2FA confirmée ────────────────────────────────── --}}
+                @if($user2fa->two_factor_confirmed_at)
+                <div class="alert alert-success" style="margin-bottom:1.25rem;">
+                    <i class="fas fa-check-circle"></i>
+                    <span>La double authentification est <strong>activée</strong> sur votre compte.</span>
+                </div>
+
+                {{-- Codes de récupération --}}
+                <div style="margin-bottom:1.5rem;">
+                    <h3 style="font-size:0.875rem;font-weight:600;color:var(--text-primary);margin:0 0 0.5rem 0;">Codes de récupération</h3>
+                    <p style="font-size:0.8rem;color:var(--text-secondary);margin:0 0 0.75rem 0;">Conservez ces codes dans un endroit sûr. Ils vous permettent d'accéder à votre compte si vous perdez votre téléphone.</p>
+                    <button type="button" onclick="loadRecoveryCodes()" class="btn-secondary" style="font-size:0.8rem;padding:0.5rem 1rem;border-radius:0.5rem;cursor:pointer;display:inline-flex;align-items:center;gap:0.5rem;">
+                        <i class="fas fa-eye"></i> Afficher les codes
+                    </button>
+                    <button type="button" onclick="regenerateRecoveryCodes()" style="font-size:0.8rem;padding:0.5rem 1rem;border-radius:0.5rem;cursor:pointer;display:inline-flex;align-items:center;gap:0.5rem;background:none;border:1px solid var(--border-medium);color:var(--text-secondary);margin-left:0.5rem;">
+                        <i class="fas fa-sync"></i> Régénérer
+                    </button>
+                    <div id="recovery-codes-list" style="display:none;margin-top:1rem;background:var(--bg-tertiary);border:1px solid var(--border-light);border-radius:0.5rem;padding:1rem;font-family:monospace;font-size:0.8rem;line-height:2;"></div>
+                </div>
+
+                {{-- Désactiver --}}
+                <div style="border-top:1px solid var(--border-light);padding-top:1.25rem;">
+                    <h3 style="font-size:0.875rem;font-weight:600;color:#ef4444;margin:0 0 0.5rem 0;">Désactiver la 2FA</h3>
+                    <p style="font-size:0.8rem;color:var(--text-secondary);margin:0 0 0.75rem 0;">Votre compte sera moins sécurisé.</p>
+                    <form method="POST" action="/user/two-factor-authentication" onsubmit="return confirm('Désactiver la double authentification ?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn-danger-outline" style="font-size:0.8rem;padding:0.5rem 1rem;border-radius:0.5rem;cursor:pointer;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3);display:inline-flex;align-items:center;gap:0.5rem;">
+                            <i class="fas fa-shield-virus"></i> Désactiver la 2FA
+                        </button>
+                    </form>
+                </div>
+
+                {{-- ── État : 2FA activée mais pas encore confirmée ─────────── --}}
+                @elseif($user2fa->two_factor_secret)
+                <div class="alert alert-warning" style="margin-bottom:1.25rem;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>La 2FA est en cours de configuration. Scannez le QR code et confirmez avec votre application.</span>
+                </div>
+
+                <div style="text-align:center;margin-bottom:1.5rem;">
+                    <div id="qr-code-container" style="display:inline-block;background:white;padding:1rem;border-radius:0.5rem;border:1px solid var(--border-light);">
+                        <div style="font-size:0.75rem;color:#666;margin-bottom:0.5rem;">Chargement du QR code…</div>
+                    </div>
+                </div>
+
+                <form method="POST" action="/user/confirmed-two-factor-authentication" style="max-width:320px;">
+                    @csrf
+                    <label class="form-label"><i class="fas fa-mobile-alt"></i> Code de confirmation</label>
+                    <input type="text" name="code" class="form-input" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code" required style="letter-spacing:0.2em;font-size:1.1rem;text-align:center;margin-bottom:0.75rem;">
+                    <div style="display:flex;gap:0.75rem;">
+                        <button type="submit" class="btn-primary" style="flex:1;">
+                            <i class="fas fa-check"></i> Confirmer
+                        </button>
+                        <form method="POST" action="/user/two-factor-authentication" style="flex:1;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" style="width:100%;padding:0.625rem 1rem;border-radius:0.5rem;background:var(--bg-tertiary);color:var(--text-secondary);border:1px solid var(--border-light);cursor:pointer;font-size:0.875rem;">
+                                Annuler
+                            </button>
+                        </form>
+                    </div>
+                </form>
+
+                {{-- ── État : 2FA non activée ───────────────────────────────── --}}
+                @else
+                <div style="max-width:480px;">
+                    <p style="color:var(--text-secondary);font-size:0.875rem;margin-bottom:1.25rem;">
+                        La double authentification ajoute une couche de sécurité supplémentaire. À chaque connexion, vous devrez saisir un code généré par votre application d'authentification.
+                    </p>
+                    <form method="POST" action="/user/two-factor-authentication">
+                        @csrf
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-shield-alt"></i> Activer la double authentification
+                        </button>
+                    </form>
+                </div>
+                @endif
+
             </div>
         </div>
 
@@ -800,5 +899,60 @@
 
     window.closeAvatarModal = closeAvatarModal;
     window.submitAvatar = submitAvatar;
+
+    // ── 2FA : charger QR code si section active ──────────────────────────
+    @if(Auth::user()->two_factor_secret && !Auth::user()->two_factor_confirmed_at)
+    document.addEventListener('DOMContentLoaded', function () {
+        loadQrCode();
+    });
+    @endif
+
+    function loadQrCode() {
+        fetch('/user/two-factor-qr-code', {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            const container = document.getElementById('qr-code-container');
+            if (container && data.svg) {
+                container.innerHTML = data.svg;
+            }
+        })
+        .catch(() => {});
+    }
+
+    function loadRecoveryCodes() {
+        fetch('/user/two-factor-recovery-codes', {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(codes => {
+            const el = document.getElementById('recovery-codes-list');
+            if (el) {
+                el.style.display = 'block';
+                el.innerHTML = Array.isArray(codes)
+                    ? codes.map(c => '<div>' + c + '</div>').join('')
+                    : '<div>Erreur de chargement.</div>';
+            }
+        })
+        .catch(() => showToast('Impossible de charger les codes.', 'error'));
+    }
+
+    function regenerateRecoveryCodes() {
+        if (!confirm('Régénérer les codes ? Les anciens codes seront invalides.')) { return; }
+        fetch('/user/two-factor-recovery-codes', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(r => { if (r.ok) { showToast('Codes régénérés.', 'success'); loadRecoveryCodes(); } })
+        .catch(() => showToast('Erreur lors de la régénération.', 'error'));
+    }
+
+    window.loadRecoveryCodes = loadRecoveryCodes;
+    window.regenerateRecoveryCodes = regenerateRecoveryCodes;
 </script>
 @endpush

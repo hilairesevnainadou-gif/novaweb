@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -309,30 +308,24 @@ protected function sendPasswordResetInvitation(User $user, UserInvitation $invit
      * Activer/Désactiver un utilisateur (optionnel)
      * Nécessite l'ajout d'un champ 'is_active' dans la table users
      */
-    public function toggleStatus(Request $request, User $user)
+    public function toggleStatus(Request $request, User $user): \Illuminate\Http\JsonResponse
     {
-        // Vérifier si le champ is_active existe dans la table
-        if (!Schema::hasColumn('users', 'is_active')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'La fonctionnalité n\'est pas disponible. Champ is_active manquant.'
-            ], 500);
-        }
-
         if ($user->id === auth()->id()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Vous ne pouvez pas modifier votre propre statut.'
+                'message' => 'Vous ne pouvez pas modifier votre propre statut.',
             ], 403);
         }
 
-        $user->is_active = !$user->is_active;
+        $user->is_active = ! $user->is_active;
         $user->save();
 
         return response()->json([
             'success' => true,
-            'message' => 'Statut de l\'utilisateur mis à jour avec succès.',
-            'is_active' => $user->is_active
+            'message' => $user->is_active
+                ? 'Compte activé avec succès.'
+                : 'Compte désactivé avec succès.',
+            'is_active' => $user->is_active,
         ]);
     }
 

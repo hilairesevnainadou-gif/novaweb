@@ -97,7 +97,7 @@ class ServiceController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:500',
             'full_description' => 'nullable|string',
@@ -105,10 +105,11 @@ class ServiceController extends Controller
             'icon_color' => 'required|string',
             'features' => 'nullable|array',
             'order' => 'nullable|integer',
-            'is_active' => 'boolean'
         ]);
 
-        Service::create($request->all());
+        $validated['is_active'] = $request->boolean('is_active');
+
+        Service::create($validated);
 
         return redirect()->route('admin.services.index')
             ->with('success', 'Service créé avec succès');
@@ -196,7 +197,7 @@ class ServiceController extends Controller
 
     public function update(Request $request, Service $service)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:500',
             'full_description' => 'nullable|string',
@@ -204,10 +205,11 @@ class ServiceController extends Controller
             'icon_color' => 'required|string',
             'features' => 'nullable|array',
             'order' => 'nullable|integer',
-            'is_active' => 'boolean'
         ]);
 
-        $service->update($request->all());
+        $validated['is_active'] = $request->boolean('is_active');
+
+        $service->update($validated);
 
         return redirect()->route('admin.services.index')
             ->with('success', 'Service mis à jour avec succès');
