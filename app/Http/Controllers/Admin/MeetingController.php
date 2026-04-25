@@ -24,6 +24,20 @@ class MeetingController extends Controller
             abort(403, 'Vous n\'avez pas la permission de voir cette page.');
         }
 
+        // Vérifier l'accès au projet pour les utilisateurs sans vue globale
+        if (! $user->can('meetings.view.all')) {
+            $hasAccess = $project->project_manager_id === $user->id
+                || $project->projectMembers()->where('user_id', $user->id)->exists()
+                || $project->tasks()->where(fn ($q) => $q
+                    ->where('assigned_to', $user->id)
+                    ->orWhere('created_by', $user->id)
+                )->exists();
+
+            if (! $hasAccess) {
+                abort(403, 'Vous n\'avez pas accès aux réunions de ce projet.');
+            }
+        }
+
         $meetings = Meeting::with(['project', 'organizer'])
             ->where('project_id', $project->id)
             ->orderBy('meeting_date', 'desc')
@@ -52,13 +66,14 @@ class MeetingController extends Controller
             abort(403);
         }
 
-        // Contrainte de scope (réunions concernant l'utilisateur si pas de vue globale)
+        // Scope : réunions où l'utilisateur est organisateur ou participant
+        // Les utilisateurs avec meetings.view.all voient toutes les réunions
         $scopeQuery = function ($q) use ($user, $canViewAll): void {
             if (! $canViewAll) {
                 $q->where(function ($inner) use ($user) {
                     $inner->where('organizer_id', $user->id)
                           ->orWhereJsonContains('attendees', $user->id)
-                          ->orWhereHas('project', fn ($pq) => $pq->where('project_manager_id', $user->id));
+                          ->orWhereJsonContains('attendees', (string) $user->id);
                 });
             }
         };
@@ -109,7 +124,7 @@ class MeetingController extends Controller
         }
 
         $meetings = $query->orderBy('meeting_date', 'desc')->paginate(15)->withQueryString();
-        $projects = Project::active()->get();
+        $projects = $this->accessibleProjects($user);
 
         return view('admin.meetings.global-index', compact('meetings', 'projects', 'stats', 'canViewAll'));
     }
@@ -124,6 +139,7 @@ class MeetingController extends Controller
         if (! $user->can('projects.view.all')) {
             $query->where(function ($q) use ($user) {
                 $q->where('project_manager_id', $user->id)
+                  ->orWhereHas('projectMembers', fn ($pmq) => $pmq->where('user_id', $user->id))
                   ->orWhereHas('tasks', fn ($tq) => $tq->where('assigned_to', $user->id)
                       ->orWhere('created_by', $user->id));
             });
@@ -175,6 +191,10 @@ class MeetingController extends Controller
 
         $project = Project::findOrFail($validated['project_id']);
 
+        if (isset($validated['attendees'])) {
+            $validated['attendees'] = array_map('intval', $validated['attendees']);
+        }
+
         $validated['organizer_id'] = $user->id;
         $validated['status']       = Meeting::STATUS_SCHEDULED;
 
@@ -216,6 +236,7 @@ class MeetingController extends Controller
         // Vérifier que l'utilisateur a accès à ce projet s'il n'a pas la vue globale
         if (! $user->can('meetings.view.all')) {
             $hasAccess = $project->project_manager_id === $user->id
+                || $project->projectMembers()->where('user_id', $user->id)->exists()
                 || $project->tasks()->where(function ($q) use ($user) {
                     $q->where('assigned_to', $user->id)
                       ->orWhere('created_by', $user->id);
@@ -226,8 +247,9 @@ class MeetingController extends Controller
             }
         }
 
-        // Membres du projet (chef + intervenants sur les tâches)
+        // Membres du projet (membres explicites + chef + intervenants sur les tâches)
         $projectMemberIds = collect([$project->project_manager_id])
+            ->merge($project->projectMembers()->pluck('user_id'))
             ->merge($project->tasks()->pluck('assigned_to')->filter())
             ->merge($project->tasks()->pluck('created_by')->filter())
             ->unique()
@@ -264,6 +286,10 @@ class MeetingController extends Controller
             'attendees' => 'nullable|array',
             'attendees.*' => 'exists:users,id',
         ]);
+
+        if (isset($validated['attendees'])) {
+            $validated['attendees'] = array_map('intval', $validated['attendees']);
+        }
 
         $validated['project_id'] = $project->id;
         $validated['organizer_id'] = $user->id;
@@ -307,11 +333,12 @@ class MeetingController extends Controller
 
         // Vérifier l'accès à la réunion
         if (! $user->can('meetings.view.all')) {
-            $isOrganizer = $meeting->organizer_id == $user->id;
-            $isAttendee = in_array($user->id, $meeting->attendees ?? []);
-            $isProjectManager = $meeting->project->project_manager_id == $user->id;
+            $isOrganizer      = $meeting->organizer_id == $user->id;
+            $isAttendee       = in_array($user->id, $meeting->attendees ?? []);
+            $isProjectManager = $meeting->project?->project_manager_id == $user->id;
+            $isProjectMember  = $meeting->project?->projectMembers()->where('user_id', $user->id)->exists();
 
-            if (! $isOrganizer && ! $isAttendee && ! $isProjectManager) {
+            if (! $isOrganizer && ! $isAttendee && ! $isProjectManager && ! $isProjectMember) {
                 abort(403, 'Vous n\'avez pas accès à cette réunion.');
             }
         }
@@ -370,6 +397,10 @@ class MeetingController extends Controller
             'decisions' => 'nullable|string',
             'action_items' => 'nullable|array',
         ]);
+
+        if (isset($validated['attendees'])) {
+            $validated['attendees'] = array_map('intval', $validated['attendees']);
+        }
 
         $meeting->update($validated);
 

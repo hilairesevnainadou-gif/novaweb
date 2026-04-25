@@ -380,39 +380,171 @@
     }
     .cards-pagination { margin-top: 1rem; display: flex; justify-content: flex-end; }
 
-    /* ─── Modal ─── */
+    /* ─── Modal (base) ─── */
     .modal-overlay {
         position: fixed; inset: 0;
         background: rgba(0,0,0,.65);
-        backdrop-filter: blur(3px);
+        backdrop-filter: blur(4px);
         display: flex; align-items: center; justify-content: center;
         z-index: 9999;
         opacity: 0; visibility: hidden;
-        transition: all .25s;
+        transition: opacity .22s, visibility .22s;
+        padding: 1rem;
     }
     .modal-overlay.active { opacity: 1; visibility: visible; }
     .modal-box {
         background: var(--bg-elevated);
         border: 1px solid var(--border-medium);
-        border-radius: 14px;
-        width: 90%; max-width: 420px;
-        transform: scale(.96);
-        transition: transform .25s;
-        box-shadow: var(--shadow-2xl);
+        border-radius: 16px;
+        width: 100%; max-width: 420px;
+        transform: translateY(12px) scale(.97);
+        transition: transform .25s cubic-bezier(.22,1,.36,1);
+        box-shadow: 0 24px 64px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.05);
+        overflow: hidden;
     }
-    .modal-overlay.active .modal-box { transform: scale(1); }
-    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-light); }
-    .modal-header h3 { font-size: .95rem; font-weight: 700; margin: 0; color: var(--text-primary); }
-    .modal-close { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 1rem; padding: .25rem; }
-    .modal-close:hover { color: var(--text-primary); }
-    .modal-body { padding: 1.25rem; font-size: .82rem; color: var(--text-secondary); line-height: 1.6; }
+    .modal-overlay.active .modal-box { transform: translateY(0) scale(1); }
+
+    .modal-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 1rem 1.1rem .9rem;
+        border-bottom: 1px solid var(--border-light);
+        background: var(--bg-secondary);
+    }
+    .modal-header h3 {
+        font-size: .9rem; font-weight: 700; margin: 0;
+        color: var(--text-primary);
+        display: flex; align-items: center; gap: .5rem;
+    }
+    .modal-header h3 .mh-icon {
+        width: 28px; height: 28px; border-radius: 8px;
+        background: rgba(99,102,241,.15);
+        display: flex; align-items: center; justify-content: center;
+        font-size: .75rem; color: #818cf8;
+    }
+    .modal-close {
+        width: 28px; height: 28px; border-radius: 7px;
+        background: var(--bg-tertiary); border: 1px solid var(--border-light);
+        color: var(--text-tertiary); cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .8rem; transition: all .15s;
+        flex-shrink: 0;
+    }
+    .modal-close:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-medium); }
+
+    .modal-body { font-size: .82rem; color: var(--text-secondary); line-height: 1.6; }
     .modal-warn { display: flex; align-items: center; gap: .5rem; margin-top: .75rem; font-size: .75rem; color: #fbbf24; }
-    .modal-footer { display: flex; justify-content: flex-end; gap: .6rem; padding: .9rem 1.25rem; border-top: 1px solid var(--border-light); }
+    .modal-footer {
+        display: flex; justify-content: flex-end; gap: .6rem;
+        padding: .85rem 1.1rem;
+        border-top: 1px solid var(--border-light);
+        background: var(--bg-secondary);
+    }
     .btn { display: inline-flex; align-items: center; gap: .35rem; padding: .46rem .9rem; border-radius: 8px; font-size: .78rem; font-weight: 700; cursor: pointer; border: none; transition: all .18s; font-family: inherit; }
     .btn-ghost  { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-medium); }
     .btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
     .btn-danger { background: #f43f5e; color: #fff; }
     .btn-danger:hover { background: #e11d48; }
+
+    /* ─── Modal projet : recherche ─── */
+    .mp-search-wrap {
+        padding: .85rem 1rem;
+        border-bottom: 1px solid var(--border-light);
+        background: var(--bg-secondary);
+    }
+    .mp-search-field {
+        display: flex; align-items: center; gap: .5rem;
+        padding: .5rem .75rem;
+        background: var(--bg-tertiary);
+        border: 1.5px solid var(--border-medium);
+        border-radius: 9px;
+        transition: border-color .18s, box-shadow .18s;
+    }
+    .mp-search-field:focus-within {
+        border-color: var(--brand-primary);
+        box-shadow: 0 0 0 3px rgba(99,102,241,.14);
+        background: var(--bg-elevated);
+    }
+    .mp-search-icon {
+        font-size: .72rem; color: var(--text-tertiary); flex-shrink: 0;
+        transition: color .18s;
+    }
+    .mp-search-field:focus-within .mp-search-icon { color: var(--brand-primary); }
+    .mp-search-input {
+        flex: 1; background: transparent; border: none; outline: none;
+        color: var(--text-primary); font-size: .82rem; font-family: inherit;
+        min-width: 0; line-height: 1.4;
+    }
+    .mp-search-input::placeholder { color: var(--text-disabled); font-size: .78rem; }
+    .mp-search-clear {
+        width: 18px; height: 18px; border-radius: 50%;
+        background: var(--border-medium); border: none;
+        color: var(--text-tertiary); cursor: pointer;
+        display: none; align-items: center; justify-content: center;
+        font-size: .58rem; flex-shrink: 0;
+        transition: all .15s;
+    }
+    .mp-search-clear.visible { display: flex; }
+    .mp-search-clear:hover { background: rgba(244,63,94,.18); color: #fb7185; }
+
+    /* ─── Modal projet : liste ─── */
+    .mp-list { max-height: 300px; overflow-y: auto; overscroll-behavior: contain; }
+    .mp-item {
+        display: flex; align-items: center; gap: .75rem;
+        padding: .72rem 1rem;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border-light);
+        transition: background .12s, padding-left .15s;
+        position: relative;
+    }
+    .mp-item:last-child { border-bottom: none; }
+    .mp-item:hover, .mp-item.focused { background: var(--bg-hover); padding-left: 1.2rem; }
+    .mp-item.focused { outline: none; }
+    .mp-dot {
+        width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+        box-shadow: 0 0 0 2px rgba(255,255,255,.08);
+    }
+    .mp-item-body { flex: 1; min-width: 0; }
+    .mp-item-name {
+        font-size: .82rem; font-weight: 600; color: var(--text-primary);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        line-height: 1.3;
+    }
+    .mp-item-sub {
+        font-size: .67rem; color: var(--text-tertiary); margin-top: .08rem;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mp-status-pill {
+        padding: .16rem .5rem; border-radius: 6px;
+        font-size: .6rem; font-weight: 700; flex-shrink: 0;
+        white-space: nowrap;
+    }
+    .mp-chevron { font-size: .62rem; color: var(--text-disabled); flex-shrink: 0; transition: color .12s, transform .12s; }
+    .mp-item:hover .mp-chevron, .mp-item.focused .mp-chevron { color: var(--brand-primary); transform: translateX(2px); }
+
+    .mp-empty {
+        padding: 2.5rem 1.5rem; text-align: center; color: var(--text-tertiary);
+    }
+    .mp-empty i { font-size: 1.8rem; display: block; margin-bottom: .65rem; opacity: .3; }
+    .mp-empty p { margin: 0; font-size: .78rem; }
+
+    /* ─── Modal projet : footer ─── */
+    .mp-footer {
+        display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+        padding: .7rem 1rem;
+        border-top: 1px solid var(--border-light);
+        background: var(--bg-secondary);
+    }
+    .mp-footer-hint {
+        font-size: .67rem; color: var(--text-tertiary);
+        display: flex; align-items: center; gap: .3rem;
+    }
+    .mp-kbd {
+        display: inline-flex; align-items: center; justify-content: center;
+        padding: .05rem .35rem; border-radius: 4px;
+        background: var(--bg-tertiary); border: 1px solid var(--border-medium);
+        font-size: .58rem; font-weight: 700; color: var(--text-secondary);
+        font-family: monospace;
+    }
 
     /* ─── Responsive général ─── */
     @media (max-width: 1100px) { .stats-row { grid-template-columns: repeat(3, 1fr); } .cards-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -456,13 +588,109 @@
         </p>
     </div>
     @can('meetings.create')
-    @if($projects->count())
-    <a href="{{ route('admin.projects.meetings.create', $projects->first()->id) }}" class="btn-primary">
+    <button id="btn-new-meeting" class="btn-primary" type="button">
         <i class="fas fa-plus"></i> Planifier une réunion
-    </a>
-    @endif
+    </button>
     @endcan
 </div>
+
+@can('meetings.create')
+{{-- ─── Modal : choisir un projet ─── --}}
+<div id="modal-project" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="mp-title">
+    <div class="modal-box" style="max-width:500px;">
+
+        {{-- En-tête --}}
+        <div class="modal-header">
+            <h3 id="mp-title">
+                <span class="mh-icon"><i class="fas fa-folder-open"></i></span>
+                Choisir un projet
+            </h3>
+            <button type="button" class="modal-close" id="modal-close-btn" aria-label="Fermer">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+
+        {{-- Barre de recherche --}}
+        <div class="mp-search-wrap">
+            <div class="mp-search-field">
+                <i class="fas fa-magnifying-glass mp-search-icon"></i>
+                <input type="text" id="modal-search" class="mp-search-input"
+                       placeholder="Rechercher un projet…" autocomplete="off" role="searchbox">
+                <button type="button" id="mp-search-clear" class="mp-search-clear" aria-label="Effacer">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+
+        {{-- Liste des projets --}}
+        <div class="modal-body" style="padding:0;">
+            <div id="modal-project-list" class="mp-list">
+                @forelse($projects as $proj)
+                @php
+                    $dotColor = match($proj->status) {
+                        'planning'    => '#94a3b8',
+                        'in_progress' => '#60a5fa',
+                        'review'      => '#fbbf24',
+                        'completed'   => '#34d399',
+                        default       => '#fb7185'
+                    };
+                    $pillBg = match($proj->status) {
+                        'planning'    => 'rgba(148,163,184,.15)',
+                        'in_progress' => 'rgba(96,165,250,.15)',
+                        'review'      => 'rgba(251,191,36,.15)',
+                        'completed'   => 'rgba(52,211,153,.15)',
+                        default       => 'rgba(251,113,133,.15)'
+                    };
+                @endphp
+                <div class="mp-item" tabindex="0" role="option"
+                     data-name="{{ $proj->name }}"
+                     data-url="{{ route('admin.projects.meetings.create', $proj) }}">
+                    <span class="mp-dot" style="background:{{ $dotColor }};"></span>
+                    <div class="mp-item-body">
+                        <div class="mp-item-name">{{ $proj->name }}</div>
+                        <div class="mp-item-sub">
+                            {{ $proj->project_number }}
+                            @if($proj->client)
+                                &nbsp;·&nbsp;{{ $proj->client->company_name ?? $proj->client->name }}
+                            @endif
+                        </div>
+                    </div>
+                    <span class="mp-status-pill" style="background:{{ $pillBg }};color:{{ $dotColor }};">
+                        {{ $proj->status_label }}
+                    </span>
+                    <i class="fas fa-chevron-right mp-chevron"></i>
+                </div>
+                @empty
+                <div class="mp-empty">
+                    <i class="fas fa-folder-open"></i>
+                    <p style="font-weight:600;margin-bottom:.25rem">Aucun projet disponible</p>
+                    <p>Vous n'êtes membre d'aucun projet actif.</p>
+                </div>
+                @endforelse
+            </div>
+
+            <div id="modal-no-result" class="mp-empty" style="display:none;">
+                <i class="fas fa-magnifying-glass"></i>
+                <p style="font-weight:600;margin-bottom:.25rem">Aucun résultat</p>
+                <p>Aucun projet ne correspond à votre recherche.</p>
+            </div>
+        </div>
+
+        {{-- Pied --}}
+        <div class="mp-footer">
+            <div class="mp-footer-hint">
+                <span class="mp-kbd">↑↓</span> naviguer
+                &nbsp;·&nbsp;
+                <span class="mp-kbd">↵</span> ouvrir
+                &nbsp;·&nbsp;
+                <span class="mp-kbd">Esc</span> fermer
+            </div>
+            <button type="button" class="btn btn-ghost" id="modal-cancel-btn">Annuler</button>
+        </div>
+
+    </div>
+</div>
+@endcan
 
 {{-- ─── Stats ─── --}}
 <div class="stats-row">
@@ -570,7 +798,7 @@
             </select>
         </div>
 
-        @if($canViewAll)
+        @if($projects->count())
         <div class="filter-group">
             <label class="filter-label"><i class="fas fa-folder" style="margin-right:.2rem"></i>Projet</label>
             <select name="project_id" class="fi">
@@ -582,7 +810,9 @@
                 @endforeach
             </select>
         </div>
+        @endif
 
+        @if($canViewAll)
         <div class="filter-group">
             <label class="filter-label"><i class="fas fa-user-tag" style="margin-right:.2rem"></i>Mon implication</label>
             <select name="my_role" class="fi">
@@ -602,9 +832,16 @@
                 <span style="font-size:.62rem;color:var(--text-tertiary);margin-right:.2rem">Filtres actifs :</span>
                 @foreach($activeFilters as $key => $val)
                     @if(!empty($filterLabels[$key]))
+                    @php
+                        $removeParams = $activeFilters;
+                        unset($removeParams[$key]);
+                        $removeUrl = route('admin.meetings.global-index') . ($removeParams ? ('?' . http_build_query($removeParams)) : '');
+                    @endphp
                     <span class="filter-tag">
-                        <i class="fas fa-xmark" style="font-size:.55rem;opacity:.7"></i>
                         {{ $filterLabels[$key] }}
+                        <a href="{{ $removeUrl }}" title="Retirer" style="color:inherit;opacity:.6;text-decoration:none;line-height:1;">
+                            <i class="fas fa-xmark" style="font-size:.55rem"></i>
+                        </a>
                     </span>
                     @endif
                 @endforeach
@@ -1030,7 +1267,6 @@
     };
 
     modal?.addEventListener('click', e => { if (e.target === modal) window.closeDelModal(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') window.closeDelModal(); });
 
     document.querySelectorAll('.ab-del').forEach(btn => {
         btn.addEventListener('click', () => openDelModal(btn.dataset.id, btn.dataset.title));
@@ -1057,6 +1293,109 @@
             window.closeDelModal();
         });
     });
+
+    /* ── Modal sélection projet ── */
+    const projectModal  = document.getElementById('modal-project');
+    const btnNewMeeting = document.getElementById('btn-new-meeting');
+    const modalSearch   = document.getElementById('modal-search');
+    const searchClear   = document.getElementById('mp-search-clear');
+    const projItems     = Array.from(document.querySelectorAll('.mp-item'));
+    const noResult      = document.getElementById('modal-no-result');
+    let focusedIdx      = -1;
+
+    function openProjectModal() {
+        if (!projectModal) return;
+        projectModal.classList.add('active');
+        projectModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        focusedIdx = -1;
+        if (modalSearch) {
+            modalSearch.value = '';
+            filterProjects('');
+            if (searchClear) searchClear.classList.remove('visible');
+            setTimeout(() => modalSearch.focus(), 80);
+        }
+    }
+
+    function closeProjectModal() {
+        if (!projectModal) return;
+        projectModal.classList.remove('active');
+        projectModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        focusedIdx = -1;
+        projItems.forEach(i => i.classList.remove('focused'));
+    }
+
+    function getVisibleItems() {
+        return projItems.filter(i => i.style.display !== 'none');
+    }
+
+    function setFocus(idx) {
+        const visible = getVisibleItems();
+        projItems.forEach(i => i.classList.remove('focused'));
+        if (idx < 0 || idx >= visible.length) { focusedIdx = -1; return; }
+        focusedIdx = idx;
+        visible[idx].classList.add('focused');
+        visible[idx].scrollIntoView({ block: 'nearest' });
+    }
+
+    function filterProjects(q) {
+        const lq = q.toLowerCase().trim();
+        let visible = 0;
+        projItems.forEach(item => {
+            const name = item.dataset.name.toLowerCase();
+            const matches = !lq || name.includes(lq);
+            item.style.display = matches ? '' : 'none';
+            item.classList.remove('focused');
+            if (matches) visible++;
+        });
+        focusedIdx = -1;
+        if (noResult) noResult.style.display = (visible === 0 && projItems.length > 0) ? '' : 'none';
+    }
+
+    modalSearch?.addEventListener('input', () => {
+        const val = modalSearch.value;
+        filterProjects(val);
+        if (searchClear) searchClear.classList.toggle('visible', val.length > 0);
+    });
+
+    searchClear?.addEventListener('click', () => {
+        modalSearch.value = '';
+        filterProjects('');
+        searchClear.classList.remove('visible');
+        modalSearch.focus();
+    });
+
+    modalSearch?.addEventListener('keydown', e => {
+        const visible = getVisibleItems();
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setFocus(Math.min(focusedIdx + 1, visible.length - 1));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setFocus(Math.max(focusedIdx - 1, 0));
+        } else if (e.key === 'Enter' && focusedIdx >= 0) {
+            e.preventDefault();
+            window.location.href = visible[focusedIdx].dataset.url;
+        }
+    });
+
+    projItems.forEach((item, i) => {
+        item.addEventListener('click', () => { window.location.href = item.dataset.url; });
+        item.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.location.href = item.dataset.url; }
+        });
+    });
+
+    btnNewMeeting?.addEventListener('click', openProjectModal);
+    document.getElementById('modal-close-btn')?.addEventListener('click', closeProjectModal);
+    document.getElementById('modal-cancel-btn')?.addEventListener('click', closeProjectModal);
+    projectModal?.addEventListener('click', e => { if (e.target === projectModal) closeProjectModal(); });
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeProjectModal(); window.closeDelModal(); }
+    });
+
 })();
 </script>
 @endpush

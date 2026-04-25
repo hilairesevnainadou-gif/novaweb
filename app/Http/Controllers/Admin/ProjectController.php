@@ -86,6 +86,7 @@ class ProjectController extends Controller
             if (! $canViewAll) {
                 $q->where(function ($inner) use ($user) {
                     $inner->where('project_manager_id', $user->id)
+                          ->orWhereHas('projectMembers', fn ($mq) => $mq->where('user_id', $user->id))
                           ->orWhereHas('tasks', fn ($tq) => $tq->where('assigned_to', $user->id)
                               ->orWhere('created_by', $user->id));
                 });
@@ -291,10 +292,15 @@ class ProjectController extends Controller
             'projectManager',
             'tasks.assignee',
             'meetings',
-            'activities.user',
             'members',
             'documents.uploader',
         ]);
+
+        $activities = $project->activities()
+            ->with('user')
+            ->latest()
+            ->paginate(15, ['*'], 'act_page')
+            ->withQueryString();
 
         // Statistiques
         $stats = [
@@ -318,7 +324,7 @@ class ProjectController extends Controller
         $memberIds = $project->members->pluck('id')->push($project->project_manager_id)->filter()->unique();
         $nonMembers = $allUsers->whereNotIn('id', $memberIds->toArray())->values();
 
-        return view('admin.projects.show', compact('project', 'stats', 'taskStatsByStatus', 'nonMembers'));
+        return view('admin.projects.show', compact('project', 'stats', 'taskStatsByStatus', 'nonMembers', 'activities'));
     }
 
     /**

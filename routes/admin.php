@@ -888,7 +888,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::prefix('{project}/meetings')->name('meetings.')->group(function () {
 
             Route::get('/', [MeetingController::class, 'index'])
-                ->middleware('permission:projects.view')
+                ->middleware('permission:meetings.view')
                 ->name('index');
 
             Route::get('/create', [MeetingController::class, 'create'])
@@ -976,7 +976,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::prefix('meetings')->name('meetings.')->group(function () {
 
         Route::get('/', [MeetingController::class, 'globalIndex'])
-            ->middleware('permission:projects.view')
+            ->middleware('permission:meetings.view')
             ->name('global-index');
 
         Route::get('/create', [MeetingController::class, 'createGlobal'])
@@ -988,7 +988,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             ->name('store');
 
         Route::get('/{meeting}', [MeetingController::class, 'show'])
-            ->middleware('permission:projects.view')
+            ->middleware('permission:meetings.view')
             ->name('show');
 
         Route::get('/{meeting}/edit', [MeetingController::class, 'edit'])

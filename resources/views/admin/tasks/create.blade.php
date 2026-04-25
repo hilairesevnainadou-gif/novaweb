@@ -689,7 +689,7 @@
 
 {{-- Page header --}}
 <div class="page-header">
-    <a href="{{ $hasProject ? route('admin.projects.tasks.index', $project) : route('admin.tasks.global-index') }}"
+<a href="{{ $hasProject ? route('admin.projects.tasks.index', $project) : route('admin.projects.index') }}"
        class="back-btn" title="Retour">
         <i class="fas fa-arrow-left"></i>
     </a>
@@ -979,7 +979,7 @@
 
                 {{-- Action Bar --}}
                 <div class="action-bar">
-                    <a href="{{ $hasProject ? route('admin.projects.tasks.index', $project) : route('admin.tasks.global-index') }}"
+                    <a href="{{ $hasProject ? route('admin.projects.tasks.index', $project) : route('admin.projects.index') }}"
                        class="btn btn-ghost">
                         <i class="fas fa-xmark"></i> Annuler
                     </a>

@@ -35,7 +35,9 @@ class TaskController extends Controller
                 $q->where(function ($inner) use ($user) {
                     $inner->where('assigned_to', $user->id)
                         ->orWhere('created_by', $user->id)
-                        ->orWhereHas('project', fn ($pq) => $pq->where('project_manager_id', $user->id));
+                        ->orWhereHas('project', fn ($pq) => $pq
+                            ->where('project_manager_id', $user->id)
+                            ->orWhereHas('projectMembers', fn ($mq) => $mq->where('user_id', $user->id)));
                 });
             }
         };
@@ -116,6 +118,7 @@ class TaskController extends Controller
         if (! $user->can('tasks.view.all')) {
             $projectsQuery->where(function ($q) use ($user) {
                 $q->where('project_manager_id', $user->id)
+                    ->orWhereHas('projectMembers', fn ($mq) => $mq->where('user_id', $user->id))
                     ->orWhereHas('tasks', function ($tq) use ($user) {
                         $tq->where('assigned_to', $user->id)
                             ->orWhere('created_by', $user->id);
@@ -191,6 +194,7 @@ class TaskController extends Controller
         if (! $user->can('projects.view.all')) {
             $query->where(function ($q) use ($user) {
                 $q->where('project_manager_id', $user->id)
+                  ->orWhereHas('projectMembers', fn ($pmq) => $pmq->where('user_id', $user->id))
                   ->orWhereHas('tasks', fn ($tq) => $tq->where('assigned_to', $user->id)
                       ->orWhere('created_by', $user->id));
             });

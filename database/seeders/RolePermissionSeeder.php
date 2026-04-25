@@ -345,6 +345,9 @@ class RolePermissionSeeder extends Seeder
 
                     'newsletter.view',
 
+                    // Réunions (ses propres uniquement)
+                    'meetings.view',
+
                     'profile.view', 'profile.edit',
                 ],
             ],
@@ -382,6 +385,12 @@ class RolePermissionSeeder extends Seeder
                     'billing.invoices.send',
                     'billing.payments.view', 'billing.payments.create',
                     'billing.payments.resend',
+
+                    // Réunions (ses propres — peut être invité à des réunions inter-équipes)
+                    'meetings.view', 'meetings.create', 'meetings.edit',
+
+                    // Projets & tâches (peut être membre d'un projet)
+                    'projects.view', 'tasks.view',
 
                     // Profil
                     'profile.view', 'profile.edit',
@@ -429,6 +438,9 @@ class RolePermissionSeeder extends Seeder
                     // Contacts
                     'contact.view', 'contact.reply',
 
+                    // Réunions (ses propres — peut être convoqué à des réunions)
+                    'meetings.view',
+
                     // Profil
                     'profile.view', 'profile.edit',
                 ],
@@ -450,6 +462,9 @@ class RolePermissionSeeder extends Seeder
 
                     // Devices (vue)
                     'devices.view',
+
+                    // Réunions (ses propres — peut être convoqué à des réunions)
+                    'meetings.view',
 
                     // Profil
                     'profile.view', 'profile.edit',

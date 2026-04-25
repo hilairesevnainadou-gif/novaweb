@@ -439,9 +439,9 @@
         ? route('admin.projects.meetings.store', $project)
         : route('admin.meetings.store');
 
-    $backUrl = $hasProject
+$backUrl = $hasProject
         ? route('admin.projects.meetings.index', $project)
-        : route('admin.meetings.global-index');
+        : route('admin.projects.index');
 
     $statusLabels = [
         'planning'    => 'Planification',

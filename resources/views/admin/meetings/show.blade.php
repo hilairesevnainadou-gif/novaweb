@@ -534,12 +534,16 @@
         'completed'   => 'fa-check-circle',
         'cancelled'   => 'fa-ban',
     ];
-    $isUpcoming = $meeting->status === 'scheduled' && $meeting->meeting_date > now();
+    $isUpcoming  = $meeting->status === 'scheduled' && $meeting->meeting_date > now();
+    $canViewProject = $user->can('projects.view');
+    $backUrl     = $canViewProject
+        ? route('admin.projects.meetings.index', $meeting->project)
+        : route('admin.meetings.global-index');
 @endphp
 
 {{-- Page Header --}}
 <div class="show-page-header">
-    <a href="{{ route('admin.projects.meetings.index', $meeting->project) }}" class="back-btn" title="Retour aux réunions">
+    <a href="{{ $backUrl }}" class="back-btn" title="Retour">
         <i class="fas fa-arrow-left"></i>
     </a>
     <div class="header-meta">
@@ -825,12 +829,15 @@
             <div class="sidebar-header"><i class="fas fa-bolt" style="margin-right:.35rem"></i>Actions rapides</div>
             <div class="sidebar-body">
 
+                @if($canViewProject)
                 <a href="{{ route('admin.projects.show', $meeting->project) }}" class="quick-link">
                     <i class="fas fa-folder-open"></i> Voir le projet
                 </a>
+                @endif
 
-                <a href="{{ route('admin.projects.meetings.index', $meeting->project) }}" class="quick-link">
-                    <i class="fas fa-calendar-alt"></i> Toutes les réunions
+                <a href="{{ $backUrl }}" class="quick-link">
+                    <i class="fas fa-calendar-alt"></i>
+                    {{ $canViewProject ? 'Réunions du projet' : 'Liste des réunions' }}
                 </a>
 
                 @if($canEdit)

@@ -1,14 +1,26 @@
-# Tâches en cours - Vue Edit Réunion
+# TODO: Fix Task Create Cancel Redirect
 
-## Étapes du plan (4/7 complétées)
+## Plan approuvé par l'utilisateur
 
-✅ 1. Créer resources/views/admin/meetings/edit.blade.php  
-✅ 2. Copier structure de create.blade.php et adapter titres/breadcrumbs  
-✅ 3. Pré-remplir tous les champs avec données $meeting  
-✅ 4. Adapter JS participants avec $meeting->attendees  
+**Objectif:** Corriger le bouton "Annuler/Retour" dans la vue création de tâche globale (`admin/tasks/create`) pour rediriger vers la liste des projets (`admin/projects/index`) au lieu de la liste globale des tâches.
 
-- [ ] 5. Ajouter permissions @can('meetings.edit') sur actions  
-- [ ] 6. Adapter sidebar pour infos réunion (organizer, status, etc.)  
-- [ ] 7. Vérifier routes et tester formulaire  
+## Étapes à compléter:
 
-**Prochaine étape :** Finaliser permissions et sidebar
+### ✅ Étape 1: Créer ce fichier TODO.md [ TERMINÉE ]
+
+### ✅ Étape 2: Appliquer les modifications edit_file sur resources/views/admin/tasks/create.blade.php
+- Remplacer les 2 occurrences du href du bouton retour pour utiliser `route('admin.projects.index')` quand !$hasProject
+- Fichiers impactés: `resources/views/admin/tasks/create.blade.php`
+
+### ✅ Étape 3: Vérifier le résultat
+- Accéder à `/admin/tasks/create` (création globale)
+- Cliquer sur le bouton "Retour" (flèche gauche ou "Annuler")
+- ✅ Doit rediriger vers `/admin/projects`
+- ✅ Le sélecteur de projet fonctionne toujours correctement
+- ✅ La création depuis un projet spécifique (`/admin/projects/{id}/tasks/create`) retourne toujours vers les tâches du projet
+
+### ✅ Étape 4: Marquer comme terminé - Modal tableau projets fonctionnel dans meetings/global-index
+- Utiliser `attempt_completion` une fois testé et validé
+
+**Note:** Modification purement frontale (Blade). Aucune impact sur les contrôleurs ou routes existants.
+
